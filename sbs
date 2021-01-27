@@ -1,0 +1,170 @@
+#!/bin/bash
+
+source .sbs/sbscfg.bash
+
+QEMU=${QEMU:-"qemu-system-x86_64"}
+BOCHS=${BOCHS:-"bochs"}
+
+VERB=${1:-"help"}
+ARCH=${2:-"i686-pc"}
+MODE=${3:-"debug"}
+
+
+PROJECT_DIR=${PROJECT_DIR:-$PWD}
+PROJECT_FILE=${PROJECT_FILE:-"${PROJECT_DIR}/sbs.project"}
+
+KERNEL_FILE="build/${ARCH}/${MODE}/kernel.${ARCH}.elf"
+
+NOT_VERB=(remove_update_files)
+
+help() {
+    echo "
+Usage: sbs <verb=help> <arch=i686-pc> <mode=debug>
+Verbs:
+    help     : show this menu
+    build    : build the kernel
+    clean    : clean object files
+    iso      : generate the iso file
+    run-qemu : boots the iso file with qemu
+    run-bochs: boots the iso file with bochs
+    all      : equivalent to build->iso
+    all-bochs: equivalent to all->run-bochs
+    all-qemu : equivalent to all->run-qemu
+Arch:
+    i686-pc: for i686-pc platforms
+Modes:
+    debug
+    release
+"
+}
+
+build() {
+    echo "ARCH=${ARCH}" > ".sbs/sbsrc"
+    source .sbs/sbs.bash
+}
+
+iso() {
+    if [[ -f ${KERNEL_FILE} ]]; then
+        cp ${KERNEL_FILE} isodir/boot/helium.elf
+        mkdir -p run/
+        grub-mkrescue isodir -o run/helium.iso
+        if [[ $? -ne 0 ]]; then
+            exit 1
+        fi
+    else
+        echo "Kernel not found at: ${KERNEL_FILE}"
+        echo "Try building first with: 'sbs build'"
+    fi
+    if [[ ${VERB} != "all-qemu" && ${VERB} != "all-bochs" ]]; then
+        exit 0
+    fi
+}
+
+run-qemu() {
+    cd run
+    if [[ -f helium.iso ]]; then
+        ${QEMU} -cdrom helium.iso
+        exit $?
+    else
+        echo "helium.iso file not found, try generating it first with 'sbs iso'"  
+    fi
+}
+
+run-bochs() {
+    cd run
+    if [[ -f helium.iso ]]; then
+        ${BOCHS} -f bochsrc.txt -q
+        exit $?
+    else
+        echo "helium.iso file not found, try generating it first with 'sbs iso'"  
+    fi
+}
+
+clean() {
+    echo "Cleaning build files..."
+    if [[ -f ${PROJECT_FILE} ]]; then
+        source ${PROJECT_FILE}
+    else
+        echo "Project file not found!"
+        exit 1
+    fi
+    BUILD_DIR=${BUILD_DIR:-"${PROJECT_DIR}/build/"}
+    _RBDIR=${_RBDIR:-"${BUILD_DIR}/"}
+    [[ -d "${_RBDIR}/debug/obj" ]] && rm -rf "${_RBDIR}/debug/obj"
+    [[ -d "${_RBDIR}/release/obj" ]] && rm -rf "${_RBDIR}/release/obj"
+    echo "Cleaned build files"
+}
+
+remove_update_files() {
+    echo "Removing temporary file..."
+    if [[ $(basename ${PWD}) = "__update_sbs_tmp" ]]; then
+        cd ..
+    fi
+    rm -rf __update_sbs_tmp
+    if [[ $? -ne 0 ]]; then
+        echo "Problem while trying to delete temporary files!"
+        echo "Try deleting '__update_sbs_tmp' by yourself"
+        exit 1
+    fi
+}
+
+update() {
+    mkdir -p __update_sbs_tmp
+    cd __update_sbs_tmp
+    echo "Downloading update..."
+    
+    if [[ $(command -v wget) ]]; then
+        CMD="wget"
+    elif [[ $(command -v curl) ]]; then
+        CMD="curl"
+    else
+        echo "Please install wget or curl before trying to update"
+        cd ..
+        remove_update_files
+        exit 1
+    fi
+    ${CMD} ${UPDATE_URL}
+    if [[ $? -ne 0 ]]; then
+        echo "Problem while downloading the update files!"
+        remove_update_files
+        exit 1
+    fi
+    echo "Extracting files..."
+    tar -xzf latest.tar.gz
+    if [[ $? -ne 0 ]]; then
+        echo "Problem while extracting the update files!"
+        remove_update_files
+        exit 1
+    fi
+    echo "Copying new files to .sbs directory..."
+    \cp -r ShellBuildSystem-latest/.sbs/* ../.sbs
+    if [[ $? -ne 0 ]]; then
+        echo "Problem while copying the update files!"
+        remove_update_files
+        exit 1
+    fi
+    cd ..
+    remove_update_files
+    echo "Updated sbs!"
+}
+
+all() {
+    build
+    iso
+}
+
+all-bochs() {
+    all
+    run-bochs
+}
+
+all-qemu() {
+    all
+    run-qemu
+}
+
+if [[ $(command -v ${VERB}) && ! ${NOT_VERB[@]} =~ (^|[[:space:]])"${VERB}"($|[[:space:]]) ]]; then
+    ${VERB}
+else
+    echo "Unknown verb: ${VERB}"
+fi

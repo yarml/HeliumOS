@@ -1,7 +1,10 @@
 global _start
 global magic
 global mbd
- 
+
+extern setup_gdt
+
+
 extern kmain
  
 extern start_ctors
@@ -38,6 +41,8 @@ _start:
     cmp  ebx, end_ctors
     jb   .call_constructor
  
+    call setup_gdt
+
     call kmain
  
     mov  ebx, end_dtors

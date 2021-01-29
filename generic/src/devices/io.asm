@@ -3,12 +3,12 @@ global outw
 global inb
 global inw
 
+section .text
+
 ; uint8_t inb(uint16_t port);
 inb:
     mov dx, [esp + 4] ; Port
-    in  al, dx
-    %include "debug/debug.asm"
-    
+    in  al, dx    
     ret
 
 ; uint16_t inb(uint16_t port);

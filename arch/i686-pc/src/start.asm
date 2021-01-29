@@ -1,32 +1,62 @@
-%include "kernel.asm"
-
-MBALIGN  equ  1 << 0
-MEMINFO  equ  1 << 1
-FLAGS    equ  MBALIGN | MEMINFO
-MAGIC    equ  0x1BADB002
-CHECKSUM equ -(MAGIC + FLAGS)
-
-section .multiboot
-align 4
-	dd MAGIC
-	dd FLAGS
-	dd CHECKSUM
-
-section .bss
-align 16
-stack_bottom:
-resb 16384 ; 16 KiB
-stack_top:
+global _start
+global magic
+global mbd
  
-
+extern kmain
+ 
+extern start_ctors
+extern end_ctors
+extern start_dtors
+extern end_dtors
+ 
+MODULEALIGN equ  1<<0
+MEMINFO     equ  1<<1
+FLAGS       equ  MODULEALIGN | MEMINFO
+MAGIC       equ    0x1BADB002
+CHECKSUM    equ -(MAGIC + FLAGS)
+ 
 section .text
-global start:function (start.end - start)
-start:
-	mov esp, stack_top
-
-	call kmain
-
-	cli
-.hang:	hlt
-	jmp .hang
-.end:
+ 
+align 4
+    dd MAGIC
+    dd FLAGS
+    dd CHECKSUM
+ 
+STACKSIZE equ 0x4000
+ 
+_start:
+    mov  esp, stack + STACKSIZE
+    mov  [magic], eax
+    mov  [mbd], ebx
+ 
+    mov  ebx, start_ctors
+    jmp  .ctors_until_end
+.call_constructor:
+    call [ebx]
+    add  ebx,4
+.ctors_until_end:
+    cmp  ebx, end_ctors
+    jb   .call_constructor
+ 
+    call kmain
+ 
+    mov  ebx, end_dtors
+    jmp  .dtors_until_end
+.call_destructor:
+    sub  ebx, 4
+    call [ebx]
+.dtors_until_end:
+    cmp  ebx, start_dtors
+    ja   .call_destructor
+ 
+    cli
+.hang:
+    hlt
+    jmp  .hang
+ 
+section .bss
+ 
+align 4
+magic: resd 1
+mbd:   resd 1
+stack: resb STACKSIZE                   ; reserve 16k stack on a doubleword boundary

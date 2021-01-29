@@ -205,8 +205,8 @@ LIB_FLAGS=""
 OBJECTS=""
 
 for INC in ${_INC[@]} ${_PINC[@]}; do
-    INCLUDE_FLAGS=" -I${INC}"
-    AS_INCLUDE_FLAGS=" -i${INC}"
+    INCLUDE_FLAGS+=" -I${INC}"
+    AS_INCLUDE_FLAGS+=" -i${INC}"
 done
 
 for LIB_DIR in ${_LDIRS[@]}; do

@@ -39,13 +39,10 @@ struct framebuffer_cell
     uint8_t bg:4 ;
 } __attribute__((packed));
 
-class framebuffer
+namespace framebuffer
 {
-private:
-    framebuffer_cell* m_base;
-public:
-    framebuffer(framebuffer_cell* base = (framebuffer_cell*) 0xB8000);
-public:
+    extern framebuffer_cell* base;
+
     void clear(framebuffer_color bg = framebuffer_color::BLACK    );
     void put_char(  uint16_t position   , uint8_t ascii            ,
                     framebuffer_color fg = framebuffer_color::WHITE,
@@ -61,6 +58,6 @@ public:
                     framebuffer_color bg = framebuffer_color::BLACK);
     void set_curs(uint8_t x, uint8_t y);
     void set_curs( uint16_t position);
-};
+}
 
 #endif /* FRAMEBUFFER_HPP */

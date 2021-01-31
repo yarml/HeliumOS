@@ -70,7 +70,7 @@ class serial
 private:
     uint16_t m_base;
 public:
-    serial(uint16_t base = SERIAL_COM1_BASE);
+    serial(uint16_t base);
 public:
     void configure_baud_rate(uint16_t divisor);
     void configure_line(uint8_t config       );
@@ -82,5 +82,7 @@ public:
     void write(      uint8_t  data              );
     void write(const uint8_t* data, uint16_t len);
 };
+
+extern serial com1;
 
 #endif /* SERIAL_HPP */

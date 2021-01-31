@@ -64,7 +64,7 @@ extern "C" void setup_gdt()
     entries[2] = gdt_entry(0x00000000, 0xFFFFFFFF,
                                    gdt_access::PRESENT                    | gdt_access::CODE_DATA|
                                    gdt_access::RW, gdt_flags::GRANULARITY | gdt_flags::OP_SIZE   );
-    gdtr = { .size = sizeof(gdt_entry) * 3, .offset = entries };
+    gdtr = { .size = sizeof(entries), .offset = entries };
 
     load_gdt(gdtr);
 

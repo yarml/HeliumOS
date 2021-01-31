@@ -28,6 +28,8 @@ align 4
 STACKSIZE equ 0x4000
  
 _start:
+    cli    
+
     mov  esp, stack + STACKSIZE
     mov  [magic], eax
     mov  [mbd], ebx
@@ -40,9 +42,8 @@ _start:
 .ctors_until_end:
     cmp  ebx, end_ctors
     jb   .call_constructor
- 
-    call setup_gdt
 
+    call setup_gdt
     call kmain
  
     mov  ebx, end_dtors
@@ -53,10 +54,7 @@ _start:
 .dtors_until_end:
     cmp  ebx, start_dtors
     ja   .call_destructor
- 
-    cli
 .hang:
-    hlt
     jmp  .hang
  
 section .bss
@@ -64,4 +62,4 @@ section .bss
 align 4
 magic: resd 1
 mbd:   resd 1
-stack: resb STACKSIZE                   ; reserve 16k stack on a doubleword boundary
+stack: resb STACKSIZE

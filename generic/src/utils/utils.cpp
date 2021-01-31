@@ -11,7 +11,7 @@ namespace utils
         for(; num > 0; num /= 10, counter++);
         return counter;
     }
-    void uint32_to_string(uint32_t num, char* buf)
+    void uint32_to_string_dec(uint32_t num, char* buf)
     {
         if(num < 10)
         {

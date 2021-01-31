@@ -7,7 +7,7 @@
 namespace utils
 {
     size_t uint32_length(   uint32_t num           );
-    void   uint32_to_string(uint32_t num, char* buf);
+    void   uint32_to_string_dec(uint32_t num, char* buf);
     void   string_reverse(  char* str              );
 }
 

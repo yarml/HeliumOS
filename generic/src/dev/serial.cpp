@@ -1,11 +1,14 @@
-#include <devices/serial.hpp>
-#include <devices/io.hpp>
-#include <devices/framebuffer.hpp>
+#include <dev/serial.hpp>
+#include <dev/io.hpp>
+#include <dev/framebuffer.hpp>
+
+serial com1(SERIAL_COM1_BASE);
 
 serial::serial(uint16_t base)
 {
     m_base = base;
 }
+
 void serial::configure_baud_rate(uint16_t divisor)
 {
     configure_line(serial_line_config::ENABLE_DLAB);
@@ -31,9 +34,6 @@ bool serial::query_status(line_status status)
 {
     return inb(SERIAL_LINE_STATUS_PORT(m_base)) & (uint8_t) status;
 }
-
-extern framebuffer fb;
-
 
 void serial::write(uint8_t data)
 {

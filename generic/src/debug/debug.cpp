@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <string.h>
 #include <dev/framebuffer.hpp>
-#include <utils.hpp>
+#include <kutils.hpp>
 
 debug dbg(com1);
 
@@ -32,9 +32,9 @@ void debug::print(const char* msg)
 }
 void debug::print(uint32_t n)
 {
-    uint32_t n_len = utils::uint32_length(n);
+    uint32_t n_len = kutils::uint32_length(n);
     char str_n[n_len + 1];
-    utils::uint32_to_string_dec(n, str_n);
+    kutils::uint32_to_string_dec(n, str_n);
     str_n[n_len] = 0;
     print(str_n);
 }

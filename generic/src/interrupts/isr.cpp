@@ -16,13 +16,7 @@ static void aisr_keyboard()
 {
     uint8_t scancode = inb(0x60);
     dbg << "scan code: " << (uint32_t) scancode << '\n';
-    uint32_t sc_len = utils::uint32_length(scancode);
-    char sc_str[sc_len + 1];
-    utils::uint32_to_string_dec(scancode, sc_str);
-    sc_str[sc_len] = 0;
-    framebuffer::put_string(0, sc_str);
-    framebuffer::put_string(sc_len, "   ");
-    framebuffer::set_curs(sc_len);
+    
     pic::send_eoi(irq::KEYBOARD);
 }
 

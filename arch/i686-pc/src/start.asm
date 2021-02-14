@@ -14,16 +14,20 @@ extern end_dtors
  
 MODULEALIGN equ  1<<0
 MEMINFO     equ  1<<1
-FLAGS       equ  MODULEALIGN | MEMINFO
-MAGIC       equ    0x1BADB002
+
+FLAGS       equ  (MODULEALIGN | MEMINFO)
+MAGIC       equ   0x1BADB002
 CHECKSUM    equ -(MAGIC + FLAGS)
  
-section .text
- 
+
+section multiboot
+
 align 4
     dd MAGIC
     dd FLAGS
     dd CHECKSUM
+
+section .text
  
 STACKSIZE equ 0x4000
  
@@ -44,8 +48,11 @@ _start:
     jb   .call_constructor
 
     call setup_gdt
+
+    push dword [mbd]
     call kmain
- 
+    add esp, 4
+
     mov  ebx, end_dtors
     jmp  .dtors_until_end
 .call_destructor:

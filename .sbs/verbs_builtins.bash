@@ -22,20 +22,20 @@ clean() {
 
 remove_update_files() {
     echo "Removing temporary file..."
-    if [[ $(basename ${PWD}) = "__update_sbs_tmp" ]]; then
+    if [[ $(basename ${PWD}) = "${TMP_DIR}" ]]; then
         cd ..
     fi
-    rm -rf __update_sbs_tmp
+    rm -rf ${TMP_DIR}
     if [[ $? -ne 0 ]]; then
         echo "Problem while trying to delete temporary files!"
-        echo "Try deleting '__update_sbs_tmp' by yourself"
+        echo "Try deleting '${TMP_DIR}' by yourself, it should be deleted automatically after reboot"
         exit 1
     fi
 }
 
 update() {
-    mkdir -p __update_sbs_tmp
-    cd __update_sbs_tmp
+    TMP_DIR=$(mktemp -d)
+    cd ${TMP_DIR}
 
     if [[ ! $(command -v jq) ]]; then
         echo "Cannot find command jq, please install it first"

@@ -15,5 +15,5 @@ TARGET="kernel.${ARCH}.elf"
 TYPE="exec"
 BUILD_TYPE="debug"
 LIBRARIES="gcc"
-SUB_PROJECTS="libc/"
+SUB_PROJECTS="libc/ libc++/"
 

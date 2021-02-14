@@ -7,10 +7,11 @@
 extern "C" {
 #endif /* __cplusplus */
 
-size_t strlen(const char* str);
+size_t strlen(const char* str                                          );
+void*  memcpy(void* to, const void* from, size_t size);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* LIBS_STRING_H */
+#endif /* LIBC_STRING_H */

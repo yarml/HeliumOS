@@ -10,6 +10,13 @@ SBS_DIR=${SBS_DIR:-"${PROJECT_DIR}/.sbs"}
 PROJECT_FILE=${PROJECT_FILE:-"${PROJECT_DIR}/sbs.project"}
 TMP_DIR=${TMP_DIR:-"${SBS_DIR}/tmp/"}
 SUB_PROJECT_RET="${TMP_DIR}/sub_proj_ret"
+LAST_BUILD_FILE="${SBS_DIR}/last_build"
+if [[ -f ${LAST_BUILD_FILE} ]]; then
+    LAST_BUILD_TIME=$(cat ${LAST_BUILD_FILE})
+else
+    LAST_BUILD_TIME=0
+fi
+
 
 cd ${PROJECT_DIR}
 
@@ -22,6 +29,8 @@ source ${SBS_DIR}/term.bash
 source ${SBS_DIR}/colors.bash
 
 debug "Sbs is in debug mode"
+debug "Last build: ${LAST_BUILD_TIME}"
+
 
 _IS_SUB_PROJECT=${_IS_SUB_PROJECT:-0}
 
@@ -189,8 +198,8 @@ for PROJ in ${_SPR[@]}; do
     fi
     source ${SUB_PROJECT_RET}
     if [[ ${_SPR_TYPE} != "exec" ]]; then # if lib
-        print "${bold}${fg_green}Adding subproject ${__PROJECT_NAME} as a library"
-        _PINC+=${_SPR_INCLUDE[@]}
+        print "${bold}${fg_green}Adding subproject ${fg_blue}${__PROJECT_NAME}${fg_green} as a library"
+        _PINC+=("${_SPR_INCLUDE[@]}")
         _LIBS+=("${_SPR_TARGET}")
         _LDIRS+=("${_SPR_BUILD_DIR}")
     fi
@@ -219,99 +228,90 @@ done
 
 debug " Include flags: \"${INCLUDE_FLAGS}\""
 
-for SOURCE in ${_ASRC[@]}; do
+RELINK=0
+
+compile() {
+    if [[ ${#} -ne 1 ]]; then
+        error "compile got invalid arguments"
+        exit -1
+    fi
     SOURCE_OUT="${_BDIR}/${SOURCE//\//$'_'}.o"
     SOURCE_EXT="${SOURCE##*.}"
     OBJECTS+=" ${SOURCE_OUT}"
-    if [[ ${_CEXT[@]} =~ "${SOURCE_EXT}" ]]; then
-        print " ${bold}${fg_yellow}=> ${fg_green}Compiling $(basename ${SOURCE})"
-        CMD="${CC} -c ${INCLUDE_FLAGS} ${CFLAGS} ${CCFLAGS} ${SOURCE} -o ${SOURCE_OUT}"
-        ${CMD}
-        if [[ $? -ne 0 ]]; then
-            error "Failed to compile: ${SOURCE}"
-            error "While executing: "${CMD}""
-            exit ${exit_error}
+    SOURCE_MODIF=$(stat -c %Y ${SOURCE})
+    if [[ ! -f ${SOURCE_OUT} || ${SOURCE_MODIF} -gt ${LAST_BUILD_TIME} ]]; then
+        RELINK=1
+        if [[ ${_CEXT[@]} =~ "${SOURCE_EXT}" ]]; then
+            print " ${bold}${fg_yellow}=> ${fg_green}Compiling $(basename ${SOURCE})"
+            CMD="${CC} -c ${INCLUDE_FLAGS} ${CFLAGS} ${CCFLAGS} ${SOURCE} -o ${SOURCE_OUT}"
+            ${CMD}
+            if [[ $? -ne 0 ]]; then
+                error "Failed to compile: ${SOURCE}"
+                error "While executing: "${CMD}""
+                exit ${exit_error}
+            fi
+        elif [[ ${_CXXEXT[@]} =~ "${SOURCE_EXT}" ]]; then
+            print " ${bold}${fg_yellow}=> ${fg_green}Compiling $(basename ${SOURCE})"
+            CMD="${CXX} -c ${INCLUDE_FLAGS} ${CXXFLAGS} ${CCFLAGS} ${SOURCE} -o ${SOURCE_OUT}"
+            ${CMD}
+            if [[ $? -ne 0 ]]; then
+                error "Failed to compile: ${SOURCE}"
+                error "While executing: "${CMD}""
+                exit ${exit_error}
+            fi
+        elif [[ ${_ASEXT[@]} =~ "${SOURCE_EXT}" ]]; then
+            print " ${bold}${fg_yellow}=> ${fg_green}Assembling $(basename ${SOURCE})"
+            CMD="${AS} ${AS_INCLUDE_FLAGS} ${ASFLAGS} ${SOURCE} -o ${SOURCE_OUT}"
+            ${CMD}
+            if [[ $? -ne 0 ]]; then
+                error "Failed to assemble: ${SOURCE}"
+                error "While executing: "${CMD}""
+                exit ${exit_error}
+            fi
         fi
-    elif [[ ${_CXXEXT[@]} =~ "${SOURCE_EXT}" ]]; then
-        print " ${bold}${fg_yellow}=> ${fg_green}Compiling $(basename ${SOURCE})"
-        CMD="${CXX} -c ${INCLUDE_FLAGS} ${CXXFLAGS} ${CCFLAGS} ${SOURCE} -o ${SOURCE_OUT}"
-        ${CMD}
-        if [[ $? -ne 0 ]]; then
-            error "Failed to compile: ${SOURCE}"
-            error "While executing: "${CMD}""
-            exit ${exit_error}
-        fi
-    elif [[ ${_ASEXT[@]} =~ "${SOURCE_EXT}" ]]; then
-        print " ${bold}${fg_yellow}=> ${fg_green}Assembling $(basename ${SOURCE})"
-        CMD="${AS} ${AS_INCLUDE_FLAGS} ${ASFLAGS} ${SOURCE} -o ${SOURCE_OUT}"
-        ${CMD}
-        if [[ $? -ne 0 ]]; then
-            error "Failed to assemble: ${SOURCE}"
-            error "While executing: "${CMD}""
-            exit ${exit_error}
-        fi
+    else
+        print " ${bold}${fg_blue}=> ${fg_green} Skipping $(basename ${SOURCE}), already up to date"
     fi
+}
+
+for SOURCE in ${_ASRC[@]}; do
+    compile ${SOURCE}
 done
 
 for SOURCE in ${C_SOURCES[@]}; do
-    SOURCE_OUT="${_BDIR}/${SOURCE//\//$'_'}.o"
-    OBJECTS+=" ${_BDIR}/${SOURCE//\//$'_'}.o"
-    print " ${bold}${fg_yellow}=> ${fg_green}Compiling $(basename ${SOURCE})"
-    debug "Compiling ${SOURCE}"
-    CMD="${CC} -c ${INCLUDE_FLAGS} ${CFLAGS} ${CCFLAGS} ${SOURCE} -o ${SOURCE_OUT}"
-    ${CMD}
-    if [[ $? -ne 0 ]]; then
-        error "Failed to compile: ${SOURCE}"
-        error "While executing: "${CMD}""
-        exit ${exit_error}
-    fi
+    compile ${SOURCE}
 done
 
 for SOURCE in ${CXX_SOURCES[@]}; do
-    SOURCE_OUT="${_BDIR}/${SOURCE//\//$'_'}.o"
-    OBJECTS+=" ${_BDIR}/${SOURCE//\//$'_'}.o"
-    print " ${bold}${fg_yellow}=> ${fg_green}Compiling $(basename ${SOURCE})"
-    debug "Compiling ${SOURCE}"
-    CMD="${CXX} -c ${INCLUDE_FLAGS} ${CXXFLAGS} ${CCFLAGS} ${SOURCE} -o ${SOURCE_OUT}"
-    ${CMD}
-    if [[ $? -ne 0 ]]; then
-        error "Failed to compile: ${SOURCE}"
-        error "While executing: "${CMD}""
-        exit ${exit_error}
-    fi
+    compile ${SOURCE}
 done
 
 for SOURCE in ${AS_SOURCES[@]}; do
-    SOURCE_OUT="${_BDIR}/${SOURCE//\//$'_'}.o"
-    OBJECTS+=" ${_BDIR}/${SOURCE//\//$'_'}.o"
-    print " ${bold}${fg_yellow}=> ${fg_green}Assembling $(basename ${SOURCE})"
-    debug "Assembling ${SOURCE}"
-    CMD="${AS} ${AS_INCLUDE_FLAGS} ${ASFLAGS} ${SOURCE} -o ${SOURCE_OUT}"
-    ${CMD}
-    if [[ $? -ne 0 ]]; then
-        error "Failed to assemble: ${SOURCE}"
-        error "While executing: "${CMD}""
-        exit ${exit_error}
-    fi
+    compile ${SOURCE}
 done
 
-if [[ ${TYPE} = "exec" ]]; then
-    print " ${bold}${fg_yellow}=> ${fg_green}Linking executable: ${fg_blue}$(basename ${OUT})${fg_green}..."
-    CMD="${LINKER} ${LINKFLAGS} ${OBJECTS} ${LIB_DIRS_FLAGS} ${LIB_FLAGS} -o ${OUT}"
-elif [[ ${TYPE} = "slib" ]]; then
-    print " ${bold}${fg_yellow}=> ${fg_green}Generating static library: ${fg_blue}$(basename ${OUT})${fg_green}..."
-    CMD="${STATIC_LINKER} crf "${_RBDIR}/lib${TARGET}.a" ${OBJECTS}"
-elif [[ ${TYPE} = "dlib" ]]; then
-    print " ${bold}${fg_yellow}=> ${fg_green}Linking shared library: ${fg_blue}$(basename ${OUT})${fg_green}..."
-    CMD="${LINKER} -shared ${LINKFLAGS} ${OBJECTS} ${LIB_DIRS_FLAGS} ${LIB_FLAGS} -o ${OUT}"
+if [[ ${RELINK} -ne 0 || ! -f ${OUT} ]]; then
+    if [[ ${TYPE} = "exec" ]]; then
+        print " ${bold}${fg_yellow}=> ${fg_green}Linking executable: ${fg_blue}$(basename ${OUT})${fg_green}..."
+        CMD="${LINKER} ${LINKFLAGS} ${OBJECTS} ${LIB_DIRS_FLAGS} ${LIB_FLAGS} -o ${OUT}"
+    elif [[ ${TYPE} = "slib" ]]; then
+        print " ${bold}${fg_yellow}=> ${fg_green}Generating static library: ${fg_blue}$(basename ${OUT})${fg_green}..."
+        CMD="${STATIC_LINKER} crf "${_RBDIR}/lib${TARGET}.a" ${OBJECTS}"
+    elif [[ ${TYPE} = "dlib" ]]; then
+        print " ${bold}${fg_yellow}=> ${fg_green}Linking shared library: ${fg_blue}$(basename ${OUT})${fg_green}..."
+        CMD="${LINKER} -shared ${LINKFLAGS} ${OBJECTS} ${LIB_DIRS_FLAGS} ${LIB_FLAGS} -o ${OUT}"
+    fi
+
+    ${CMD}
+    if [[ $? -ne 0 ]]; then
+        error "Linking failed!"
+        error "While executing: ${CMD}"
+        exit ${exit_error}
+    fi
+else
+    print " ${bold}${fg_blue}=> ${fg_green} Skipping ${OUT}, already up to date"
 fi
 
-${CMD}
-if [[ $? -ne 0 ]]; then
-    error "Linking failed!"
-    error "While executing: ${CMD}"
-    exit ${exit_error}
-fi
 
 if [[ ${_IS_SUB_PROJECT} -eq 1 ]]; then
     ABSOLUTE_INCLUDE=""
@@ -324,6 +324,7 @@ if [[ ${_IS_SUB_PROJECT} -eq 1 ]]; then
     done
     printf "_SPR_TYPE=${TYPE}\n_SPR_INCLUDE=(${ABSOLUTE_INCLUDE})\n_SPR_TARGET=${TARGET}\n_SPR_BUILD_DIR=${_RBDIR}\n" > ${SUB_PROJECT_RET}
 else
+    echo $(date +%s) > ${LAST_BUILD_FILE}
     rm -rf ${TMP_DIR}
 fi
 

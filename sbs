@@ -18,7 +18,8 @@ NOT_VERB=(remove_update_files)
 source ".sbs/verbs_builtins.bash"
 
 help() {
-    echo "\
+    echo \
+"\
 Usage: sbs <verb=help> <arch=i686-pc> <mode=debug>
 Verbs:
     help    (default): show this menu
@@ -125,7 +126,9 @@ all-qemu-no-grub() {
     ${QEMU} -kernel build/debug/kernel.i686-pc.elf
 }
 
-if [[ $(command -v ${VERB}) && ! ${NOT_VERB[@]} =~ (^|[[:space:]])"${VERB}"($|[[:space:]]) ]]; then
+
+
+if [[ $(type -t ${VERB}) = "function" && ! ${NOT_VERB[@]} =~ (^|[[:space:]])"${VERB}"($|[[:space:]]) ]]; then
     ${VERB}
 else
     echo "Unknown verb: ${VERB}"

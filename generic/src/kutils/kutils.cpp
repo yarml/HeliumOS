@@ -1,7 +1,7 @@
-#include <utils.hpp>
+#include <kutils.hpp>
 #include <string.h>
 
-namespace utils
+namespace kutils
 {
     size_t uint32_length(uint32_t num)
     {
@@ -15,12 +15,14 @@ namespace utils
     {
         if(num < 10)
         {
-            *buf = '0' + num;
+            buf[0] = '0' + num;
+            buf[1] = 0;
             return;
         }
 
-        for(int i = 0; num > 0;
-            buf[i] = '0' + num % 10, i++, num /= 10);
+        int i = 0;
+        for(;num > 0; buf[i] = '0' + num % 10, i++, num /= 10);
+        buf[i] = 0;
         string_reverse(buf);
     }
     void string_reverse(char* str)

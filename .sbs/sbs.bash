@@ -17,7 +17,6 @@ else
     LAST_BUILD_TIME=0
 fi
 
-
 cd ${PROJECT_DIR}
 
 [[ -f ${SBSRC} ]] && source ${SBSRC}
@@ -328,4 +327,4 @@ else
     rm -rf ${TMP_DIR}
 fi
 
-print "${bold}${fg_green}Done building project: ${TARGET}" 
+print "${bold}${fg_green}Done building project: ${TARGET}"

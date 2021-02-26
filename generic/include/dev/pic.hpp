@@ -28,7 +28,7 @@
 
 enum irq : uint8_t
 {
-    TIMER,
+    PIT,
     KEYBOARD,
     PIC2,
     COM2,

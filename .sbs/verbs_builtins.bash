@@ -35,6 +35,7 @@ remove_update_files() {
 
 update() {
     TMP_DIR=$(mktemp -d)
+    PROJECT_DIR=${PWD}
     cd ${TMP_DIR}
 
     if [[ ! $(command -v jq) ]]; then
@@ -52,14 +53,14 @@ update() {
         TAG_NAME=$(curl -s ${GITHUB_API_LATEST} | jq -r ".tag_name")
     else
         echo "Please install wget or curl before trying to update"
-        cd ..
+        cd ${PROJECT_DIR}
         remove_update_files
         exit 1
     fi
 
     
-    if [[ -f ../.sbs/sbs.version ]]; then
-        CURRENT_VERSION=$(cat ../.sbs/sbs.version)
+    if [[ -f ${PROJECT_DIR}/.sbs/sbs.version ]]; then
+        CURRENT_VERSION=$(cat ${PROJECT_DIR}/.sbs/sbs.version)
     else
         CURRENT_VERSION="unknown"
     fi
@@ -97,13 +98,13 @@ update() {
         exit 1
     fi
     echo "Copying new files to .sbs directory..."
-    \cp -r ShellBuildSystem*/.sbs/* ../.sbs
+    \cp -r ShellBuildSystem*/.sbs/* ${PROJECT_DIR}/.sbs
     if [[ $? -ne 0 ]]; then
         echo "Problem while copying the update files!"
         remove_update_files
         exit 1
     fi
-    cd ..
+    cd ${PROJECT_DIR}
     remove_update_files
     echo ${TAG_NAME} > .sbs/sbs.version
     echo "Updated sbs!"

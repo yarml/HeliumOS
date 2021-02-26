@@ -3,6 +3,9 @@
 QEMU=${QEMU:-"qemu-system-x86_64"}
 BOCHS=${BOCHS:-"bochs"}
 
+QEMU_FLAGS="-k fr"
+BOCHS_FLAGS=""
+
 VERB=${1:-"help"}
 ARCH=${2:-"i686-pc"}
 MODE=${3:-"debug"}
@@ -32,6 +35,7 @@ Verbs:
     all-bochs        : equivalent to all->run-bochs
     all-qemu         : equivalent to all->run-qemu
     all-qemu-no-grub : build the kernel and boot with qemu directly
+    install          : copies the kernel to /boot/helium_os.elf or to /boot/<arg1> if arg1 is specified
 Arch:
     i686-pc (default): for i686-pc platform
 Modes:
@@ -64,9 +68,9 @@ iso() {
         if [[ ! $(command -v grub-file) ]]; then
             echo "Please install grub before generating the iso"
         fi
-        echo $PWD
+        echo ${PWD}
         grub-file --is-x86-multiboot ${KERNEL_FILE}
-        if [[ $? -ne 0 ]]; then
+        if [[ ${?} -ne 0 ]]; then
             echo "Kernel file is not multiboot compliant"
             exit 1
         else
@@ -82,15 +86,12 @@ iso() {
         echo "Kernel not found at: ${KERNEL_FILE}"
         echo "Try building first with: 'sbs build'"
     fi
-    if [[ ${VERB} != "all-qemu" && ${VERB} != "all-bochs" ]]; then
-        exit 0
-    fi
 }
 
 run-qemu() {
     cd run
     if [[ -f helium.iso ]]; then
-        ${QEMU} -cdrom helium.iso
+        ${QEMU} ${QEMU_FLAGS} -cdrom helium.iso
         exit $?
     else
         echo "helium.iso file not found, try generating it first with 'sbs iso'"  
@@ -100,7 +101,7 @@ run-qemu() {
 run-bochs() {
     cd run
     if [[ -f helium.iso ]]; then
-        ${BOCHS} -f bochs.cfg -rc bochsrc -q
+        ${BOCHS} ${BOCHS_FLAGS} -f bochs.cfg -rc bochsrc -q
         exit $?
     else
         echo "helium.iso file not found, try generating it first with 'sbs iso'"  
@@ -123,10 +124,16 @@ all-qemu() {
 
 all-qemu-no-grub() {
     build
-    ${QEMU} -kernel build/debug/kernel.i686-pc.elf
+    ${QEMU} ${QEMU_FLAGS} -kernel build/debug/kernel.i686-pc.elf
 }
 
-
+install() {
+    if [[ -f build/debug/kernel.i686-pc.elf ]]; then
+        sudo cp build/debug/kernel.i686-pc.elf /boot/${1:-"helium_os.elf"}
+    else
+        echo "Kernel file not found, try generating it first with 'sbs build'"
+    fi
+}
 
 if [[ $(type -t ${VERB}) = "function" && ! ${NOT_VERB[@]} =~ (^|[[:space:]])"${VERB}"($|[[:space:]]) ]]; then
     ${VERB}

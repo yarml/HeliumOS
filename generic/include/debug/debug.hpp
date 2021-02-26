@@ -5,7 +5,7 @@
 #include <dev/io.hpp>
 
 #define DEBUG_TERM(c) outb(0xe9, c)
-#define DEBUG_BREAK() {outw(0x8A00, 0x8A00); outw(0x8A00,0x08AE0);} do{} while(0)
+#define DEBUG_BREAK {outw(0x8A00, 0x8A00); outw(0x8A00,0x08AE0);}
 
 class debug
 {

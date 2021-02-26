@@ -6,3 +6,5 @@ run/helium.iso
 run/bx_enh_dbg.ini
 run/com1.out
 .sbs/tmp
+.sbs/last_build
+run/copy.txt

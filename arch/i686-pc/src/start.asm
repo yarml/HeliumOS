@@ -1,3 +1,5 @@
+%include "debug.asm"
+
 global _start
 global magic
 global mbd
@@ -62,7 +64,7 @@ _start:
     cmp  ebx, start_dtors
     ja   .call_destructor
 .hang:
-    jmp  .hang
+    jmp .hang
  
 section .bss
  

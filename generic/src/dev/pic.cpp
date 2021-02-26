@@ -1,5 +1,6 @@
 #include <dev/pic.hpp>
 #include <dev/io.hpp>
+#include <debug/debug.hpp>
 
 namespace pic
 {
@@ -12,10 +13,11 @@ namespace pic
     void remap(uint32_t offset1, uint32_t offset2)
     {
         unsigned char a1, a2;
-    
+        io_wait();
         a1 = inb(PIC_DATA(PIC_MASTER));
+        io_wait();
         a2 = inb(PIC_DATA(PIC_SLAVE));
-    
+        io_wait();
         outb(PIC_CMD(PIC_MASTER), ICW1_INIT | ICW1_ICW4);
         io_wait();
         outb(PIC_CMD(PIC_SLAVE) , ICW1_INIT | ICW1_ICW4);
@@ -35,6 +37,7 @@ namespace pic
         io_wait();
     
         outb(PIC_DATA(PIC_MASTER), a1);
+        io_wait();
         outb(PIC_DATA(PIC_SLAVE) , a2);
     }
     void set_mask(uint8_t irq) 
@@ -49,7 +52,9 @@ namespace pic
             port = PIC_DATA(PIC_SLAVE);
             irq -= 8;
         }
+        io_wait();
         value = inb(port) | (1 << irq);
+        io_wait();
         outb(port, value);        
     }  
     void clear_mask(uint8_t irq) 
@@ -63,7 +68,10 @@ namespace pic
             port = PIC_DATA(PIC_SLAVE);
             irq -= 8;
         }
-        value = inb(port) & ~(1 << irq);
+        io_wait();
+        uint8_t old_value = inb(port);
+        io_wait();
+        value = old_value & ~(1 << irq);
         outb(port, value);        
     }
 }

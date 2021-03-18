@@ -8,3 +8,4 @@ run/com1.out
 .sbs/tmp
 .sbs/last_build
 run/copy.txt
+run/mem.out

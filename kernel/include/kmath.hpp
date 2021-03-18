@@ -1,6 +1,7 @@
 #ifndef KMATH_HPP
 #define KMATH_HPP
 
+#include <debug/debug.hpp>
 #include <stdint.h>
 
 struct interval
@@ -26,6 +27,8 @@ public:
     bool operator>( const interval& other) const;
     bool operator==(const interval& other) const;
     bool operator!=(const interval& other) const;
+public:
+    friend debug& operator<<(debug&, const interval&);
 };
 
 #endif /* KMATH_HPP */

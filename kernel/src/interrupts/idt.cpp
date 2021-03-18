@@ -17,8 +17,8 @@ idt_entry::idt_entry(void (*handler)(interrupt_frame*), uint16_t segment,
     zero        = 0                                      ;
 }
 
-static idt_entry entries[256];
-static idt       idtr        ;
+static idt_entry idt_entries[256];
+static idt       idtr            ;
 
 void setup_idt()
 {
@@ -27,19 +27,19 @@ void setup_idt()
     for(int i = 0; i < 16; i++)
         pic::set_mask(i);
     
-    meta::idt_loop<256>::f(entries);
+    meta::idt_loop<256>::f(idt_entries);
     
-    // // Keyboard
-    entries[PIC_MASTER_OFFSET + irq::KEYBOARD] = idt_entry(isr_keyboard, CODE_SEGMENT,
+    // Keyboard
+    idt_entries[PIC_MASTER_OFFSET + irq::KEYBOARD] = idt_entry(isr_keyboard, CODE_SEGMENT,
                                                            idt_entry_type::INTERRUPT_32,
                                                            idt_entry_flags::PRESENT);
     
-    // // PIT
-    entries[PIC_MASTER_OFFSET + irq::PIT] = idt_entry(isr_pit, CODE_SEGMENT,
+    // PIT
+    idt_entries[PIC_MASTER_OFFSET + irq::PIT] = idt_entry(isr_pit, CODE_SEGMENT,
                                                            idt_entry_type::INTERRUPT_32,
                                                            idt_entry_flags::PRESENT);
     
-    idtr = {.size = sizeof(entries), .base = entries};
+    idtr = {.size = sizeof(idt_entries), .base = idt_entries};
     load_idt(idtr);
     pic::clear_mask(irq::PIT);
     pic::clear_mask(irq::KEYBOARD);

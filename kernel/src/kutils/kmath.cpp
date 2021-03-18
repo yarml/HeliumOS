@@ -1,5 +1,6 @@
 #include <kmath.hpp>
 #include <algorithm>
+#include <debug/debug.hpp>
 
 interval interval::intersection(interval other)
 {
@@ -15,7 +16,7 @@ interval interval::null()
 
 uint32_t interval::size() const
 {
-    return start + end +1;
+    return end - start + 1;
 }
 
 bool interval::valid() const
@@ -65,4 +66,10 @@ bool interval::operator<(const interval& other) const
 bool interval::operator>(const interval& other) const
 {
     return after(other);
+}
+
+debug& operator<<(debug& _dbg, const interval& inter)
+{
+    _dbg << inter.start << ':' << inter.end;
+    return _dbg;
 }

@@ -3,7 +3,7 @@
 
 namespace framebuffer
 {
-    framebuffer_cell* base = (framebuffer_cell*) 0x000B8000;
+    framebuffer_cell* base = (framebuffer_cell*) 0xC00B8000;
     
     void put_char(uint16_t position, uint8_t ascii, 
                             framebuffer_color fg, framebuffer_color bg)

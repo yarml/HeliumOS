@@ -7,14 +7,13 @@ QEMU_FLAGS="-k fr"
 BOCHS_FLAGS=""
 
 VERB=${1:-"help"}
-ARCH=${2:-"i686-pc"}
 MODE=${3:-"debug"}
 
 
 PROJECT_DIR=${PROJECT_DIR:-$PWD}
 PROJECT_FILE=${PROJECT_FILE:-"${PROJECT_DIR}/sbs.project"}
 
-KERNEL_FILE="build/${MODE}/kernel.${ARCH}.elf"
+KERNEL_FILE="build/${MODE}/kernel.elf"
 
 NOT_VERB=(remove_update_files)
 
@@ -23,7 +22,7 @@ source ".sbs/verbs_builtins.bash"
 help() {
     echo \
 "\
-Usage: sbs <verb=help> <arch=i686-pc> <mode=debug>
+Usage: sbs <verb=help> <mode=debug>
 Verbs:
     help    (default): show this menu
     build            : build the kernel
@@ -36,8 +35,6 @@ Verbs:
     all-qemu         : equivalent to all->run-qemu
     all-qemu-no-grub : build the kernel and boot with qemu directly
     install          : copies the kernel to /boot/helium_os.elf or to /boot/<arg1> if arg1 is specified
-Arch:
-    i686-pc (default): for i686-pc platform
 Modes:
     debug   (default): for debug   builds
     release          : for release builds\
@@ -60,6 +57,7 @@ clean() {
     [[ -f "run/bx_enh_dbg.ini" ]] && rm -rf "run/bx_enh_dbg.ini"
     [[ -f "run/helium.iso" ]] && rm -rf "run/helium.iso"
     [[ -f "run/bochslog.txt" ]] && rm -rf "run/bochslog.txt"
+    [[ -f "run/mem.out" ]] && rm -rf "run/mem.out"
     echo "Cleaned!"
 }
 

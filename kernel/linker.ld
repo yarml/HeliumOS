@@ -2,16 +2,20 @@ ENTRY(_start)
 
 SECTIONS
 {
-    . = 0x00100000;
 
-    .text ALIGN(0x1000) :
+    . = 0xC0100000;
+
+    kernel_virtual_start = .;
+    kernel_physical_start = . - 0xC0000000;
+
+    .text ALIGN(0x1000) : AT(ADDR(.text)-0xC0000000)
     {
         *(multiboot)
         *(.text)
         *(.gnu.linkonce.t*)
     }
 
-    .rodata ALIGN(0x1000) :
+    .rodata ALIGN(0x1000) : AT(ADDR(.rodata)-0xC0000000)
     {
         start_ctors = .;
         *(SORT(.ctors*))
@@ -25,13 +29,13 @@ SECTIONS
         *(.gnu.linkonce.r*)
     }
 
-    .data ALIGN(0x1000) :
+    .data ALIGN(0x1000) : AT(ADDR(.data)-0xC0000000)
     {
         *(.data)
         *(.gnu.linkonce.d*)
     }
 
-    .bss :
+    .bss ALIGN(0x1000): AT(ADDR(.bss)-0xC0000000)
     {
         sbss = .;
         *(COMMON)
@@ -40,9 +44,6 @@ SECTIONS
         ebss = .;
     }
 
-    /DISCARD/ :
-    {
-        *(.comment)
-        *(.eh_frame)
-    }
+    kernel_virtual_end = .;
+    kernel_physical_end = . - 0xC0000000;
 }

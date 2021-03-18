@@ -4,7 +4,7 @@
 #define LOOP_HPP
 
 #include <stdint.h>
-#include <gdt.hpp>
+#include <memory/gdt.hpp>
 #include <interrupts/idt.hpp>
 #include <debug/debug.hpp>
 #include <interrupts/isr.hpp>

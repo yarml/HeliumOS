@@ -17,6 +17,7 @@ else
     LAST_BUILD_TIME=0
 fi
 
+
 cd ${PROJECT_DIR}
 
 [[ -f ${SBSRC} ]] && source ${SBSRC}
@@ -82,16 +83,16 @@ mkdir -p ${_BDIR}
 
 # Convert some variables into lists
 export IFS=${IFS:-" "}
-read -r -a _CEXT   <<< "${CEXTENSIONS}"
-read -r -a _CXXEXT <<< "${CXXEXTENSIONS}"
-read -r -a _ASEXT  <<< "${ASEXTENSIONS}"
-read -r -a _SRC    <<< "${SRC}"
-read -r -a _ASRC   <<< "${ADDITIONAL_SOURCES}"
-read -r -a _INC    <<< "${INCLUDE}"
-read -r -a _PINC   <<< "${PUBLIC_INCLUDE}"
-read -r -a _SPR    <<< "${SUB_PROJECTS}"
-read -r -a _LIBS   <<< "${LIBRARIES}"
-read -r -a _LDIRS  <<< "${LIB_DIRS}"
+read -ra _CEXT   <<< "${CEXTENSIONS}"
+read -ra _CXXEXT <<< "${CXXEXTENSIONS}"
+read -ra _ASEXT  <<< "${ASEXTENSIONS}"
+read -ra _SRC    <<< "${SRC}"
+read -ra _ASRC   <<< "${ADDITIONAL_SOURCES}"
+read -ra _INC    <<< "${INCLUDE}"
+read -ra _PINC   <<< "${PUBLIC_INCLUDE}"
+read -ra _SPR    <<< "${SUB_PROJECTS}"
+read -ra _LIBS   <<< "${LIBRARIES}"
+read -ra _LDIRS  <<< "${LIB_DIRS}"
 
 
 if [[ ${TYPE} = "exec" ]]; then
@@ -207,14 +208,12 @@ done
 # Build self
 
 INCLUDE_FLAGS=""
-AS_INCLUDE_FLAGS=""
 LIB_DIRS_FLAGS=""
 LIB_FLAGS=""
 OBJECTS=""
 
 for INC in ${_INC[@]} ${_PINC[@]}; do
     INCLUDE_FLAGS+=" -I${INC}"
-    AS_INCLUDE_FLAGS+=" -i${INC}"
 done
 
 for LIB_DIR in ${_LDIRS[@]}; do
@@ -238,7 +237,32 @@ compile() {
     SOURCE_EXT="${SOURCE##*.}"
     OBJECTS+=" ${SOURCE_OUT}"
     SOURCE_MODIF=$(stat -c %Y ${SOURCE})
-    if [[ ! -f ${SOURCE_OUT} || ${SOURCE_MODIF} -gt ${LAST_BUILD_TIME} ]]; then
+
+    # I think no ne has a file name containing '$&²²kuyfttuyrfi_uytf&'
+    if [[ ${_CEXT[@]} =~ "${SOURCE_EXT}" ]]; then
+        IFS=" " read -d "$&²²kuyfttuyrfi_uytf&" -ra DEP_ALL_INCLUDES_L <<< $(${CC}  ${INCLUDE_FLAGS} ${CCFLAGS} ${CFLAGS}   -E -H ${SOURCE} 2>&1 > /dev/null)
+    elif [[ ${_CXXEXT[@]} =~ "${SOURCE_EXT}" ]]; then
+        IFS=" " read -d "$&²²kuyfttuyrfi_uytf&" -ra DEP_ALL_INCLUDES_L <<< $(${CXX} ${INCLUDE_FLAGS} ${CCFLAGS} ${CXXFLAGS} -E -H ${SOURCE} 2>&1 > /dev/null)
+    fi
+    # TODO: Implement header change check for assembly
+    HEADER_CHANGED=0
+    if [[ ! (${_ASEXT[@]} =~ ${SOURCE_EXT}) ]]; then
+        debug "Dependecies: ${DEP_ALL_INCLUDES_L[@]}"
+        for LINE in ${DEP_ALL_INCLUDES_L[@]}; do
+            if [[ ${LINE:0:1} = '.' ]]; then
+                continue
+            fi
+            HEADER=${LINE}
+            HEADER_MODIF=$(stat -c %Y ${HEADER} 2> /dev/null)
+            debug "Checking file: ${HEADER}"
+            if [[ ${HEADER_MODIF} -gt ${LAST_BUILD_TIME} ]]; then
+                debug "Changed header file: ${HEADER}"
+                HEADER_CHANGED=1
+                break
+            fi
+        done
+    fi
+    if [[ ! -f ${SOURCE_OUT} || ${SOURCE_MODIF} -gt ${LAST_BUILD_TIME} || HEADER_CHANGED -ne 0 ]]; then
         RELINK=1
         if [[ ${_CEXT[@]} =~ "${SOURCE_EXT}" ]]; then
             print " ${bold}${fg_yellow}=> ${fg_green}Compiling $(basename ${SOURCE})"
@@ -260,7 +284,7 @@ compile() {
             fi
         elif [[ ${_ASEXT[@]} =~ "${SOURCE_EXT}" ]]; then
             print " ${bold}${fg_yellow}=> ${fg_green}Assembling $(basename ${SOURCE})"
-            CMD="${AS} ${AS_INCLUDE_FLAGS} ${ASFLAGS} ${SOURCE} -o ${SOURCE_OUT}"
+            CMD="${AS} ${INCLUDE_FLAGS} ${ASFLAGS} ${SOURCE} -o ${SOURCE_OUT}"
             ${CMD}
             if [[ $? -ne 0 ]]; then
                 error "Failed to assemble: ${SOURCE}"
@@ -327,4 +351,4 @@ else
     rm -rf ${TMP_DIR}
 fi
 
-print "${bold}${fg_green}Done building project: ${TARGET}"
+print "${bold}${fg_green}Done building project: ${TARGET}" 

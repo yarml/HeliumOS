@@ -17,8 +17,8 @@ extern end_ctors
 extern start_dtors
 extern end_dtors
  
-MODULEALIGN equ  1<<0
-MEMINFO     equ  1<<1
+MODULEALIGN equ 1<<0
+MEMINFO     equ 1<<1
 
 FLAGS       equ  (MODULEALIGN | MEMINFO)
 MAGIC       equ   0x1BADB002

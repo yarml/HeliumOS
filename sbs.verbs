@@ -1,9 +1,7 @@
-#!/bin/bash
-
 QEMU=${QEMU:-"qemu-system-x86_64"}
 BOCHS=${BOCHS:-"bochs"}
 
-QEMU_FLAGS="-k fr"
+QEMU_FLAGS="-k fr -serial stdio"
 BOCHS_FLAGS=""
 
 VERB=${1:-"help"}
@@ -14,10 +12,6 @@ PROJECT_DIR=${PROJECT_DIR:-$PWD}
 PROJECT_FILE=${PROJECT_FILE:-"${PROJECT_DIR}/sbs.project"}
 
 KERNEL_FILE="build/${MODE}/kernel.elf"
-
-NOT_VERB=(remove_update_files)
-
-source ".sbs/verbs_builtins.bash"
 
 help() {
     echo \
@@ -132,9 +126,3 @@ install() {
         echo "Kernel file not found, try generating it first with 'sbs build'"
     fi
 }
-
-if [[ $(type -t ${VERB}) = "function" && ! ${NOT_VERB[@]} =~ (^|[[:space:]])"${VERB}"($|[[:space:]]) ]]; then
-    ${VERB}
-else
-    echo "Unknown verb: ${VERB}"
-fi

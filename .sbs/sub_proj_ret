@@ -1,0 +1,4 @@
+_SPR_TYPE=slib
+_SPR_INCLUDE=( /media/internum/projects/dev/helium_os/libc++/include/)
+_SPR_TARGET=c++
+_SPR_BUILD_DIR=/media/internum/projects/dev/helium_os/build//libc++/debug/

@@ -20,6 +20,8 @@ idt_entry::idt_entry(void (*handler)(interrupt_frame*), uint16_t segment,
 static idt_entry idt_entries[256];
 static idt       idtr            ;
 
+void init_idt_entries(idt_entry* e);
+
 void setup_idt()
 {
     dbg << "setting up idt\n";
@@ -27,7 +29,7 @@ void setup_idt()
     for(int i = 0; i < 16; i++)
         pic::set_mask(i);
     
-    meta::idt_loop<256>::f(idt_entries);
+    init_idt_entries(idt_entries);
     
     // Keyboard
     idt_entries[PIC_MASTER_OFFSET + irq::KEYBOARD] = idt_entry(isr_keyboard, CODE_SEGMENT,
@@ -43,6 +45,7 @@ void setup_idt()
     load_idt(idtr);
     pic::clear_mask(irq::PIT);
     pic::clear_mask(irq::KEYBOARD);
+    pic::clear_mask(irq::PS_MOUSE);
 
     dbg << "setup idt\n";
 }

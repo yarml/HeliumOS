@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <debug/debug.hpp>
 #include <dev/pic.hpp>
+#include <dev/framebuffer.hpp>
 
 struct interrupt_frame
 {

@@ -16,7 +16,6 @@ extern "C" void kmain(multiboot_info_t* mbt)
 {
     framebuffer::clear();
     framebuffer::set_curs(0);
-    framebuffer::put_string(0, "HeliumOS");
 
     dbg << "Started kmain\n";
     if(!memory::init(mbt))

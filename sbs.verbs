@@ -1,7 +1,7 @@
 QEMU=${QEMU:-"qemu-system-x86_64"}
 BOCHS=${BOCHS:-"bochs"}
 
-QEMU_FLAGS="-k fr -serial stdio"
+QEMU_FLAGS="-serial stdio"
 BOCHS_FLAGS=""
 
 VERB=${1:-"help"}

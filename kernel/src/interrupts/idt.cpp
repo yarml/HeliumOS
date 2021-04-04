@@ -4,6 +4,7 @@
 #include <interrupts/idt.hpp>
 #include <interrupts/isr.hpp>
 #include <meta/loop.hpp>
+#include <dev/io.hpp>
 
 idt_entry::idt_entry() {}
 

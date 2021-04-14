@@ -22,7 +22,7 @@ template<uint32_t i>
 __attribute__((interrupt))
 void isr_unhandled(interrupt_frame*)
 {
-    dbg << "RECEIVED UNHANDLED INTERRUPT: " << i << '\n';
+    // dbg << "RECEIVED UNHANDLED INTERRUPT: " << i << '\n';
 }
 
 #endif /* ISR_HPP */

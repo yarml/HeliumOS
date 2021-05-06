@@ -3,12 +3,23 @@
 #include <dev/pic.hpp>
 #include <interrupts/idt.hpp>
 #include <interrupts/isr.hpp>
+#include <interrupts/exceptions.hpp>
 #include <meta/loop.hpp>
 #include <dev/io.hpp>
 
 idt_entry::idt_entry() {}
 
 idt_entry::idt_entry(void (*handler)(interrupt_frame*), uint16_t segment,
+              idt_entry_type type, uint8_t flags)
+{
+    offset_low  = ((uint32_t) handler      ) & 0x0000FFFF;
+    offset_high = ((uint32_t) handler >> 16) & 0x0000FFFF;
+    selector    = segment                                ;
+    type_attr   = flags | type                           ;
+    zero        = 0                                      ;
+}
+
+idt_entry::idt_entry(void (*handler)(interrupt_frame*, uint32_t), uint16_t segment,
               idt_entry_type type, uint8_t flags)
 {
     offset_low  = ((uint32_t) handler      ) & 0x0000FFFF;
@@ -42,6 +53,9 @@ void setup_idt()
                                                            idt_entry_type::INTERRUPT_32,
                                                            idt_entry_flags::PRESENT);
     
+    // Page fault
+    idt_entries[14] = idt_entry(e_page_fault, CODE_SEGMENT, INTERRUPT_32, PRESENT);
+
     idtr = {.size = sizeof(idt_entries), .base = idt_entries};
     load_idt(idtr);
     pic::clear_mask(irq::PIT);

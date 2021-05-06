@@ -11,6 +11,7 @@
 #include <dev/pit.hpp>
 #include <dev/io.hpp>
 #include <kmath.hpp>
+#include <dev/terminal.hpp>
 
 extern "C" void kmain(multiboot_info_t* mbt)
 {
@@ -27,6 +28,7 @@ extern "C" void kmain(multiboot_info_t* mbt)
     mbt = (multiboot_info_t*) ((uint32_t) mbt + 0xC0000000);
     dbg << "memory size: " << memory::memory_size * 4096 << '\n';
     pit::init(PIT_FREQ / 1000);
+    terminal::init();
     setup_idt();
 }
 

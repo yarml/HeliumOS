@@ -3,15 +3,51 @@
 #include <debug/debug.hpp>
 #include <dev/framebuffer.hpp>
 #include <dev/keyboard.hpp>
+#include <sys/cmds.hpp>
 
 namespace terminal
 {
     static uint32_t cursor = 0;
     static bool aw = true; // Allow Write
     static bool uppecase = false;
+    static char current_command[COMMAND_BUFFER];
+    static int16_t cc_cursor = 0; // current command cursor
+
+    void prompt()
+    {
+        write(" > ", false, framebuffer_color::RED);
+    }
+    static void newline()
+    {
+        cursor += 80;
+        cursor /= 80;
+        cursor *= 80;
+        if(cursor >= 80 * 25)
+        {
+            cursor = 0;
+            framebuffer::clear();
+        }
+    }
+    static void send_cmd()
+    {
+        sys::execute(current_command);
+        current_command[0] = 0;
+        cc_cursor = 0;
+        prompt();
+    }
+    void init()
+    {
+        prompt();
+    }
+    void reset(bool _prompt)
+    {
+        framebuffer::clear();
+        cursor = 0;
+        if(_prompt)
+            prompt();
+    }
     void key_event(uint8_t scancode)
     {
-        dbg << "Scancode: " << (uint32_t) scancode << '\n';
         switch(scancode)
         {
         case LSHIFT_PRESS:
@@ -25,14 +61,15 @@ namespace terminal
             if(!(scancode & 0x80))
             {
                 if(!uppecase)
-                    terminal::write(kbdfr[scancode]);
+                    terminal::write(kbdus[scancode], true);
                 else
-                    terminal::write(kbdfr_upper[scancode]);
+                    terminal::write(kbdus_upper[scancode], true);
             }
             break;
         }
     }
-    void write(char c, framebuffer_color fg,framebuffer_color bg)
+
+    void write(char c, bool add_to_cmd, framebuffer_color fg,framebuffer_color bg)
     {
         if(c == 0)
             return;
@@ -40,21 +77,51 @@ namespace terminal
         {
             switch(c)
             {
+            case '\r':
+                newline();
+                break;
             case '\n':
-                cursor += 80;
-                cursor /= 80;
-                cursor *= 80;
+                newline();
+                send_cmd();
                 break;
             case '\b':
-                framebuffer::put_char(--cursor, ' ', fg, bg);
+                if(cc_cursor == 0)
+                    return;
+                if(current_command[cc_cursor - 1] == '\t')
+                {
+                    framebuffer::put_char(--cursor, ' ', fg, bg);
+                    framebuffer::put_char(--cursor, ' ', fg, bg);
+                    framebuffer::put_char(--cursor, ' ', fg, bg);
+                    framebuffer::put_char(--cursor, ' ', fg, bg);
+                }
+                else
+                {
+                    framebuffer::put_char(--cursor, ' ', fg, bg);
+                }
+                if(add_to_cmd)
+                    current_command[--cc_cursor] = 0;
                 break;
             case '\t':
+                if(add_to_cmd)
+                {
+                    if(cc_cursor >= COMMAND_BUFFER - 2)
+                        return;
+                    current_command[cc_cursor++] = '\t';
+                    current_command[cc_cursor + 1] = 0;
+                }
                 framebuffer::put_char(cursor++, ' ', fg, bg);
                 framebuffer::put_char(cursor++, ' ', fg, bg);
                 framebuffer::put_char(cursor++, ' ', fg, bg);
                 framebuffer::put_char(cursor++, ' ', fg, bg);
                 break;
             default:
+                if(add_to_cmd)
+                {
+                    if(cc_cursor >= COMMAND_BUFFER - 2)
+                        return;
+                    current_command[cc_cursor++] = c;
+                    current_command[cc_cursor + 1] = 0;
+                }
                 framebuffer::put_char(cursor++, c, fg, bg);
                 break;
             }
@@ -64,33 +131,31 @@ namespace terminal
                 framebuffer::clear();
             }
             framebuffer::set_curs(cursor);
-
         }
-        
     }
-    void write(char* s, framebuffer_color fg,framebuffer_color bg)
+    void write(const char* s, bool add_to_cmd, framebuffer_color fg,framebuffer_color bg)
     {
         if(!aw)
             return;
         for(uint32_t i = 0; s[i] != 0; i++)
-            write(s[i], fg, bg);
+            write(s[i], add_to_cmd, fg, bg);
     }
     void allow_write(bool a)
     {
         aw = a;
     }
-    char kbdfr[128] =
+    char kbdus[128] =
     {
-        0,  27, '&', 0, '"', '\'', '(', '-', 0, '_',	/* 9 */
-        0, 0, ')', '=', '\b',	/* Backspace */
+        0, '`', '1', '2', '3', '4', '5', '6', '7', '8',	/* 9 */
+        '9', '0', '-', '=', '\b',	/* Backspace */
         '\t',			/* Tab */
-        'a', 'z', 'e', 'r',	/* 19 */
-        't', 'y', 'u', 'i', 'o', 'p', '^', '$', '\n',	/* Enter key */
+        'q', 'w', 'e', 'r',	/* 19 */
+        't', 'y', 'u', 'i', 'o', 'p', '[', ']', '\n',	/* Enter key */
             0,			/* 29   - Control */
-        'q', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', 'm',	/* 39 */
-        ' ', '*',   0,		/* Left shift */
-        '<', 'w', 'x', 'c', 'v', 'b', 'n',			/* 49 */
-        ',', ';', ':', '!',   0,				/* Right shift */
+        'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';',	/* 39 */
+        '\'', '\\',   0,		/* Left shift */
+        ' ', 'z', 'x', 'c', 'v', 'b', 'n',			/* 49 */
+        'm', ',', '.', '/',   0,				/* Right shift */
         '*',
         0,	/* Alt */
         ' ',	/* Space bar */
@@ -118,18 +183,18 @@ namespace terminal
         0,	/* F12 Key */
         0	/* All other keys are undefined */
     };
-    char kbdfr_upper[128] =
+    char kbdus_upper[128] =
     {
-        0,  27, '1', '2', '3', '4', '5', '6', '7', '8',	/* 9 */
-        '9', '0', 0, '+', '\b',	/* Backspace */
+        0, '~', '!', '@', '#', '$', '%', '^', '&', '*',	/* 9 */
+        '(', ')', '_', '+', '\b',	/* Backspace */
         '\t',			/* Tab */
-        'A', 'Z', 'E', 'R',	/* 19 */
-        'T', 'Y', 'U', 'I', 'O', 'P', 0, 0, '\n',	/* Enter key */
+        'Q', 'W', 'E', 'R',	/* 19 */
+        'T', 'Y', 'U', 'I', 'O', 'P', '{', '}', '\r',	/* Enter key */
             0,			/* 29   - Control */
-        'Q', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', 'M',	/* 39 */
-        '%', 0,   0,		/* Left shift */
-        '>', 'W', 'X', 'C', 'V', 'B', 'N',			/* 49 */
-        '?', '.', '/', ' ',   0,				/* Right shift */
+        'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ':',	/* 39 */
+        '"', '|',   0,		/* Left shift */
+        ' ', 'Z', 'X', 'C', 'V', 'B', 'N',			/* 49 */
+        'M', '<', '>', '?',   0,				/* Right shift */
         '*',
         0,	/* Alt */
         ' ',	/* Space bar */

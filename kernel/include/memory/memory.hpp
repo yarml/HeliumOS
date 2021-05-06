@@ -9,6 +9,9 @@
 #define PAGES_MAX_COUNT (MEMORY_MAX_SIZE / 4096)
 #define INVALID_PAGE ((uint32_t) -1)
 
+#define PAGE_DIRS_COUNT (1024)
+#define PAGE_TABLES_PER_DIR (1024)
+
 namespace memory
 {
 
@@ -35,6 +38,12 @@ namespace memory
         page_table_entry(uint32_t page, uint8_t flags);
     public:
         void set_flags(uint8_t flags);
+        void set_flag(page_struct_flags flag);
+    public:
+        uint32_t physical_page();
+    public:
+        bool get_flag(page_struct_flags flag);
+        bool present();
     }__attribute__((packed));
 
     struct page_directory_entry
@@ -48,6 +57,10 @@ namespace memory
         page_directory_entry(page_table_entry* first, uint8_t flags);
     public:
         void set_flags(uint8_t flags);
+        void set_flag(page_struct_flags flag);
+    public:
+        bool get_flag(page_struct_flags flag);
+        bool present();
     public:
         page_table_entry& at(uint32_t framen);
     public:
@@ -60,6 +73,8 @@ namespace memory
     void unmark_page(uint32_t page);
     uint32_t mark_next_page();
     uint32_t physical_page(uint32_t page);
+    uint32_t kallocvp(uint32_t count = 1);
+    void freevp(uint32_t start, uint32_t count = 1);
 }
 
 #endif

@@ -35,6 +35,8 @@ public:
     idt_entry();
     idt_entry(void (*handler)(interrupt_frame*), uint16_t segment,
               idt_entry_type type, uint8_t flags);
+    idt_entry(void (*handler)(interrupt_frame*, uint32_t), uint16_t segment,
+        idt_entry_type type, uint8_t flags);
 } __attribute__((packed));
 
 struct idt

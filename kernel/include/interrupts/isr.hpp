@@ -5,15 +5,7 @@
 #include <debug/debug.hpp>
 #include <dev/pic.hpp>
 #include <dev/framebuffer.hpp>
-
-struct interrupt_frame
-{
-    uint32_t eip   ;
-    uint32_t cs    ;
-    uint32_t eflags;
-    uint32_t esp   ;
-    uint32_t ss    ;
-} __attribute__((packed));
+#include <interrupts/interrupt_frame.hpp>
 
 void isr_keyboard( interrupt_frame*);
 void isr_pit(      interrupt_frame*);

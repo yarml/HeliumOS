@@ -1,6 +1,7 @@
 #include <dev/serial.hpp>
 #include <dev/io.hpp>
 #include <dev/framebuffer.hpp>
+#include <debug/debug.hpp>
 
 serial com1(SERIAL_COM1_BASE);
 

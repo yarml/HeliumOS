@@ -6,6 +6,7 @@
 #define GDT_SIZE (3)
 
 #include <stdint.h>
+#include <debug/debug.hpp>
 
 namespace gdt
 {
@@ -38,7 +39,7 @@ namespace gdt
         uint8_t  m_granularity;
         uint8_t  m_base_high  ;
     public:
-        gdt_entry() { }
+        gdt_entry() {}
         gdt_entry(uint32_t base, uint32_t limit, uint8_t access, uint8_t flags)
         {
             m_limit_low    = ((limit   & 0x0000FFFF)      );

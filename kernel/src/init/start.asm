@@ -4,12 +4,13 @@
 global _start
 global magic
 global mbd
+global destroy_objects
 
 extern setup_gdt
 
 
 extern kmain
- 
+extern init_memory
 extern dbg_out
 
 extern start_ctors
@@ -127,6 +128,10 @@ far_jump:
     jmp eax
 higher_half:
     
+    call setup_gdt
+    push dword [mbd]
+    call init_memory
+    add esp, 4
     mov ebx, start_ctors
     jmp .ctors_until_end
 .call_constructor:
@@ -136,12 +141,12 @@ higher_half:
     cmp  ebx, end_ctors
     jb   .call_constructor
 
-    call setup_gdt
-
-    push dword [mbd]
     call kmain
-    add esp, 4
+    
+.hang:
+    jmp .hang
 
+destroy_objects:
     mov  ebx, end_dtors
     jmp  .dtors_until_end
 .call_destructor:
@@ -150,9 +155,9 @@ higher_half:
 .dtors_until_end:
     cmp  ebx, start_dtors
     ja   .call_destructor
-.hang:
-    jmp .hang
- 
+
+    ret
+
 section .bss
  
 align 4

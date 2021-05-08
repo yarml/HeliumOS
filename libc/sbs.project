@@ -1,4 +1,0 @@
-SRC="src/"
-PUBLIC_INCLUDE="include/"
-TYPE="slib"
-TARGET="c"

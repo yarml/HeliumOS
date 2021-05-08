@@ -14,8 +14,7 @@
 
 namespace memory
 {
-
-    extern uint32_t memory_size;
+    extern bool ready;
     enum page_struct_flags : uint8_t
     {
         PRESENT = 0b00000001,
@@ -75,6 +74,7 @@ namespace memory
     uint32_t physical_page(uint32_t page);
     uint32_t kallocvp(uint32_t count = 1);
     void freevp(uint32_t start, uint32_t count = 1);
+    uint32_t size();
 }
 
 #endif

@@ -5,9 +5,12 @@ namespace memory
 {
     page_table_entry::page_table_entry()
     {
-        _flags = 0;
-        _adr_low_free = 0;
-        _adr_high = 0;
+        if(!ready)
+        {
+            _flags = 0;
+            _adr_high = 0;
+            _adr_low_free = 0;
+        }
     }
     page_table_entry::page_table_entry(uint32_t phy_page, uint8_t flags)
     {
@@ -25,9 +28,12 @@ namespace memory
     }
     page_directory_entry::page_directory_entry()
     {
-        _flags = 0;
-        _adr_low_free = 0;
-        _adr_high = 0;
+        if(!ready)
+        {
+            _flags = 0;
+            _adr_low_free = 0;
+            _adr_high = 0;
+        }
     }
     page_directory_entry::page_directory_entry(page_table_entry *first, uint8_t flags)
     {

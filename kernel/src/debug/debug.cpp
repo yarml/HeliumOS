@@ -1,6 +1,5 @@
 #include <debug/debug.hpp>
 #include <stddef.h>
-#include <string.h>
 #include <dev/framebuffer.hpp>
 #include <kutils.hpp>
 
@@ -25,7 +24,7 @@ void debug::print(char c)
 
 void debug::print(const char* msg)
 {
-    size_t len = strlen(msg);
+    size_t len = kutils::string_len(msg);
     mp_serial->write((const uint8_t*)msg, len);
     for(; *msg != 0; msg++)
         DEBUG_TERM(*msg);
@@ -63,5 +62,11 @@ debug& debug::operator<<(uint32_t n)
 debug& debug::operator<<(void* ptr)
 {
     print(ptr);
+    return *this;
+}
+
+debug& debug::operator<<(bool b)
+{
+    print(b ? "true" : "false");
     return *this;
 }

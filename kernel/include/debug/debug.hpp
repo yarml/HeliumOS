@@ -23,6 +23,7 @@ public:
     debug& operator<<(const char* msg);
     debug& operator<<(uint32_t    n  );
     debug& operator<<(void*       ptr);
+    debug& operator<<(bool        b  );
 };
 
 extern debug dbg;

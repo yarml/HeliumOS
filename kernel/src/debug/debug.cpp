@@ -14,6 +14,7 @@ debug::debug(serial& serial)
                         | serial_fifo_config::CLTR  | serial_fifo_config::CLRC 
                         | serial_fifo_config::ENABLE                            );
     serial.configure_modem(0x03);
+    dbg << "It was a debug constructor\n";
 }
 
 void debug::print(char c)

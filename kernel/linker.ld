@@ -11,12 +11,15 @@ SECTIONS
     .text ALIGN(0x1000) : AT(ADDR(.text)-0xC0000000)
     {
         *(multiboot)
+
         *(.text)
         *(.gnu.linkonce.t*)
+
     }
 
     .rodata ALIGN(0x1000) : AT(ADDR(.rodata)-0xC0000000)
     {
+        
         start_ctors = .;
         *(SORT(.ctors*))
         end_ctors = .;

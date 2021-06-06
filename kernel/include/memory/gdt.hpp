@@ -42,13 +42,13 @@ namespace gdt
         gdt_entry() {}
         gdt_entry(uint32_t base, uint32_t limit, uint8_t access, uint8_t flags)
         {
-            m_limit_low    = ((limit   & 0x0000FFFF)      );
-            m_granularity  = ((limit   & 0x000F0000) >> 16);
-            m_base_middle  = ((base    & 0x00FF0000) >> 16);
-            m_base_low     = ((base    & 0x0000FFFF)      );
-            m_base_high    = ((base    & 0xFF000000) >> 24);
-            m_access       = (access                      );
-            m_granularity |= (flags                       );
+            m_limit_low    = ((limit & 0x0000FFFF)      );
+            m_granularity  = ((limit & 0x000F0000) >> 16);
+            m_base_middle  = ((base  & 0x00FF0000) >> 16);
+            m_base_low     = ((base  & 0x0000FFFF)      );
+            m_base_high    = ((base  & 0xFF000000) >> 24);
+            m_access       = (access                    );
+            m_granularity |= (flags                     );
         }
     } __attribute__((packed));
 

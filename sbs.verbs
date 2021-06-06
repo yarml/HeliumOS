@@ -90,6 +90,16 @@ run-qemu() {
     fi
 }
 
+run-qemu-gdb() {
+    cd run
+    if [[ -f helium.iso ]]; then
+        ${QEMU} ${QEMU_FLAGS} -s -S -cdrom helium.iso
+        exit $?
+    else
+        echo "helium.iso file not found, try generating it first with 'sbs iso'"  
+    fi
+}
+
 run-bochs() {
     cd run
     if [[ -f helium.iso ]]; then
@@ -97,6 +107,16 @@ run-bochs() {
         exit $?
     else
         echo "helium.iso file not found, try generating it first with 'sbs iso'"  
+    fi
+}
+
+run-gdb() {
+    if [[ -f isodir/boot/helium.elf ]]; then
+        cd run
+        gdb
+        exit $?
+    else
+        echo "isodir/boot/helium.elf not found create it first by running 'sbs iso'"
     fi
 }
 
@@ -112,6 +132,11 @@ all-bochs() {
 all-qemu() {
     all
     run-qemu
+}
+
+all-qemu-gdb() {
+    all
+    run-qemu-gdb
 }
 
 all-qemu-no-grub() {

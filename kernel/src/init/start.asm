@@ -33,7 +33,7 @@ align 4
     dd FLAGS
     dd CHECKSUM
 
-section .text
+section .data
  
 STACKSIZE equ 0x800000
 
@@ -77,6 +77,8 @@ basic_gdt:
 basic_gdtr:
     dw 0x18
     dd basic_gdt - 0xC0000000
+
+section .text
 
 _start:
     cli
@@ -127,16 +129,19 @@ far_jump:
     mov eax, higher_half
     jmp eax
 higher_half:
-    
     call setup_gdt
     push dword [mbd]
     call init_memory
     add esp, 4
+    
     mov ebx, start_ctors
     jmp .ctors_until_end
 .call_constructor:
+    extern checck
+    call checck
     call [ebx]
     add  ebx,4
+    ; break
 .ctors_until_end:
     cmp  ebx, end_ctors
     jb   .call_constructor
@@ -155,7 +160,7 @@ destroy_objects:
 .dtors_until_end:
     cmp  ebx, start_dtors
     ja   .call_destructor
-
+    
     ret
 
 section .bss
@@ -166,7 +171,3 @@ mbd:   resd 1
 stack_bottom:
     resb STACKSIZE
 stack_top:
-
-section .rodata
-start_msg:
-    db 0xA, "Called _start", 0xA, 0x0

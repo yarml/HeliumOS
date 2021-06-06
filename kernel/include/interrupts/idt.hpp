@@ -5,6 +5,9 @@
 
 #include <stdint.h>
 
+typedef void(*interrupt_handler)(interrupt_frame*);
+typedef void(*exception_hanlder)(interrupt_frame*, uint32_t);
+
 enum idt_entry_type
 {
     TASK         = 0b00000101,
@@ -33,9 +36,9 @@ private:
    uint16_t offset_high; // offset bits 16..31
 public:
     idt_entry();
-    idt_entry(void (*handler)(interrupt_frame*), uint16_t segment,
+    idt_entry(interrupt_handler, uint16_t segment,
               idt_entry_type type, uint8_t flags);
-    idt_entry(void (*handler)(interrupt_frame*, uint32_t), uint16_t segment,
+    idt_entry(exception_hanlder, uint16_t segment,
         idt_entry_type type, uint8_t flags);
 } __attribute__((packed));
 

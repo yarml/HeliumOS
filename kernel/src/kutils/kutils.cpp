@@ -63,7 +63,7 @@ namespace kutils
                 return i;
         return -1;
     }
-    uint32_t string_compare(const char* str1, const char* str2)
+    int32_t string_compare(const char* str1, const char* str2)
     {
         int32_t size1 = kutils::string_len(str1);
         int32_t size2 = kutils::string_len(str2);
@@ -77,5 +77,12 @@ namespace kutils
     {
         kutils::mem_copy(to, from, kutils::string_len(from) + 1);
         return to;
+    }
+    int32_t mem_compare(const void* p1, const void* p2, uint32_t size)
+    {
+        for(uint32_t i = 0; i < size; i++)
+            if(((uint8_t*)p1)[i] != ((uint8_t*)p2)[i])
+                return ((uint8_t*)p1)[i] - ((uint8_t*)p2)[i];
+        return 0;
     }
 }

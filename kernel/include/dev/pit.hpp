@@ -35,6 +35,7 @@ namespace pit
     void pit_int();
     void wait_ticks(uint32_t ticks);
     void wait(uint32_t sec);
+    void wait_milli(uint32_t milli);
 }
 
 

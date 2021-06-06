@@ -9,7 +9,7 @@
 
 idt_entry::idt_entry() {}
 
-idt_entry::idt_entry(void (*handler)(interrupt_frame*), uint16_t segment,
+idt_entry::idt_entry(interrupt_handler handler, uint16_t segment,
               idt_entry_type type, uint8_t flags)
 {
     offset_low  = ((uint32_t) handler      ) & 0x0000FFFF;
@@ -19,7 +19,7 @@ idt_entry::idt_entry(void (*handler)(interrupt_frame*), uint16_t segment,
     zero        = 0                                      ;
 }
 
-idt_entry::idt_entry(void (*handler)(interrupt_frame*, uint32_t), uint16_t segment,
+idt_entry::idt_entry(exception_hanlder handler, uint16_t segment,
               idt_entry_type type, uint8_t flags)
 {
     offset_low  = ((uint32_t) handler      ) & 0x0000FFFF;
@@ -36,7 +36,7 @@ void init_idt_entries(idt_entry* e);
 
 void setup_idt()
 {
-    dbg << "setting up idt\n";
+    dbg << "Setting up idt\n";
     pic::remap(PIC_MASTER_OFFSET, PIC_SLAVE_OFFSET);
     for(int i = 0; i < 16; i++)
         pic::set_mask(i);
@@ -52,15 +52,17 @@ void setup_idt()
     idt_entries[PIC_MASTER_OFFSET + irq::PIT] = idt_entry(isr_pit, CODE_SEGMENT,
                                                            idt_entry_type::INTERRUPT_32,
                                                            idt_entry_flags::PRESENT);
-    
+    idt_entries[8 ] = idt_entry((interrupt_handler) nullptr, 0, idt_entry_type::INTERRUPT_32, 0);
+    idt_entries[13] = idt_entry((interrupt_handler) nullptr, 0, idt_entry_type::INTERRUPT_32, 0);
+    idt_entries[14] = idt_entry((interrupt_handler) nullptr, 0, idt_entry_type::INTERRUPT_32, 0);
     // Page fault
-    idt_entries[14] = idt_entry(e_page_fault, CODE_SEGMENT, INTERRUPT_32, PRESENT);
+    //idt_entries[14] = idt_entry(e_page_fault, CODE_SEGMENT, INTERRUPT_32, PRESENT);
+    // General Protection
+    //idt_entries[13] = idt_entry(e_general_protection, CODE_SEGMENT, INTERRUPT_32, PRESENT);
 
     idtr = {.size = sizeof(idt_entries), .base = idt_entries};
     load_idt(idtr);
     pic::clear_mask(irq::PIT);
     pic::clear_mask(irq::KEYBOARD);
     pic::clear_mask(irq::PS_MOUSE);
-
-    dbg << "setup idt\n";
 }

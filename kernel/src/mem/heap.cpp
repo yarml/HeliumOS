@@ -4,18 +4,6 @@
 
 namespace memory::heap
 {
-    debug& operator<<(debug& d, const palloc_data& ps)
-    {
-        d  << "pallocdata: " << ps.m_page;
-        return d;
-    }
-
-    debug& operator<<(debug& d, const ptr_size& ps)
-    {
-        d << "ptr_size: " << ps.ptr << ' ' << ps.size;
-        return d;
-    }
-
     palloc_data::palloc_data(uint32_t page)
         : m_page(page),
           ptr_map()
@@ -61,10 +49,7 @@ namespace memory::heap
                     for(uint32_t j = start; j < start + count; j++)
                         set(j);
                     void* ptr = (void*) (m_page * 4096 + start);
-                    dbg << "page: " << m_page << " registers pointer: " << ptr << " size: " << count << '\n';
                     ptr_map += ptr_size{ .ptr = ptr, .size = count };
-                    for(uint32_t j = 0; j < ptr_map.size(); j++)
-                        dbg << ptr_map[j].ptr << ' ' << ptr_map[j].size << '\n';
                     return ptr;
                 }
             }
@@ -90,19 +75,14 @@ namespace memory::heap
     }
     bool palloc_data::has_ptr(void* ptr)
     {
-        dbg << "Looking for: " << ptr << " in " << m_page << '\n';
-        dbg << "ptr_map size " << ptr_map.size() << '\n';
         for(uint32_t i = 0; i < ptr_map.size(); i++)
         {
             ptr_size& ps = ptr_map[i];
-            dbg << ptr_map[i].ptr << ' ' << ptr_map[i].size << '\n';
             if(ps.ptr == ptr)
             {
-                dbg << "page: " << m_page << " has " << ptr << '\n';
                 return true;
             }
         }
-        dbg << "page: " << m_page << " does not have " << ptr << '\n';
         return false;
     }
     void palloc_data::unmark(void* ptr)
@@ -129,39 +109,35 @@ namespace memory::heap
             unset((uint32_t)(ptr) - m_page * 4096);
     }
 
-    static kutils::page_list<palloc_data> s_palloc_data;
-
+    static page_list<palloc_data> s_palloc_data;
+    // page_list<ptr_size> s_alloc_journal;
+    
     void* knew(uint32_t count)
     {
         if(count > 4096)
             dbg << "Allocations for blocks of memory larger than 4096 bytes is not supported yet\n";
-        dbg << "palloc_data list size: " << s_palloc_data.size() << '\n';
         for(uint32_t i = 0; i < s_palloc_data.size(); i++)
         {
             palloc_data& p = s_palloc_data[i];
             if(p.has(count))
             {
                 void* ptr = p.mark_next(count);
-                dbg << "Allcated: " << ptr << ' ' << count << '\n';
+                //s_alloc_journal += { ptr, count};
+                dbg << "Allocated: " << ptr << ':' << count << '\n';
                 return ptr;
             }
         }
-        uint32_t new_page = kallocvp();
-        if(new_page == 0)
-            dbg << "Got a page in 000000000000000000000000000000000000";
-        s_palloc_data += palloc_data(new_page);
+        s_palloc_data += palloc_data(kallocvp());
         void* ptr = s_palloc_data.last().mark_next(count);
-        dbg << "palloc_data list size: " << s_palloc_data.size() << '\n';
-        dbg << "New page: " << new_page << " Allcated: " << ptr << ' ' << count << '\n';
+        //s_alloc_journal += { ptr, count };
+        dbg << "Allocated: " << ptr << ':' << count << '\n';
         return ptr;
     }
     void kfree(void* ptr)
     {
-        dbg << "palloc_data list size: " << s_palloc_data.size() << '\n';
         for(uint32_t i = 0; i < s_palloc_data.size() +1; i++)
         {
             palloc_data& p = s_palloc_data[i];
-            dbg << "Trying for " << p << '\n';
             if(p.has_ptr(ptr))
             {
                 p.unmark(ptr);
@@ -169,5 +145,16 @@ namespace memory::heap
             }
         }
         dbg << "Tried to free unallocated pointer " << ptr << '\n';
+    }
+
+    void list_journal()
+    {
+        // dbg << "Allocation journal\n";
+        // for(uint32_t i = 0; i < s_alloc_journal.size(); i++)
+        // {
+        //     ptr_size& ps = s_alloc_journal[i];
+        //     dbg << ps.ptr << ':' << ps.size << '\n';
+        // }
+        // dbg << "End of Allocation Journal\n";
     }
 }

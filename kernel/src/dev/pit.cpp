@@ -32,4 +32,8 @@ namespace pit
     {
         wait_ticks(sec * s_freq);
     }
+    void wait_milli(uint32_t milli)
+    {
+        wait_ticks(milli * (s_freq / 1000));
+    }
 }

@@ -7,6 +7,7 @@ serial com1(SERIAL_COM1_BASE);
 
 serial::serial(uint16_t base)
 {
+    dbg << "It was a serial constructor\n";
     m_base = base;
 }
 

@@ -28,7 +28,6 @@ namespace memory
     {
         dbg << "Kernel Size in memory: " << k_pend * 4096 - k_pstart * 4096 << " bytes("
             << (k_pend * 4096 - k_pstart * 4096) / 1024 / 1024 << " MiB)\n";
-        dbg << "Initializing memory\n";
         // FIXME: take the size member into account
         // I'll fix it when I face the problem of not fixing it
         uint32_t entries_count = mbt->mmap_length / sizeof(multiboot_memory_map_t);
@@ -80,20 +79,14 @@ namespace memory
             memory_map[i] = interval_to_add;
             memory_size += interval_to_add.size();
         }
-        dbg << "Setting up paging\n";
         // Setup paging
-        dbg << "Clearing physical memory manager data\n";
         for (uint32_t i = 0; i < PAGES_MAX_COUNT / 8 / 4; i++)
             ((uint32_t *)physical_mem_manager_data)[i] = 0;
-        dbg << "physical_mem_manager_data: " << physical_mem_manager_data << '\n';
         // Mark where the kernel is loaded physically as used
-        dbg << "Marking kernel area as used\n";
         for (uint32_t i = k_pstart; i <= k_pend; i++)
             mark_page(i);
-        dbg << "Initializing page directory\n";
         for (uint32_t i = 0; i < 1024; i++)
             page_dir[i] = page_directory_entry((page_table_entry *)((uint32_t)(&(page_tables[1024 * i])) - 0xC0000000), page_struct_flags::PRESENT | page_struct_flags::RW);
-        dbg << "Initializing page tables\n";
         for (uint32_t i = 0; i < PAGE_DIRS_COUNT * PAGE_TABLES_PER_DIR; i++)
             page_tables[i] = page_table_entry(0, 0);
         // Map pages k_pstart:k_pend(+align 4M) -> k_vstart:k_vend(+align 4M)
@@ -103,7 +96,6 @@ namespace memory
         uint32_t k_vdstart = k_vstart / 1024;
         uint32_t k_vdend = k_vend / 1024 + 1;
         kalloc_start = (k_vdend + 1) * 1024;
-        dbg << "Mapping kernel(" << k_pdstart << ':' << k_pdend << ") to: " << k_vdstart << ':' << k_vdend << '\n';
         for (uint32_t i = 0; i < k_pdend - k_pdstart + 1; i++)
         {
             page_dir[k_vdstart + i].set_flags(page_struct_flags::PRESENT | page_struct_flags::RW);
@@ -117,11 +109,8 @@ namespace memory
             }
         }
         // Set gdt linear addresses to +0xC0000000
-        dbg << "Enabling pagin\n";
         enable_paging(page_dir);
-        dbg << "Paging enabled\n";
         // Remove Identity mapping
-        dbg << "Removing Identity mapping\n";
         for (uint32_t i = 0; i < k_pdend - k_pdstart + 1; i++)
         {
             for (uint32_t j = 0; j < 1024; j++)
@@ -203,6 +192,7 @@ namespace memory
                             dbg << "Not enough physical address space\n";
                             return INVALID_PAGE;
                         }
+                        dbg << "Allocated Mapping: " << pp << " to " << start + j << '\n';
                         map_page(pp, start + j);
                         page_tables[start + j].set_flag(page_struct_flags::RW);
                     }
@@ -216,9 +206,8 @@ namespace memory
     {
         for (uint32_t i = start; i < start + count; i++)
         {
-            dbg << "Freeing " << start << '\n';
-            dbg << "Unmapping " << page_tables[i].physical_page() << '\n';
             unmark_page(page_tables[i].physical_page());
+            dbg << "Unmapping: " << page_tables[i].physical_page() << " from " << i << '\n';
             unmap_page(i);
         }
     }
@@ -244,6 +233,4 @@ extern "C" void init_memory(multiboot_info_t *mbt)
     memory::kalloc_start = 0;
     memory:: memory_size = 0;
     memory::ready = memory::init(mbt);
-    dbg << "Returned\n";
 }
-

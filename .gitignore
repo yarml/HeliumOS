@@ -1,7 +1,7 @@
 # Ignore build files
 
 build/
-isodir/boot/helium.elf
+isodir/boot/helium.kernel
 
 # Ignore VMs files
 

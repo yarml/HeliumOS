@@ -1,10 +1,17 @@
+# Ignore build files
+
 build/
 isodir/boot/helium.elf
-.vscode/
+
+# Ignore VMs files
+
 run/bochslog.txt
 run/helium.iso
 run/bx_enh_dbg.ini
 run/com1.out
 run/copy.txt
 run/mem.out
-.sbs/
+
+# Ignore IDEs files
+.vscode/
+*.kdev4

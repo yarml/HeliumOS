@@ -1,3 +1,22 @@
+
+KERNEL_DIR := kernel
+SRCD := $(KERNEL_DIR)/src
+LINK_SCRIPT := $(KERNEL_DIR)/linker.ld
+INCLUDES := $(KERNEL_DIR)/include
+BDIR := build
+OBJD := $(BDIR)/obj
+KOUT := $(BDIR)/$(KERNEL)
+RDIR := run
+ISODIR := isodir
+ISORUN := $(RDIR)/$(ISO)
+ISOBOOT := $(ISODIR)/boot
+ISOGRUB := $(ISOBOOT)/grub
+GRUBCFG := $(ISOGRUB)/grub.cfg
+BOCHSLOG := $(RDIR)/bochslog.txt
+BOCHSCOPY := $(RDIR)/copy.txt
+BOCHSCOM := $(RDIR)/com1.out
+TOCLEAN := $(RDIR)/bx_enh_dbg.ini $(RDIR)/mem.out
+
 AS       := nasm -o
 CC       := i686-elf-gcc -c -o
 CXX      := i686-elf-g++ -c -o
@@ -6,8 +25,7 @@ ASFLAGS  := -f elf32
 CFLAGS   := -std=gnu17
 CXXFLAGS := -std=gnu++20 -fno-exceptions -fno-rtti -fno-use-cxa-atexit
 CCFLAGS  := -ffreestanding -Wall -Wextra -O0 -g -mgeneral-regs-only
-LDFLAGS  := -ffreestanding -nostdlib -g -T kernel/linker.ld
-INCLUDES := kernel/include
+LDFLAGS  := -ffreestanding -nostdlib -g -T $(LINKER_SCRIPT)
 
 MKDIR := mkdir -p
 RM    := rm -rf
@@ -28,19 +46,6 @@ INCLUDE_FLAGS := $(patsubst %,-I%,$(INCLUDES))
 
 KERNEL := helium.kernel
 ISO := helium.iso
-
-SRCD := kernel/src
-BDIR := build
-OBJD := $(BDIR)/obj
-KOUT := $(BDIR)/$(KERNEL)
-RDIR := run
-ISODIR := isodir
-ISORUN := $(RDIR)/$(ISO)
-ISOBOOT := $(ISODIR)/boot
-BOCHSLOG := $(RDIR)/bochslog.txt
-BOCHSCOPY := $(RDIR)/copy.txt
-BOCHSCOM := $(RDIR)/com1.out
-TOCLEAN := $(RDIR)/bx_enh_dbg.ini $(RDIR)/mem.out
 
 rwildcard = $(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 
@@ -84,14 +89,14 @@ clean:
 	@echo Cleaning
 	@$(RM) $(TOCLEAN) $(BDIR) $(ISOBOOT)/$(KERNEL) $(BOCHSLOG) $(ISORUN) $(BOCHSCOM) $(BOCHSCOPY)
 
-$(ISORUN): $(KOUT)
+$(ISORUN): $(KOUT) $(GRUBCFG)
 	@echo Generating ISO file for the OS
 	@$(MKDIR) $(ISOBOOT)
 	@$(CP) $(KOUT) $(ISOBOOT)/$(KERNEL)
 	@$(MKDIR) $(RDIR)
 	@$(MKISO) $(ISORUN) $(ISODIR)
 
-$(KOUT): $(BASOBJECTS) $(BCOBJECTS) $(BCXXOBJECTS)
+$(KOUT): $(BASOBJECTS) $(BCOBJECTS) $(BCXXOBJECTS) $(LINKER_SCRIPT)
 	@echo Linking
 	@$(LD) $(KOUT) $(LDFLAGS) $(BASOBJECTS) $(BCOBJECTS) $(BCXXOBJECTS)
 	@$(ISMULTIBOOT) $(KOUT) || (echo Output file is not multiboot complient; exit 1)
@@ -109,4 +114,4 @@ $(OBJD)/%$(CXXEXT).o: %$(CXXEXT)
 $(OBJD)/%$(ASEXT).o: %$(ASEXT)
 	@echo Assembling: $<
 	@$(MKDIR) $(dir $(OBJD)/$<.o)
-	@$(AS) $(OBJD)/$<.o $(INCLUDE_FLAGS) $(ASFLAGS) $<
+	@$(AS) $(OBJD)/$<.o $(INCLUDE_FLAGS) $(ASFLAGS) $< 

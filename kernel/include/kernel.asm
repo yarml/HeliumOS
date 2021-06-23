@@ -1,2 +1,0 @@
-extern kmain
-extern init_memory

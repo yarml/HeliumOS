@@ -1,21 +1,25 @@
 
-KERNEL_DIR := kernel
-SRCD := $(KERNEL_DIR)/src
+
+KERNEL := helium.kernel
+ISO := helium.iso
+
+KERNEL_DIR  := kernel
+SRCD        := $(KERNEL_DIR)/src
 LINK_SCRIPT := $(KERNEL_DIR)/linker.ld
-INCLUDES := $(KERNEL_DIR)/include
-BDIR := build
-OBJD := $(BDIR)/obj
-KOUT := $(BDIR)/$(KERNEL)
-RDIR := run
-ISODIR := isodir
-ISORUN := $(RDIR)/$(ISO)
-ISOBOOT := $(ISODIR)/boot
-ISOGRUB := $(ISOBOOT)/grub
-GRUBCFG := $(ISOGRUB)/grub.cfg
-BOCHSLOG := $(RDIR)/bochslog.txt
-BOCHSCOPY := $(RDIR)/copy.txt
-BOCHSCOM := $(RDIR)/com1.out
-TOCLEAN := $(RDIR)/bx_enh_dbg.ini $(RDIR)/mem.out
+INCLUDES    := $(KERNEL_DIR)/include
+BDIR        := build
+OBJD        := $(BDIR)/obj
+KOUT        := $(BDIR)/$(KERNEL)
+RDIR        := run
+ISODIR      := isodir
+ISORUN      := $(RDIR)/$(ISO)
+ISOBOOT     := $(ISODIR)/boot
+ISOGRUB     := $(ISOBOOT)/grub
+GRUBCFG     := $(ISOGRUB)/grub.cfg
+BOCHSLOG    := $(RDIR)/bochslog.txt
+BOCHSCOPY   := $(RDIR)/copy.txt
+BOCHSCOM    := $(RDIR)/com1.out
+TOCLEAN     := $(RDIR)/bx_enh_dbg.ini $(RDIR)/mem.out
 
 AS       := nasm -o
 CC       := i686-elf-gcc -c -o
@@ -24,8 +28,8 @@ LD       := i686-elf-g++ -o
 ASFLAGS  := -f elf32
 CFLAGS   := -std=gnu17
 CXXFLAGS := -std=gnu++20 -fno-exceptions -fno-rtti -fno-use-cxa-atexit
-CCFLAGS  := -ffreestanding -Wall -Wextra -O0 -g -mgeneral-regs-only
-LDFLAGS  := -ffreestanding -nostdlib -g -T $(LINKER_SCRIPT)
+CCFLAGS  := -ffreestanding -Wall -Wextra -O0 -g -mgeneral-regs-only -masm=intel
+LDFLAGS  := -ffreestanding -nostdlib -g -T $(LINK_SCRIPT)
 
 MKDIR := mkdir -p
 RM    := rm -rf
@@ -43,9 +47,6 @@ QEMU := qemu-system-x86_64
 QEMU_FLAGS := -serial stdio
 
 INCLUDE_FLAGS := $(patsubst %,-I%,$(INCLUDES))
-
-KERNEL := helium.kernel
-ISO := helium.iso
 
 rwildcard = $(foreach d,$(wildcard $(1:=/*)),$(call rwildcard,$d,$2) $(filter $(subst *,%,$2),$d))
 
@@ -114,4 +115,4 @@ $(OBJD)/%$(CXXEXT).o: %$(CXXEXT)
 $(OBJD)/%$(ASEXT).o: %$(ASEXT)
 	@echo Assembling: $<
 	@$(MKDIR) $(dir $(OBJD)/$<.o)
-	@$(AS) $(OBJD)/$<.o $(INCLUDE_FLAGS) $(ASFLAGS) $< 
+	@$(AS) $(OBJD)/$<.o $(INCLUDE_FLAGS) $(ASFLAGS) $<

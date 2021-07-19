@@ -1,8 +1,7 @@
-#include <debug.hpp>
-#include <stddef.h>
-#include <mem/gdt.hpp>
+#include <init/multiboot.h>
+#include <mem/mem.hpp>
 
-extern "C" void kernel_main()
+extern "C" void kernel_main(multiboot_info_t* mbt)
 {
-    mem::gdt::init();
+    mem::init(mbt);
 }

@@ -1,10 +1,11 @@
 #include <mem/mem.hpp>
 #include <utils/mem.hpp>
 #include <utils/math.hpp>
+#include <debug.hpp>
 
 namespace mem::early_heap
 {
-    uint8_t early_heap[SIZE];
+    uint8_t early_heap_area[SIZE];
     uint8_t early_heap_bitmap[BITMAP_SIZE(SIZE, UNIT_SIZE)];
     early_heap::early_heap() { }
     early_heap::early_heap(uint8_t* heap, uint8_t* bitmap, uint32_t size, uint32_t unit_size)
@@ -12,10 +13,13 @@ namespace mem::early_heap
        m_bitmap(bitmap),
        m_size(size),
        m_unit_size(unit_size)
-    { }
+    {
+        for(uint32_t i = 0; i < BITMAP_SIZE(size, unit_size); ++i)
+            m_bitmap[i] = 0;
+    }
     void* early_heap::alloc(uint32_t size)
     {
-        uint32_t units_count = size / m_unit_size;
+        uint32_t units_count = size / m_unit_size + 1;
         uint32_t available_bytes_count = 0;
         uint32_t first_unit = INVALID_UNIT;
         for(uint32_t i = 0; i < m_size / m_unit_size; ++i)
@@ -42,8 +46,8 @@ namespace mem::early_heap
     }
     void early_heap::free(void* ptr, uint32_t size)
     {
-        for(uint32_t i = 0; i < size / m_unit_size; ++i)
-            unmark_unit(i + (uint32_t) ptr / m_unit_size);
+        for(uint32_t i = 0; i < size / m_unit_size + 1; ++i)
+            unmark_unit(i + ((uint32_t) ptr - (uint32_t) m_heap) / m_unit_size);
     }
     void* early_heap::realloc(void* ptr, uint32_t size, uint32_t new_size)
     {
@@ -63,13 +67,13 @@ namespace mem::early_heap
     void early_heap::mark_unit(uint32_t unit)
     {
         uint8_t bit = unit % 8;
-        uint32_t byte = (unit - bit) / 8;
+        uint32_t byte = (unit) / 8;
         m_bitmap[byte] |= 1 << bit;
     }
     void early_heap::unmark_unit(uint32_t unit)
     {
         uint8_t bit = unit % 8;
-        uint32_t byte = (unit - bit) / 8;
+        uint32_t byte = (unit) / 8;
         m_bitmap[byte] &= ~(1 << bit);
     }
 }

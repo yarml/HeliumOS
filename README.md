@@ -8,7 +8,7 @@ The source files come with a makefile at the top directory, a simple make comman
 
 All the build configurations are stored in `make/build_config/`
 
-Other build configurations are stored in `make/`, but they shouldn't need to
+Other build configurations are stored in `make/`, but they shouldn't need to be modified
 
 # Run
 You can grab the iso generated and use it in any virtual machine, or burn it in a USB stick or something

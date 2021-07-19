@@ -11,7 +11,7 @@ namespace mem
         {
             return heap_size / unit_size / 8;
         }
-        extern uint8_t early_heap[SIZE];
+        extern uint8_t early_heap_area[SIZE];
         extern uint8_t early_heap_bitmap[BITMAP_SIZE(SIZE, UNIT_SIZE)];
         class early_heap
         {
@@ -22,7 +22,7 @@ namespace mem
             void* alloc(uint32_t size);
             void free(void* ptr, uint32_t size);
             void* realloc(void* ptr, uint32_t size, uint32_t new_size);
-        private:
+        public:
             bool available(uint32_t unit);
             void mark_unit(uint32_t unit);
             void unmark_unit(uint32_t unit);

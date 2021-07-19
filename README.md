@@ -6,6 +6,10 @@ Right now the OS is written only for x86 architectures, but ports to x86_64 are 
 # How to compile?
 The source files come with a makefile at the top directory, a simple make command(preferrably from the top directory) is enough to compile the kernel and generate an iso with grub as bootloader
 
+All the build configurations are stored in `make/build_config/`
+
+Other build configurations are stored in `make/`, but they shouldn't need to
+
 # Run
 You can grab the iso generated and use it in any virtual machine, or burn it in a USB stick or something
 
@@ -14,14 +18,14 @@ The makefile provided provides both `make bochs` and `make qemu` for quick testi
 # All the make commands
 `make iso` or `make`: Builds the kernel image and creates an iso with grub as boot loader
 
-`make kernel`: Builds the kernel image, no iso is generated
+`make kernel`       : Builds the kernel image, no iso is generated
 
-`make clean`: Clean all the build files
+`make clean`        : Clean all the build files
 
-`make bochs`: Generates the iso if not already done then run it using bochs as VM
+`make bochs`        : Generates the iso if not already done then run it using bochs as VM
 
-`make qemu`: Generates the iso if not already done then run it using qemu as VM
+`make qemu`         : Generates the iso if not already done then run it using qemu as VM
 
-`make qemu-gdb`: Same as `make qemu`, but sets up Qemu to listen for gdb
+`make qemu-gdb`     : Same as `make qemu`, but sets up Qemu to listen for gdb
 
-`make gdb`: Launches gdb to work with Qemu
+`make gdb`          : Launches gdb to work with Qemu

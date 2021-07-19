@@ -10,3 +10,18 @@ The source files come with a makefile at the top directory, a simple make comman
 You can grab the iso generated and use it in any virtual machine, or burn it in a USB stick or something
 
 The makefile provided provides both `make bochs` and `make qemu` for quick testing in those two VMs
+
+# All the make commands
+`make iso` or `make`: Builds the kernel image and creates an iso with grub as boot loader
+
+`make kernel`: Builds the kernel image, no iso is generated
+
+`make clean`: Clean all the build files
+
+`make bochs`: Generates the iso if not already done then run it using bochs as VM
+
+`make qemu`: Generates the iso if not already done then run it using qemu as VM
+
+`make qemu-gdb`: Same as `make qemu`, but sets up Qemu to listen for gdb
+
+`make gdb`: Launches gdb to work with Qemu

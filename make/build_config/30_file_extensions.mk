@@ -5,3 +5,5 @@ ASEXT  := .asm
 CEXT   := .c
 # C++ files extension
 CXXEXT := .cpp
+# Object file extension
+OEXT   := .o

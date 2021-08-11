@@ -1,7 +1,8 @@
 #include <mem/mem.hpp>
 #include <utils/mem.hpp>
 #include <utils/math.hpp>
-#include <debug.hpp>
+
+#include "early.hpp"
 
 namespace mem::early_heap
 {
@@ -44,12 +45,12 @@ namespace mem::early_heap
         }
         return nullptr;
     }
-    void early_heap::free(void* ptr, uint32_t size)
+    void early_heap::free(void const* ptr, uint32_t size)
     {
         for(uint32_t i = 0; i < size / m_unit_size + 1; ++i)
             unmark_unit(i + ((uint32_t) ptr - (uint32_t) m_heap) / m_unit_size);
     }
-    void* early_heap::realloc(void* ptr, uint32_t size, uint32_t new_size)
+    void* early_heap::realloc(void const* ptr, uint32_t size, uint32_t new_size)
     {
         void* new_ptr = alloc(new_size);
         if(new_ptr == nullptr)

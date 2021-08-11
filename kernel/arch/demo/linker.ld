@@ -1,0 +1,1 @@
+/* An architecture can specify a linker script if needed */

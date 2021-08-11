@@ -3,29 +3,18 @@ HeliumOs is a hobby operating system that started as a learning experience(and i
 
 Right now the OS is written only for x86 architectures, but ports to x86_64 are planned
 
-# How to compile?
-The source files come with a makefile at the top directory, a simple make command(preferrably from the top directory) is enough to compile the kernel and generate an iso with grub as bootloader
+# Getting the sources
+HeliumOS is currently only hosted in Github
+Provided that `git` is installed in your system, you can get the latest sources with:
 
-All the build configurations are stored in `make/build_config/`
+`git clone https://github.com/YavaCoco/HeliumOS.git`
 
-Other build configurations are stored in `make/`, but they shouldn't need to be modified
+# How to build the kernel?
+The source files come with a makefile at the top directory, a simple `make` command is enough to build the kernel and generate an iso with grub as bootloader
+
+The make build system can be heavily configured, if you want to know more about it take a look at the [documentation for the building process](docs/BUILDING.md)
 
 # Run
 You can grab the iso generated and use it in any virtual machine, or burn it in a USB stick or something
 
-The makefile provided provides both `make bochs` and `make qemu` for quick testing in those two VMs
-
-# All the make commands
-`make iso` or `make`: Builds the kernel image and creates an iso with grub as boot loader
-
-`make kernel`       : Builds the kernel image, no iso is generated
-
-`make clean`        : Clean all the build files
-
-`make bochs`        : Generates the iso if not already done then run it using bochs as VM
-
-`make qemu`         : Generates the iso if not already done then run it using qemu as VM
-
-`make qemu-gdb`     : Same as `make qemu`, but sets up Qemu to listen for gdb
-
-`make gdb`          : Launches gdb to work with Qemu
+The makefile provides both `make bochs` and `make qemu` for quick testing in those two VMs

@@ -1,13 +1,15 @@
-.PHONY: all kernel iso bochs qemu qemu-gdb gdb clean
+.PHONY: all bochs qemu qemu-gdb gdb clean makefile-version
+
+.DEFAULT_GOAL := all
 
 all: iso
 	@echo Done
 
-kernel: $(KOUT)
-iso: $(ISORUN)
+makefile-version:
+	@echo $(MAKEFILEVER)
 
 bochs: $(ISORUN)
-	@cd run && $(BOCHS) $(BOCHS_FLAGS) -f $(BOCHS_CONFIG) -rc $(BOCHSRC)
+	cd run && $(BOCHS) $(BOCHS_FLAGS) -f $(BOCHS_CONFIG) -rc $(BOCHSRC)
 
 qemu: $(ISORUN)
 	@cd run && $(QEMU) $(QEMU_FLAGS) -cdrom $(ISO)

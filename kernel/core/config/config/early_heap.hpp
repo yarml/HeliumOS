@@ -11,4 +11,5 @@ namespace mem::early_heap
     /** Invalid unit identifier, changing it to a very low value may (will) result in bugs
       There is no point in changing it anyway **/
     constexpr uint32_t INVALID_UNIT = 0xFF'FF'FF'FF;
+
 }

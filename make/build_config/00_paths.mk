@@ -1,15 +1,19 @@
 # Architecture output
-ARCH          ?= x86
+ARCH          ?= i686
 # Output files names
 KERNEL        := helium-$(ARCH).kernel
-ISO           := helium.iso
+ISO           := helium-$(ARCH).iso
 ARCH_FILE     := arch-$(ARCH).a
+
 # File names
 KERNEL_DIR    := kernel
 CORE_DIR      := core
 ARCH_DIR      := arch
-BDIR          := build
-RDIR          := run
+TEMPLATES_DIR := templates
+# Build directory
+BDIR          ?= build
+# Run directory
+RDIR          ?= run
 ISODIR        := isodir
 INCLUDE_DIR   := include
 CONFIG_DIR    := config

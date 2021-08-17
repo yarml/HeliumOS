@@ -1,25 +1,34 @@
-.PHONY: all bochs qemu qemu-gdb gdb clean makefile-version
+.PHONY: all bochs qemu qemu-gdb gdb clean nothing
 
 .DEFAULT_GOAL := all
 
+$(info Makefile version: $(MAKEFILEVER))
+
 all: iso
-	@echo Done
+	$(info Done)
 
-makefile-version:
-	@echo $(MAKEFILEVER)
+nothing:
 
-bochs: $(ISORUN)
-	cd run && $(BOCHS) $(BOCHS_FLAGS) -f $(BOCHS_CONFIG) -rc $(BOCHSRC)
+bochs: $(ISORUN) $(RDIR)/$(BOCHS_CONFIG)
+	@$(CD) run && $(BOCHS) $(BOCHS_FLAGS) -f $(BOCHS_CONFIG) -rc $(BOCHSRC)
 
 qemu: $(ISORUN)
-	@cd run && $(QEMU) $(QEMU_FLAGS) -cdrom $(ISO)
+	@$(CD) run && $(QEMU) $(QEMU_FLAGS) -cdrom $(ISO)
 
 qemu-gdb: $(ISORUN)
-	@cd run && $(QEMU) $(QEMU_FLAGS) -s -S -cdrom $(ISO)
+	@$(CD) run && $(QEMU) $(QEMU_FLAGS) -s -S -cdrom $(ISO)
 
 gdb: $(ISORUN)
-	@cd run && gdb
+	@$(CD) run && gdb
 
 clean:
-	@echo Cleaning
-	@$(RM) $(TOCLEAN) $(BDIR) $(ISOBOOT)/$(KERNEL) $(BOCHSLOG) $(ISORUN) $(BOCHSCOM) $(BOCHSCOPY)
+	$(info Removing build directory)
+	@$(RM) $(BDIR)
+	$(info Removing unnecessary BOCHS files)
+	@$(RM) $(BOCHSLOG) $(ISORUN) $(BOCHSCOM) $(BOCHSCOPY)
+	$(info Removing output template files)
+	@$(RM) $(OUTPUT_TEMPLATES)
+	$(info Removing additional files)
+	@$(RM) $(TOCLEAN)
+	$(info Cleaning iso directory)
+	@$(RM) $(ISOBOOT)/$(KERNEL)

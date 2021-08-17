@@ -1,4 +1,4 @@
-AS       ?= nasm -f elf32 -o
+AS       := nasm -f elf32 -o
 CC       ?= clang -target i686-pc-elf -c -o
 CXX      ?= clang -target i686-pc-elf -c -o
 LD       ?= clang -target i686-pc-elf -fuse-ld=gold -o

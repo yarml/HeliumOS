@@ -7,3 +7,5 @@ CEXT   := .c
 CXXEXT := .cpp
 # Object file extension
 OEXT   := .o
+# M4 file extension
+M4EXT  := .m4

@@ -1,6 +1,7 @@
 
 MAKEFILEVER := 0.2
 
+
 INCLUDE_FLAGS := $(patsubst %,-I%,$(INCLUDES))
 ARCH_INCLUDE_FLAGS := $(patsubst %,-I%,$(ARCH_INCLUDES))
 
@@ -30,3 +31,5 @@ ARCH_BASOBJECTS  := $(patsubst %,$(OBJD)/%,$(ARCH_ASOBJECTS))
 ARCH_BCOBJECTS   := $(patsubst %,$(OBJD)/%,$(ARCH_COBJECTS))
 ARCH_BCXXOBJECTS := $(patsubst %,$(OBJD)/%,$(ARCH_CXXOBJECTS))
 
+TEMPLATE_FILES   := $(call rwildcard,$(TEMPLATES_DIR),*$(M4EXT))
+OUTPUT_TEMPLATES := $(patsubst $(TEMPLATES_DIR)/%$(M4EXT),%,$(TEMPLATE_FILES))

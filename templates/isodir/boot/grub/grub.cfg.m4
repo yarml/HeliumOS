@@ -1,7 +1,7 @@
 set timeout=0
 
 menuentry "HeliumOS" {
-	multiboot /boot/helium-x86.kernel
+	multiboot /boot/KERNEL
 	boot
 }
 

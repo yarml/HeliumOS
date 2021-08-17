@@ -24,7 +24,7 @@ This category contains dependencies that cannot be substituted with other tools(
 * GNU m4
 * Basic unix commands(cp, rm, mkdir)
 
-If you have other tools that can completely replace, then you may specify them in [make/build_config/10_tools.mk](make/build_config/10_tools.mk)
+If you have other tools that can completely replace, then you may specify them in [make/build_config/10_tools.mk](../make/build_config/10_tools.mk)
 
 ## Target architecture specific dependencies
 Depending on which architecture and toolchain you use, you'll need a different set of assemblers, compilers, and linkers.
@@ -69,7 +69,7 @@ Once you have configured the kernel to your taste, it is time to configure the b
 
 Nearly all the configuration variables can be found in [`make/build_config`](../make/build_config), each file there is documented with each variable and its usage(unless it is clear from the name), changing those variables shouldn't(in theory) cause any problems to the build process(Please report it as a bug if it does)
 
-Toolchains are the only exception that cannot be configured from those files, instead, toolchains are found in `kernel/arch/<Target architecture>/make/toolchains/`, you can take a look at [`kernel/arch/demo/make/toolchains/EXAMPLE.mk`](kernel/arch/demo/make/toolchains/EXAMPLE.mk) if you want more details about what each variable defined by the toolchain is used for.
+Toolchains are the only exception that cannot be configured from those files, instead, toolchains are found in `kernel/arch/<Target architecture>/make/toolchains/`, you can take a look at [`kernel/arch/demo/make/toolchains/EXAMPLE.mk`](../kernel/arch/demo/make/toolchains/EXAMPLE.mk) if you want more details about what each variable defined by the toolchain is used for.
 
 Some variables can be directly set in the make command line(`make VAR1=VALUE VAR2=VALUE <target>`), they are summed up in the following table:
 

@@ -1,6 +1,3 @@
----
-title: Building
----
 # Overview of the build system
 The HeliumOS project uses [Make] to automate the build process, this is because Make(as opposed to other build systems) lets you control every command executed for the build, which is essential for something like compiling a kernel
 

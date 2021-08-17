@@ -1,1 +1,1 @@
-/* An architecture can specify a linker script if needed */
+/* An architecture can(should?) specify a linker script */

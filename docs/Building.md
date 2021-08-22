@@ -103,6 +103,11 @@ You can also compile/assemble an individual file `X` with `make build/obj/X.o`(w
 
 You can preprocess a [template file][Templates] with path `X` relative to the top directory with the command `make X`, for example, to generate the file `isodir/boot/grub/grub.cfg`, you would use `make isodir/boot/grub/grub.cfg`. Template files that get preprocessed are found in `templates/X.m4`, for file `X`
 
+# Known Issues
+## \`mcopy\` invocation failed
+There is a chance when you are making the iso with `make iso`(or executing a target that implicitly generates the iso like `bochs` or `qemu`), that the following or a similar error pops up: `grub-mkrescue: error: 'mcopy' invocation failed`
+That is a bug in the 4.0.33 version of mtools, as for now the only solution is to downgrade mtools to 4.0.29, or if you are reading this in the future upgrading to a newer version may solve the issue
+
 [Make]: https://en.wikipedia.org/wiki/Make_(software)
 [Download]: https://github.com/YavaCoco/HeliumOS/archive/refs/heads/master.zip
 
@@ -113,6 +118,6 @@ You can preprocess a [template file][Templates] with path `X` relative to the to
 [kernel/arch/demo/make/toolchains/EXAMPLE.mk]: ../kernel/arch/demo/make/toolchains/EXAMPLE.mk
 [make/build_config/00_paths.mk]: ../make/build_config/00_paths.mk
 
-[Templates]: TODO
-[Running the kernel]: TODO
-[Toolchains]: TODO
+[Templates]: TODO:LinkIsNotValidYet
+[Running the kernel]: TODO:LinkIsNotValidYet
+[Toolchains]: TODO:LinkIsNotValidYet

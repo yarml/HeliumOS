@@ -1,10 +1,3 @@
-# Warning 
-Currently there is 0 code in this branch, things are being refactored
-
-In other words, don't download this version of the code if you want to compile the kernel or something
-
-Take a version 3 commits behind
-
 # HeliumOS
 HeliumOs is a hobby operating system that started as a learning experience(and is still just that), the plan is to take the cool concepts from other operating systems while keeping the os very light(that's where the name Helium came from)
 

@@ -10,4 +10,7 @@ namespace capi
     typedef uint32_t qword   ;
     typedef dword    blockidx;
     typedef dword    adr     ;
+    typedef dword    mem_size;
+    typedef word     ioadr   ;
+    
 }

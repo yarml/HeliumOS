@@ -3,19 +3,17 @@
 #include <capi/consts.hpp>
 
 // Temporary debug functions
-extern "C" void dbg_out(capi::word,capi::byte);
-
-void dbg_char(char c)
+void dbg_char(capi::io_interface* io, char c)
 {
-    // Bochs e9 hack
-    dbg_out(0xE9, c);
+    // bochs e9 hack
+    io->write_byte(0xE9, c);
 }
-void dbg_str(char const* str)
+void dbg_str(capi::io_interface* io, char const* str)
 {
     for(size_t i = 0; str[i] != 0; ++i)
-        dbg_char(str[i]);
+        dbg_char(io, str[i]);
 }
-void dbg_uint(int val)
+void dbg_uint(capi::io_interface* io,int val)
 {
     constexpr char NUMBERS[] = "0123456789";
     static utils::array<char, 32> buf;
@@ -27,15 +25,15 @@ void dbg_uint(int val)
 
     buf[i] = NUMBERS[val];
 
-    dbg_str(buf.data() + i);
+    dbg_str(io, buf.data() + i);
 }
 
 namespace core
 {
-    void init()
+    void init(capi::architecture* arch)
     {
-        dbg_str("Hello, World\n");
-        dbg_uint(5);
-        dbg_char('\n');
+        dbg_str(arch->get_io_interface(), "Hello, World\n");
+        dbg_uint(arch->get_io_interface(), 10);
+        dbg_char(arch->get_io_interface(), '\n');
     }
 }

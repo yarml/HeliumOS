@@ -12,9 +12,19 @@ Provided that `git` is installed in your system, you can get the latest sources 
 # How to build the kernel?
 The source files come with a makefile at the top directory, a simple `make` command is enough to build the kernel and generate an iso with grub as bootloader
 
-The make build system can be heavily configured, if you want to know more about it take a look at the [documentation for the building process](docs/Building.md)
+The make build system can be heavily configured, if you want to know more about it take a look at the [Building Documentation]
 
 # Run
 You can grab the iso generated and use it in any virtual machine, or burn it in a USB stick or something
 
 The makefile provides both `make bochs` and `make qemu` for quick testing in those two VMs
+
+# Contributing
+HeliumOS is an open source project(I'm not sure yet what license I'll put here), but either way, you can contribute your changes here if you feel like it. All contributions are welcomed, be it a simple spelling mistake, expanding documentation, bug fix, or new code. If it is the latter though, check [TODO] to know what you can do.
+
+Code contributions have to meet a criteria so that the kernel code style is consistent with itself. You can have more information on that in [Contribution Documentation]
+
+
+[TODO]: TODO.md
+[Building Documentation]: docs/Building.md
+[Contribution Documentation]: docs/Contribution.md

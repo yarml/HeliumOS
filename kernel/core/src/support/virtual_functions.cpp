@@ -8,11 +8,3 @@ extern "C" void __cxa_pure_virtual()
     // compatible with those
 }
 #endif
-
-// capi class destructors
-
-#include <capi/architecture.hpp>
-
-namespace capi
-{
-}

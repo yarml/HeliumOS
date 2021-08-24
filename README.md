@@ -20,7 +20,7 @@ You can grab the iso generated and use it in any virtual machine, or burn it in 
 The makefile provides both `make bochs` and `make qemu` for quick testing in those two VMs
 
 # Contributing
-HeliumOS is an open source project(I'm not sure yet what license I'll put here), but either way, you can contribute your changes here if you feel like it. All contributions are welcomed, be it a simple spelling mistake, expanding documentation, bug fix, or new code. If it is the latter though, check [TODO] to know what you can do.
+HeliumOS is an open source project(I'm not sure yet what license I'll put here), but either way, you can contribute your changes here if you feel like it. All contributions are welcomed, be it a simple spelling mistake, expanding documentation, bug fix, or new code. In all cases, you might want to check [TODO] to know what you can do.
 
 Code contributions have to meet a criteria so that the kernel code style is consistent with itself. You can have more information on that in [Contribution Documentation]
 

@@ -1,1 +1,1 @@
-# Work in progress :/
+Move documentation to Wiki?

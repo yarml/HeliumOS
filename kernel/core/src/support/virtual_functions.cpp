@@ -1,4 +1,6 @@
-#if (defined(__GNUC__) || defined(__GNUG__) || defined(__clang__)) && !defined(__INTEL_COMPILER)
+#include <support/compilers.hpp>
+
+#if GCC_COMPATIBLE
 extern "C" void __cxa_pure_virtual()
 {
     // TODO: maybe display error?

@@ -27,4 +27,4 @@ Code contributions have to meet a criteria so that the kernel code style is cons
 
 [TODO]: TODO.md
 [Building Documentation]: docs/Building.md
-[Contribution Documentation]: docs/Contribution.md
+[Contribution Documentation]: CONTRIBUTING.md

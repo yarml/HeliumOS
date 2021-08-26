@@ -45,19 +45,19 @@ namespace i686::mem
                 segment_type type
             );
         private:
-            capi::word m_limit_15_00      ;
-            capi::word m_base_15_00       ;
-            capi::byte m_base_23_16       ;
-            capi::byte m_segment_type   :4;
-            bool       m_code_data      :1;
-            capi::byte m_dpl            :2;
-            bool       m_present        :1;
-            capi::byte m_limit_16_19    :4;
-            bool       m_avl            :1;
-            bool       m_zero           :1;
-            bool       m_32bit_segment  :1;
-            bool       m_4kib_limit     :1;
-            capi::byte m_base_31_24       ;
+            UNUSED capi::word m_limit_15_00      ;
+            UNUSED capi::word m_base_15_00       ;
+            UNUSED capi::byte m_base_23_16       ;
+            UNUSED capi::byte m_segment_type   :4;
+            UNUSED bool       m_code_data      :1;
+            UNUSED capi::byte m_dpl            :2;
+            UNUSED bool       m_present        :1;
+            UNUSED capi::byte m_limit_16_19    :4;
+            UNUSED bool       m_avl            :1;
+            UNUSED bool       m_zero           :1;
+            UNUSED bool       m_32bit_segment  :1;
+            UNUSED bool       m_4kib_limit     :1;
+            UNUSED capi::byte m_base_31_24       ;
         } PACKED;
         class gdtr
         {
@@ -65,8 +65,8 @@ namespace i686::mem
             gdtr();
             gdtr(capi::word limit, capi::adr base);
         private:
-            capi::word m_limit;
-            capi::adr  m_base ;
+            UNUSED capi::word m_limit;
+            UNUSED capi::adr  m_base ;
         } PACKED;
         void init();
     }

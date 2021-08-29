@@ -12,5 +12,6 @@ M4FLAGS := -D ARCH=$(ARCH)                  \
  -D ISO=$(ISO)                               \
  -D KERNEL=$(KERNEL)                          \
  -D BOCHS_ROM_IMAGE=$(BOCHS_ROM_IMAGE)         \
- -D BOCHS_VGA_ROM_IMAGE=$(BOCHS_VGA_ROM_IMAGE)
+ -D BOCHS_VGA_ROM_IMAGE=$(BOCHS_VGA_ROM_IMAGE)  \
+ -D GRUB_TIMEOUT=$(GRUB_TIMEOUT)
 

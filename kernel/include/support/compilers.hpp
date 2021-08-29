@@ -15,3 +15,5 @@
 #elif defined(__INTEL_COMPILER)
 #define INTEL_COMPILER 1
 #endif
+
+// TODO: support more compilers

@@ -16,5 +16,6 @@
 // Standard C++ attributes
 
 #define UNUSED [[maybe_unused]]
+#define NORET  [[noreturn]]
 
 // TODO: support more compilers

@@ -11,37 +11,37 @@ extern "C" capi::dword i686_indw(capi::ioadr port);
 namespace i686
 {
 
-    void i686_io_interface::write_byte(capi::ioadr a, capi::byte o)
+    void i686_io_interface::write_byte(capi::ioadr a, capi::byte o) const
     {
         i686_outb(a, o);
     }
-    void i686_io_interface::write_word(capi::ioadr a, capi::word o)
+    void i686_io_interface::write_word(capi::ioadr a, capi::word o) const
     {
         i686_outw(a, o);
     }
-    void i686_io_interface::write_dword(capi::ioadr a, capi::dword o)
+    void i686_io_interface::write_dword(capi::ioadr a, capi::dword o) const
     {
         i686_outdw(a, o);
     }
-    void i686_io_interface::write_qword(capi::ioadr a, capi::qword o)
+    void i686_io_interface::write_qword(capi::ioadr a, capi::qword o) const
     {
         // equivalent to write_dword in x86
         i686_outdw(a, o);
     }
 
-    capi::byte i686_io_interface::read_byte(capi::ioadr a)
+    capi::byte i686_io_interface::read_byte(capi::ioadr a) const
     {
         return i686_inb(a);
     }
-    capi::word i686_io_interface::read_word(capi::ioadr a)
+    capi::word i686_io_interface::read_word(capi::ioadr a) const
     {
         return i686_inw(a);
     }
-    capi::dword i686_io_interface::read_dword(capi::ioadr a)
+    capi::dword i686_io_interface::read_dword(capi::ioadr a) const
     {
         return i686_indw(a);
     }
-    capi::qword i686_io_interface::read_qword(capi::ioadr a)
+    capi::qword i686_io_interface::read_qword(capi::ioadr a) const
     {
         // equivalent to read_dword in x86
         return i686_indw(a);

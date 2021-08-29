@@ -10,10 +10,11 @@ namespace capi
     class architecture
     {
     public:
-        virtual mem_interface* get_mem_interface() = 0;
-        virtual io_interface* get_io_interface() = 0;
-        virtual proc_interface* get_proc_interface() = 0;
-        virtual interrupt_interface* get_interrupt_interface() = 0;
+        virtual mem_interface const* get_mem_interface() const = 0;
+        virtual io_interface const* get_io_interface() const = 0;
+        virtual proc_interface const* get_proc_interface() const = 0;
+        virtual interrupt_interface const* get_interrupt_interface() const = 0;
+        virtual void halt() const = 0;
     };
 }
 

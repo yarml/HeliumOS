@@ -1,5 +1,6 @@
 #include <memory.hpp>
 #include <utils/array.hpp>
+#include <debug.hpp>
 
 namespace i686::mem
 {
@@ -43,9 +44,11 @@ namespace i686::mem
         static utils::array<segment_descriptor, 3> s_descriptors;
         extern "C" void i686_load_gdt(gdtr);
 
-        void init()
+        void init(capi::architecture* arch)
         {
+            // Null descriptor
             s_descriptors[0] = segment_descriptor(0, 0, 0, false, false, false, 0);
+            // Code segment descriptor
             s_descriptors[1] = segment_descriptor(
                 0, 
                 0xFF'FF'FF'FF, 
@@ -55,6 +58,7 @@ namespace i686::mem
                 true, 
                 FLAG(code_segment_flags::CODE)
             );
+            // Data segment descriptor
             s_descriptors[2] = segment_descriptor(
                 0,
                 0xFF'FF'FF'FF,
@@ -64,8 +68,15 @@ namespace i686::mem
                 true, 
                 FLAG(data_segment_flags::DATA) | FLAG(data_segment_flags::WRITE)
             );
-            s_gdtr = gdtr(sizeof(s_descriptors), reinterpret_cast<capi::adr>(s_descriptors.data()));
+            /* TODO: Ugh, Code keeps complaining about this 
+            reinterpret_cast being not of the right type,
+            how to fucking tell it we are in i686 */
+            s_gdtr = gdtr(
+                sizeof(s_descriptors), 
+                reinterpret_cast<capi::adr>(s_descriptors.data())
+            );
             i686_load_gdt(s_gdtr);
+            dbg_str(arch->get_io_interface(), "Loaded GDT\n");
         }
     }
 }

@@ -1,4 +1,4 @@
-set timeout=0
+set timeout=GRUB_TIMEOUT
 
 menuentry "HeliumOS" {
 	multiboot /boot/KERNEL

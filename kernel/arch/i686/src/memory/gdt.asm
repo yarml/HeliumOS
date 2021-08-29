@@ -13,3 +13,13 @@ i686_load_gdt:
 far_jump:
     ret
 .end:
+
+
+; Pseudo code
+; [[global]]
+; i686_load_gdt(gdtr)
+; {
+;   lgdt(gdtr) // lgdt instruction
+;   %ds, %es, %fs, %gs, %ss = 0x10
+;   %cs = 0x08
+; }

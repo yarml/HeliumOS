@@ -8,10 +8,11 @@ namespace i686
     class i686_arch : public capi::architecture
     {
     public:
-        capi::mem_interface* get_mem_interface() override;
-        capi::io_interface* get_io_interface() override;
-        capi::proc_interface* get_proc_interface() override;
-        capi::interrupt_interface* get_interrupt_interface() override;
+        capi::mem_interface const* get_mem_interface() const override;
+        capi::io_interface const* get_io_interface() const override;
+        capi::proc_interface const* get_proc_interface() const override;
+        capi::interrupt_interface const* get_interrupt_interface() const override;
+        void halt() const override;
     private:
         i686_io_interface m_io;
     };

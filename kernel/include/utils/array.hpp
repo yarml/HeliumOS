@@ -2,13 +2,15 @@
 
 namespace utils
 {
-    template <class type, size_t len>
+    template <typename t, size_t len>
     struct array
     {
         // No constructor for aggregate type
-    private:
+    public:
+        typedef t type;
         typedef type* iterator;
         typedef type const* const_iterator;
+        constexpr size_t length = len;
     public: // container functions
         // at
         // TODO: add bound checking with proper error handling
@@ -33,11 +35,11 @@ namespace utils
         //back
         constexpr type const& back() const
         {
-            return m_data[len - 1];
+            return m_data[length - 1];
         }
         constexpr type& back()
         {
-            return m_data[len - 1];
+            return m_data[length - 1];
         }
         // data
         constexpr type const* data() const
@@ -64,30 +66,30 @@ namespace utils
         // end
         constexpr iterator end()
         {
-            return m_data + len;
+            return m_data + length;
         }
         constexpr const_iterator end() const
         {
-            return m_data + len;
+            return m_data + length;
         }
         constexpr const_iterator cend() const
         {
-            return m_data + len;
+            return m_data + length;
         }
         // empty
         constexpr bool empty() const
         {
-            return len == 0;
+            return length == 0;
         }
         // size
         constexpr size_t size() const
         {
-            return len;
+            return length;
         }
         // max_size
         constexpr size_t max_size() const
         {
-            return len;
+            return length;
         }
         // fill
         constexpr void fill(type const& value)
@@ -98,7 +100,7 @@ namespace utils
         // swap
         constexpr void swap(array<type, len>& other)
         {
-            for(size_t i = 0; i < len; ++i)
+            for(size_t i = 0; i < length; ++i)
             {
                 type tmp = other[i];
                 other[i] = at(i);
@@ -114,9 +116,9 @@ namespace utils
         {
             return at(idx);
         }
-        constexpr bool operator==(array<type, len> const& other) const
+        constexpr bool operator==(array<type, length> const& other) const
         {
-            for(size_t i = 0; i < len; ++i)
+            for(size_t i = 0; i < length; ++i)
                 if(other[i] == at(i))
                     continue;
                 else
@@ -124,6 +126,6 @@ namespace utils
             return true;
         }
     public: // Data; Kept public for aggregate type
-        type m_data[len];
+        type m_data[length];
     };
 }

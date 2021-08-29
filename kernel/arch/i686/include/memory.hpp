@@ -2,7 +2,8 @@
 
 #include <support/attributes.hpp>
 #include <capi/types.hpp>
-
+#include <capi/architecture.hpp>
+#include <multiboot.hpp>
 
 namespace i686::mem
 {
@@ -45,29 +46,31 @@ namespace i686::mem
                 segment_type type
             );
         private:
-            UNUSED capi::word m_limit_15_00      ;
-            UNUSED capi::word m_base_15_00       ;
-            UNUSED capi::byte m_base_23_16       ;
-            UNUSED capi::byte m_segment_type   :4;
-            UNUSED bool       m_code_data      :1;
-            UNUSED capi::byte m_dpl            :2;
-            UNUSED bool       m_present        :1;
-            UNUSED capi::byte m_limit_16_19    :4;
-            UNUSED bool       m_avl            :1;
-            UNUSED bool       m_zero           :1;
-            UNUSED bool       m_32bit_segment  :1;
-            UNUSED bool       m_4kib_limit     :1;
-            UNUSED capi::byte m_base_31_24       ;
-        } PACKED;
+            capi::word m_limit_15_00    UNUSED  ;
+            capi::word m_base_15_00     UNUSED  ;
+            capi::byte m_base_23_16     UNUSED  ;
+            capi::byte m_segment_type   UNUSED:4;
+            bool       m_code_data      UNUSED:1;
+            capi::byte m_dpl            UNUSED:2;
+            bool       m_present        UNUSED:1;
+            capi::byte m_limit_16_19    UNUSED:4;
+            bool       m_avl            UNUSED:1;
+            bool       m_zero           UNUSED:1;
+            bool       m_32bit_segment  UNUSED:1;
+            bool       m_4kib_limit     UNUSED:1;
+            capi::byte m_base_31_24     UNUSED  ;
+        } PACKED; // ugh, Why does Code think this is a variable name and not a macro
         class gdtr
         {
         public:
             gdtr();
             gdtr(capi::word limit, capi::adr base);
         private:
-            UNUSED capi::word m_limit;
-            UNUSED capi::adr  m_base ;
+            capi::word m_limit UNUSED;
+            capi::adr  m_base  UNUSED;
         } PACKED;
-        void init();
+        void init(capi::architecture* arch);
     }
+    
+    void init(capi::architecture* arch, multiboot::info_structure* mbt_info);
 }

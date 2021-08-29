@@ -46,3 +46,36 @@ i686_indw:
     in  eax, dx
     ret
 .end:
+
+; Pseudo code
+; [[global]]
+; i686_outb(ioadr, byte)
+; {
+;   out(ioadr, byte) // out instruction
+; }
+; [[global]]
+; i686_outw(ioadr, word)
+; {
+;   out(ioadr, word) // out instruction
+; }
+; [[global]]
+; i686_outdw(ioadr, dword)
+; {
+;   out(ioadr, dword) // out instruction
+; }
+
+; [[global]]
+; i686_inb(ioadr) : byte
+; {
+;   return in(ioadr) // in instruction
+; }
+; [[global]]
+; i686_inw(ioadr) : word
+; {
+;   return in(ioadr) // in instruction
+; }
+; [[global]]
+; i686_indw(ioadr) : dword
+; {
+;   return in(ioadr) // in instruction
+; }

@@ -4,13 +4,13 @@
 
 namespace capi
 {
-    typedef uint8_t  byte    ;
-    typedef uint16_t word    ;
-    typedef uint32_t dword   ;
-    typedef uint32_t qword   ;
-    typedef dword    blockidx;
-    typedef dword    adr     ;
-    typedef dword    mem_size;
-    typedef word     ioadr   ;
+    using byte     = uint8_t ;
+    using word     = uint16_t;
+    using dword    = uint32_t;
+    using qword    = uint32_t; // maybe uint64_t? not sure, until I need it
+    using blockidx = dword   ;
+    using adr      = dword   ;
+    using mem_size = dword   ;
+    using ioadr    = word    ;
     
 }

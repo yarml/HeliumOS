@@ -1,16 +1,18 @@
+#pragma once
+
 #include <stddef.h>
 
 namespace utils
 {
-    template <typename t, size_t len>
+    template <typename tp, size_t len>
     struct array
     {
         // No constructor for aggregate type
     public:
-        typedef t type;
-        typedef type* iterator;
-        typedef type const* const_iterator;
-        constexpr size_t length = len;
+        using type = tp;
+        using iterator = type*;
+        using const_iterator = type const*;
+        constexpr static size_t length = len;
     public: // container functions
         // at
         // TODO: add bound checking with proper error handling

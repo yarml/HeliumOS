@@ -37,6 +37,10 @@ void dbg_uint(capi::io_interface const* io, size_t val, size_t base)
 
     dbg_str(io, buf.data() + i + 1);
 }
+void dbg_ptr(capi::io_interface const* io, utils::ptr p)
+{
+    dbg_uint(io, reinterpret_cast<size_t>(p), 16);
+}
 
 namespace i686
 {
@@ -46,22 +50,14 @@ namespace i686
     i686_arch arch;
     extern "C" void load_arch(multiboot::info_structure* mbt_info, multiboot::u32 mbt_sig)
     {
-        if(mbt_sig != 0x2BADB002)
+        capi::io_interface const* io = arch.get_io_interface();
+        if(mbt_sig != multiboot::BOOTLOADER_MAGIC)
         {
-            dbg_str(arch.get_io_interface(), "Invalid multiboot signature: ");
-            dbg_uint(arch.get_io_interface(), mbt_sig, 16);
-            dbg_char(arch.get_io_interface(), '\n');
+            dbg_str(io, "Invalid multiboot signature: ");
+            dbg_uint(io, mbt_sig, 16);
+            dbg_char(io, '\n');
             arch.halt();
         }
-        else
-        {
-            dbg_str(arch.get_io_interface(), "Multiboot signature: ");
-            dbg_uint(arch.get_io_interface(), mbt_sig, 16);
-            dbg_char(arch.get_io_interface(), '\n');
-        }
-        dbg_str(arch.get_io_interface(), "MBT structure address: ");
-        dbg_uint(arch.get_io_interface(), reinterpret_cast<uint32_t>(mbt_info), 16);
-        dbg_char(arch.get_io_interface(), '\n');
         i686::mem::init(&arch, mbt_info);
         core::init(&arch);
     }

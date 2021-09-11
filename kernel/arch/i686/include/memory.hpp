@@ -6,6 +6,8 @@
 #include <capi/architecture.hpp>
 #include <multiboot.hpp>
 #include <utils/array.hpp>
+#include <utils/mem.hpp>
+#include <utils/maths.hpp>
 
 namespace i686::mem
 {
@@ -116,7 +118,7 @@ namespace i686::mem
         }
     public:
         early_heap() {}
-    public:
+    private:
         constexpr bool available(unit_type unit)
         {
             return !((m_bitmap[byte(unit)] >> bit(unit)) & 1);
@@ -129,6 +131,7 @@ namespace i686::mem
         {
             m_bitmap[byte(unit)] &= ~(1 << bit(unit));
         }
+    public:
         utils::ptr alloc(unit_type len)
         {
             unit_type first_unit = INVALID_UNIT;
@@ -160,10 +163,38 @@ namespace i686::mem
             for(unit_type i = ptr_to_unit(p); i < ptr_to_unit(p) + units_count(len); ++i)
                 unmark(i);
         }
+        /// This implementation is straight forward
+        /// Allocate new buffer -> copy data -> free old buffer -> return
+        /// This implementation is faster, but can cause fragmentation
+        /// Use realloc2(...) if you don't want fragmentation at the expanse of speed
+        utils::ptr realloc(utils::ptr p, unit_type old_len, unit_type new_len)
+        {
+            auto copylen = maths::min(old_len, new_len);
+            utils::ptr new_p = alloc(new_len);
+            ::mem::copy(new_p, p, copylen);
+            free(p, old_len);
+            return new_p;
+        }
+        /// This implementation is slow, but helps preventing fragmentation
+        /// Copy data to an internal buffer -> free old buffer -> allocate new buffer
+        /// -> copy data to new buffer -> return
+        /// use realloc(...) if you want to optimise for speed at the expanse of potentially
+        /// fragmenting memory
+        utils::ptr realloc2(utils::ptr p, unit_type old_len, unit_type new_len)
+        {
+            auto copylen = maths::min(old_len, new_len);
+            data_type buf[copylen];
+            ::mem::copy(buf, p, copylen);
+            free(p);
+            auto new_p = alloc(new_len);
+            ::mem::copy(new_p, buf, copylen);
+            return new_p;
+        }
     private:
         utils::array<data_type , heap_units > m_heap  ;
         utils::array<bitmap_type, bitmap_len> m_bitmap;
     };
+    using std_early_heap = early_heap<UNIT, SIZE>;
 
     void init(capi::architecture* arch, multiboot::info_structure* mbt_info);
 }

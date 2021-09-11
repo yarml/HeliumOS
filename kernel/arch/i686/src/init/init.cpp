@@ -5,6 +5,7 @@
 #include <multiboot.hpp>
 #include <utils/array.hpp>
 #include <debug.hpp>
+#include <early_ordered_list.hpp>
 
 // Temporary debug functions
 // TODO: Remove those when not needed anymore
@@ -41,7 +42,7 @@ void dbg_ptr(capi::io_interface const* io, utils::ptr p)
 {
     dbg_uint(io, reinterpret_cast<size_t>(p), 16);
 }
-
+#include <initializer_list.hpp>
 namespace i686
 {
     // TODO: If i686_arch ever needs a constructor
@@ -59,6 +60,16 @@ namespace i686
             arch.halt();
         }
         i686::mem::init(&arch, mbt_info);
+        dbg_str(io, "Testing early ordered linked list\n");
+        mem::std_early_heap heap;
+        early_ordered_list<size_t> l({5, 4, 1, 40, 5}, &heap);
+        early_ordered_list<size_t>::list_item* c = l.head();
+        while(c != nullptr)
+        {
+            dbg_uint(io, c->item, 10);
+            dbg_char(io, '\n');
+            c = c->next;
+        }
         core::init(&arch);
     }
 }

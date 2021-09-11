@@ -12,7 +12,16 @@ namespace maths
             return pow(x, y / 2) * pow(x, y / 2);
         return x * pow(x, y / 2) * pow(x, y / 2);
     }
-
+    template <typename type>
+    constexpr type const& min(type const& a, type const& b)
+    {
+        return a < b ? a : b;
+    }
+    template <typename type>
+    constexpr type const& max(type const& a, type const& b)
+    {
+        return a > b ? a : b;
+    }
     template <typename type>
     constexpr bool check_bit(type const& val, size_t bit)
     {

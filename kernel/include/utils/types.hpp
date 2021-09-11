@@ -1,10 +1,16 @@
 #pragma once
 
+#include <stddef.h>
+#include <capi/types.hpp>
+
+
 namespace utils
 {
     using ull       = unsigned long long;
     using ptr       = void*             ;
     using bit_index = size_t            ;
+    using size_type = size_t            ;
+
 
     template <typename type>
     class type_meta

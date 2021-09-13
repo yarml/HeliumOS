@@ -13,3 +13,8 @@ Port to more architectures(Will move to priority 2 or 1 with time)
 You might also look at source files for `// TODO:` or `// FIXME:`(more priority here)
 
 An IDE extension might help with finding those quickly
+
+# Features
+Technically [Features] can also be considered part of the TODO
+
+[Features]: docs/Features.md

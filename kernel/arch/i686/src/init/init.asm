@@ -30,7 +30,7 @@ _start:
 	
 	push eax
 	push ebx
-	
+
 	call load_arch
 
 	cli

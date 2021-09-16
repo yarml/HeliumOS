@@ -31,7 +31,7 @@ namespace i686
             : m_heap(nullptr),
               m_first(nullptr),
               m_size(0)
-        {}
+        { }
         early_ordered_list(std::initializer_list<type> list, mem::std_early_heap* heap) 
             : m_heap(heap),
               m_first(nullptr),
@@ -40,6 +40,11 @@ namespace i686
             for(type const& i : list)
                 add_item(i);
         }
+        early_ordered_list(mem::std_early_heap* heap)
+            : m_heap(heap),
+              m_first(nullptr),
+              m_size(0)
+            { }
         ~early_ordered_list()
         {
             if(m_heap == nullptr)
@@ -48,7 +53,12 @@ namespace i686
                 m_heap->free(current, ALLOC_SIZE);
         }
     public:
-        // Display proper error when m_heap is uninitialized
+        void init_heap(mem::std_early_heap* heap)
+        {
+            m_heap = heap;
+        }
+    public:
+        // TODO: Display proper error when m_heap is uninitialized
         void add_item(type const& item)
         {
             if(m_heap == nullptr)
@@ -83,6 +93,34 @@ namespace i686
             current->item.~type();
             m_heap->free(current, ALLOC_SIZE);
             --m_size;
+        }
+        type* top()
+        {
+            if(m_first == nullptr)
+                return nullptr;
+            list_item* current = m_first;
+            for(
+                ;
+                current != nullptr && current->next != nullptr;
+                current = current->next
+            )
+            {
+            }
+            return &(current->item);
+        }
+        type const* top() const
+        {
+            if(m_first == nullptr)
+                return nullptr;
+            list_item* current = m_first;
+            for(
+                ;
+                current != nullptr && current->next != nullptr;
+                current = current->next
+            )
+            {
+            }
+            return &(current->item);
         }
         constexpr list_item* head() const
         {

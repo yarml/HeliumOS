@@ -117,7 +117,10 @@ namespace i686::mem
                 / unit;
         }
     public:
-        early_heap() {}
+        early_heap() 
+        {
+            ::mem::set(m_bitmap.data(), 0, m_bitmap.size());
+        }
     private:
         constexpr bool available(unit_type unit)
         {

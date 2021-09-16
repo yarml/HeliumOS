@@ -5,11 +5,11 @@
 
 namespace multiboot
 {
-    typedef uint8_t u8;
-    typedef uint16_t u16;
-    typedef uint32_t u32;
-    typedef uint64_t u64;
-
+    using u8  = uint8_t ;
+    using u16 = uint16_t;
+    using u32 = uint32_t;
+    using u64 = uint64_t;
+    
     constexpr u32 BOOTLOADER_MAGIC = 0x2BADB002;
 
     struct aout_symbol_table

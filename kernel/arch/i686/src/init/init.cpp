@@ -49,9 +49,13 @@ namespace i686
     // then it is better if we provide a init() function
     // as the constructor may not be called yet when this variable is used
     i686_arch arch;
+
     extern "C" void load_arch(multiboot::info_structure* mbt_info, multiboot::u32 mbt_sig)
     {
+        i686::init();
+
         capi::io_interface const* io = arch.get_io_interface();
+
         if(mbt_sig != multiboot::BOOTLOADER_MAGIC)
         {
             dbg_str(io, "Invalid multiboot signature: ");
@@ -59,17 +63,9 @@ namespace i686
             dbg_char(io, '\n');
             arch.halt();
         }
+
         i686::mem::init(&arch, mbt_info);
-        dbg_str(io, "Testing early ordered linked list\n");
-        mem::std_early_heap heap;
-        early_ordered_list<size_t> l({5, 4, 1, 40, 5}, &heap);
-        early_ordered_list<size_t>::list_item* c = l.head();
-        while(c != nullptr)
-        {
-            dbg_uint(io, c->item, 10);
-            dbg_char(io, '\n');
-            c = c->next;
-        }
+        
         core::init(&arch);
     }
 }

@@ -2,15 +2,15 @@
 
 #include <utils/types.hpp>
 
-constexpr utils::ull operator""_Kib(utils::ull v)
+constexpr utils::large_int operator""_Kib(utils::large_int v)
 {
     return v * 1024;
 }
-constexpr utils::ull operator""_Mib(utils::ull v)
+constexpr utils::large_int operator""_Mib(utils::large_int v)
 {
     return v * 1024 * 1024;
 }
-constexpr utils::ull operator""_Gib(utils::ull v)
+constexpr utils::large_int operator""_Gib(utils::large_int v)
 {
     return v * 1024 * 1024 * 1024;
 }

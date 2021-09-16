@@ -5,7 +5,10 @@ HeliumOs was also written with portability in mind, and although currently only 
 
 # Features
 
-If you want to take a look at all the implemented, ot to be implemented features, take a look at [Features]
+## Implemented features
+Nothing :/
+## Features intended for the long run
+[Filesystem]
 
 # Getting the sources
 HeliumOS is currently only hosted in Github
@@ -32,4 +35,4 @@ Code contributions have to meet a criteria so that the kernel code style is cons
 [TODO]: TODO.md
 [Building Documentation]: docs/Building.md
 [Contribution Documentation]: CONTRIBUTING.md
-[Features]: docs/Features.md
+[Filesystem]: docs/features/filesystem.md

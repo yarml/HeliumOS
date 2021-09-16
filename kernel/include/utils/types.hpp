@@ -6,15 +6,16 @@
 
 namespace utils
 {
-    using ull       = unsigned long long;
+    using large_int = unsigned long long;
     using ptr       = void*             ;
     using bit_index = size_t            ;
     using size_type = size_t            ;
 
-
-    template <typename type>
+    template <typename t>
     class type_meta
     {
+    public:
+        using type = t;
     public:
         type_meta() {}
     public:

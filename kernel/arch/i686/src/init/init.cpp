@@ -1,11 +1,11 @@
 #include <i686.hpp>
-#include <capi_core.hpp>
+#include <capi/core.hpp>
 #include <capi/i686_architecture.hpp>
 #include <memory.hpp>
 #include <multiboot.hpp>
 #include <utils/array.hpp>
 #include <debug.hpp>
-#include <early_ordered_list.hpp>
+#include <capi/early_ordered_list.hpp>
 
 // Temporary debug functions
 // TODO: Remove those when not needed anymore

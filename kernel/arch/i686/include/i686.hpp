@@ -1,7 +1,6 @@
 #pragma once
 
 #include <support/attributes.hpp>
-#include <memory.hpp>
 
 #define ARCH_TEXT   SECTION(arch.text)
 #define ARCH_DATA   SECTION(arch.data)
@@ -11,6 +10,5 @@
 
 namespace i686
 {
-    mem::std_early_heap* early_heap();
     void init();
 }

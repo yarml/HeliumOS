@@ -68,9 +68,9 @@ namespace i686::mem
                 true, 
                 FLAG(data_segment_flags::DATA) | FLAG(data_segment_flags::WRITE)
             );
-            /* TODO: Ugh, Code keeps complaining about this 
+            /* TODO: Ugh, VSCode keeps complaining about this 
             reinterpret_cast being not of the right type,
-            how to fucking tell it we are in i686 */
+            how to fucking tell it we are i686 */
             s_gdtr = gdtr(
                 sizeof(s_descriptors), 
                 reinterpret_cast<capi::adr>(s_descriptors.data())

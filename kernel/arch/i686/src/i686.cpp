@@ -1,17 +1,20 @@
 #include <i686.hpp>
+#include <capi/early_heap.hpp>
 
 
-namespace i686
+namespace capi
 {
-    static mem::std_early_heap s_heap;
-
-    mem::std_early_heap* early_heap()
+    static std_early_heap s_sys_early_heap;
+    std_early_heap* system_early_heap()
     {
-        return &s_heap;
-    }
-
-    void init()
-    {
-        s_heap = mem::std_early_heap();
+        return &s_sys_early_heap;
     }
 }
+namespace i686
+{
+    void init()
+    {
+        capi::s_sys_early_heap = capi::std_early_heap();
+    }
+}
+

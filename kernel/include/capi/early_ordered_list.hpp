@@ -1,10 +1,9 @@
 #pragma once
 
 #include <initializer_list.hpp>
-#include <memory.hpp>
+#include <capi/early_heap.hpp>
 
-
-namespace i686
+namespace capi
 {
     /*
         A linked list implementation using early heap
@@ -29,21 +28,21 @@ namespace i686
     public:
         early_ordered_list()
             : m_heap(nullptr),
-              m_first(nullptr),
-              m_size(0)
+                m_first(nullptr),
+                m_size(0)
         { }
-        early_ordered_list(std::initializer_list<type> list, mem::std_early_heap* heap) 
+        early_ordered_list(std::initializer_list<type> list, capi::std_early_heap* heap) 
             : m_heap(heap),
-              m_first(nullptr),
-              m_size(0)
+                m_first(nullptr),
+                m_size(0)
         {
             for(type const& i : list)
                 add_item(i);
         }
-        early_ordered_list(mem::std_early_heap* heap)
+        early_ordered_list(capi::std_early_heap* heap)
             : m_heap(heap),
-              m_first(nullptr),
-              m_size(0)
+                m_first(nullptr),
+                m_size(0)
             { }
         ~early_ordered_list()
         {
@@ -53,7 +52,7 @@ namespace i686
                 m_heap->free(current, ALLOC_SIZE);
         }
     public:
-        void init_heap(mem::std_early_heap* heap)
+        void init_heap(capi::std_early_heap* heap)
         {
             m_heap = heap;
         }
@@ -131,9 +130,8 @@ namespace i686
             return m_size;
         }
     private:
-        mem::std_early_heap* m_heap ;
+        capi::std_early_heap* m_heap ;
         list_item*           m_first;
         size_type            m_size ;
     };
 }
-

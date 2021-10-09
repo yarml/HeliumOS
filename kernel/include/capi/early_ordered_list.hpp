@@ -93,6 +93,14 @@ namespace capi
             m_heap->free(current, ALLOC_SIZE);
             --m_size;
         }
+        void remove_from_head(list_item* to_remove, list_item* parent)
+        {
+            list_item*& parent_next = parent == nullptr ? m_first : parent->next;
+            parent_next = to_remove->next;
+            to_remove->item.~type();
+            m_heap->free(to_remove, ALLOC_SIZE);
+            --m_size;
+        }
         type* top()
         {
             if(m_first == nullptr)

@@ -6,7 +6,7 @@ mmm Maybe if you want to contribute you can start by writing this =]
 The following is just things that I would like to include in this file
 
 # Code style
-This section is not completely written written yet right now, so the best way to know the code style used is to look at the existing code
+This section is not completely written yet right now, so the best way to know the code style used is to look at the existing code
 
 Variables should have self explanatory names, even if long
 

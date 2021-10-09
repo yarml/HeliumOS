@@ -14,3 +14,5 @@ run/copy.txt
 # Ignore IDEs files
 .vscode/
 *.kdev4
+.clang
+

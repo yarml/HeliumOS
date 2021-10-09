@@ -9,19 +9,13 @@ namespace capi
     class mem_interface
     {
     public:
-        /* Format
-        /// Description
-        virtual return_t f(args); // needed flags
-        */
-        /// Allocates a continuous n block of size MEMORY_UNIT_SIZES[type]
-        virtual blockidx alloc_mem_block(size_t type, blockidx n) const = 0; // MEM_ALLOC_BLOCK
-        /// Free a continuous n block of size MEMORY_UNIT_SIZES[type]
-        virtual void free_mem_block(size_t type, blockidx n) const = 0; // MEM_FREE_BLOCK
-        /// Get available non allocated memory size in bytes
-        virtual mem_size memory_size() const = 0; // MEM_SIZE;
-        /// Set memory block of type type privilege level
-        virtual void set_mem_block_perm(size_t type, blockidx idx, priv lvl) const = 0; // MEM_BLOCK_PERM_W
-        /// Reads memory block of type type privilege level
-        virtual priv get_mem_block_perm(size_t type, blockidx idx) const = 0; // MEM_BLOCK_PERM_R
+		/// Allocates a new physical block and returns its unique index
+		virtual pblockidx alloc_physical_block() const = 0;
+		/// Frees the physical block with the specified index
+		virtual void free_physical_vlock(pblockidx) const = 0;
+		/// Maps a virtual block to a physical one
+		virtual void map_virtual_block(pblockidx, vblockidx) const = 0;
+		/// Unmaps the specified virtual block
+		virtual void unmap_virtual_block(vblockidx) const = 0;
     };
 }

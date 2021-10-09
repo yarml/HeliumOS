@@ -8,7 +8,7 @@
 #include <capi/early_ordered_list.hpp>
 
 // Temporary debug functions
-// TODO: Remove those when not needed anymore
+// TODO: Remove those when a more C++ one is implemented
 void dbg_char(capi::io_interface const* io, char c)
 {
     // bochs e9 hack

@@ -7,6 +7,7 @@ namespace core
 {
     void init(capi::architecture* arch)
     {
-        dbg_str(arch->get_io_interface(), "Core kernel loaded\n");
+        dbg_str(arch->get_io_interface(), "Core kernel loaded!\n");
     }
 }
+

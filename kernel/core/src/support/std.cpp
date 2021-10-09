@@ -12,6 +12,8 @@
 
 extern "C"
 {
+    using function = void (*)(void);
+
     utils::ptr memcpy(capi::byte* to, capi::byte* const from, utils::size_type size)
     {
         mem::copy(to, from, size);
@@ -24,5 +26,10 @@ extern "C"
     {
         mem::set(dest, b, size);
         return dest;
+    }
+
+    int atexit(function)
+    { 
+        return 0;
     }
 }

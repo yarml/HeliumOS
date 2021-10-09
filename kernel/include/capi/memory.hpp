@@ -3,7 +3,7 @@
 #include <capi/types.hpp>
 #include <multiboot.hpp>
 #include <capi/architecture.hpp>
-
+#include <capi/early_ordered_list.hpp>
 
 namespace capi
 {
@@ -51,20 +51,24 @@ namespace capi
               m_priv(priv)
         { }
     public:
-        constexpr capi::adr limit()
+        constexpr capi::adr limit() const
         {
             return m_limit;
         }
-        constexpr multiboot::mem_type priv()
+        constexpr multiboot::mem_type priv() const
         {
             return m_priv;
         }
+        constexpr void set_priv(multiboot::mem_type new_priv)
+        {
+            m_priv = new_priv;
+        }
     public:
-        constexpr bool operator<(mem_boundary const& other)
+        constexpr bool operator<(mem_boundary const& other) const
         {
             return m_limit < other.m_limit;
         }
-        constexpr bool operator!=(mem_boundary const& other)
+        constexpr bool operator!=(mem_boundary const& other) const
         {
             return m_limit != other.m_limit || m_priv != other.m_priv;
         }
@@ -72,5 +76,9 @@ namespace capi
         capi::adr           m_limit;
         multiboot::mem_type m_priv ;
     };
+
+    early_ordered_list<mem_boundary>& system_memory_map();
     void detect_memory(capi::architecture* arch, multiboot::info_structure* mbt_info);
+    utils::ptr alloc_physical_memory(utils::size_type size);
+    void free_physical_memory(utils::ptr ptr);
 }

@@ -102,7 +102,8 @@ namespace multiboot
         RESERVED = 2,
         ACPI = 3,
         NVS = 4,
-        BADRAM = 5
+        BADRAM = 5,
+        ALLOCATED = 0xF7F7E8E8 // we pray daily to the gods so that no random area of memory will randomly get this type
     };
     struct mmap_entry
     {

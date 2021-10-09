@@ -9,7 +9,7 @@ namespace i686::mem
     {
         /// Minimum allocation unit in bytes, can only allocated in blocks of this multiple
         constexpr size_t UNIT = 4    ;
-        /// Early heap size in bytes, preferably a multiply of UNIT
+        /// Early heap size in bytes, preferably a multiple of UNIT
         constexpr size_t SIZE = 4_Kib;
     }
 }

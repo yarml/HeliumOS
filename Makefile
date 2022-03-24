@@ -1,0 +1,2 @@
+
+include buildsys/*.mk

@@ -11,4 +11,9 @@ binutils/gcc build dependencies:
 mkbootimg build dependencies:
     - zip
 
-*Depending on how lazy I am* I might have implemented a ´make dependencies´ target to install these automatically
+bootboot build dependencies:
+    - gnu-efi
+
+Package names can be different from distro to distro
+
+*Depending on how lazy I am* I might have implemented a ´make dep´ target to install these automatically

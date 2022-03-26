@@ -14,8 +14,10 @@ BINUTILS_CONFIGURE_FLAGS := --with-sysroot --disable-nls --disable-werror
 
 BINUTILS_MAKEFILE := $(BINUTILS_BUILD_DIR)/Makefile
 BINUTILS_LD := $(BINUTILS_PREFIX)/bin/$(BINUTILS_TARGET)-ld
+BINUTILS_DEP := $(BINUTILS_LD)
 
-$(BINUTILS_SRC_DIR): $(BUILD_DIR)
+$(BINUTILS_SRC_DIR):
+	$(MKDIR) -p $(BUILD_DIR)
 	$(MKDIR) -p $(BINUTILS_SRC_DIR)
 	$(CURL) -o $(BUILD_DIR)/binutils.tar.gz $(BINUTILS_LINK)
 	$(CD) $(BUILD_DIR) && $(TAR) -xvf $(BUILD_DIR)/binutils.tar.gz

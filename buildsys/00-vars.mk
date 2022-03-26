@@ -1,13 +1,15 @@
 MKDIR := mkdir
+CURL  := curl
 FIND  := find
 MAKE  := make -j4
-CURL  := curl
+TOUCH := touch
 CUT   := cut
 TAR   := tar
 CD 	  := cd
 LS    := ls
 MV    := mv
 RM    := rm
+
 ROOT_DIR 	  := $(shell pwd -P)
 
 EXT_DIR 	  := $(ROOT_DIR)/ext/

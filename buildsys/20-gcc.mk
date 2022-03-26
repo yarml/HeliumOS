@@ -19,8 +19,10 @@ GCC_PATCHES_LINK := \
 
 GCC_MAKEFILE := $(GCC_BUILD_DIR)/Makefile
 GCC_BIN := $(GCC_PREFIX)/bin/$(GCC_TARGET)-gcc
+GCC_DEP := $(GCC_BIN)
 
-$(GCC_SRC_DIR): $(BUILD_DIR)
+$(GCC_SRC_DIR):
+	$(MKDIR) -p $(BUILD_DIR)
 	$(MKDIR) -p $(GCC_SRC_DIR)
 	$(CURL) -o $(BUILD_DIR)/gcc.tar.gz $(GCC_LINK)
 	$(CD) $(BUILD_DIR) && $(TAR) -xvf $(BUILD_DIR)/gcc.tar.gz
@@ -29,7 +31,7 @@ $(GCC_SRC_DIR): $(BUILD_DIR)
 	$(CD) $(BUILD_DIR) && $(TAR) -xvf $(BUILD_DIR)/gcc-patches.tar.gz
 	$(CD) $(BUILD_DIR)/$(GCC_TARGET) && $(FIND) . -type f -exec $(MV) -f "{}" "$(GCC_SRC_DIR)/{}" \;
 
-$(GCC_MAKEFILE): binutils $(GCC_SRC_DIR)
+$(GCC_MAKEFILE): $(BINUTILS_DEP) $(GCC_SRC_DIR)
 	$(MKDIR) -p $(GCC_BUILD_DIR)
 	$(CD) $(GCC_BUILD_DIR) && $(GCC_SRC_DIR)/configure --target=$(GCC_TARGET) \
 		--prefix=$(GCC_PREFIX) $(GCC_CONFIGURE_FLAGS)

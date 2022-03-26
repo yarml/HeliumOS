@@ -1,0 +1,14 @@
+Helium on its own does not depend on anyting, however, the tools that are automatically compiled with helium do have
+build dependencies:
+
+binutils/gcc build dependencies:
+    - bison
+    - flex
+    - gmp
+    - mpc
+    - mpfr
+    - texinfo
+mkbootimg build dependencies:
+    - zip
+
+*Depending on how lazy I am* I might have implemented a ´make dependencies´ target to install these automatically

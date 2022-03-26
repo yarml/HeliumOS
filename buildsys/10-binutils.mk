@@ -4,8 +4,8 @@ BINUTILS_VERSION := 2.38
 BINUTILS_NAME := binutils-$(BINUTILS_VERSION)
 BINUTILS_LINK := https://ftp.gnu.org/gnu/binutils/$(BINUTILS_NAME).tar.gz
 
-BINUTILS_SRC_DIR := $(EXT_SRC_DIR)/binutils
-BINUTILS_BUILD_DIR := $(EXT_BUILD_DIR)/binutils
+BINUTILS_SRC_DIR := $(EXT_SRC_DIR)/binutils/
+BINUTILS_BUILD_DIR := $(EXT_BUILD_DIR)/binutils/
 
 BINUTILS_TARGET 		 := x86_64-elf
 BINUTILS_PREFIX 		 := $(BUILD_SYSROOT)
@@ -27,8 +27,8 @@ $(BINUTILS_MAKEFILE): $(BINUTILS_SRC_DIR)
 		--prefix=$(BINUTILS_PREFIX) $(BINUTILS_CONFIGURE_FLAGS)
 
 $(BINUTILS_LD): $(BINUTILS_MAKEFILE)
-	$(CD) $(BINUTILS_BUILD_DIR) && $(MAKE)
-	$(CD) $(BINUTILS_BUILD_DIR) && $(MAKE) install
+	$(MAKE) -C $(BINUTILS_BUILD_DIR)
+	$(MAKE) -C $(BINUTILS_BUILD_DIR) install
 
 .PHONY: binutils-src-update binutils-configure binutils binutils-rm binutils-clean
 binutils-src-update: $(BINUTILS_SRC_DIR)

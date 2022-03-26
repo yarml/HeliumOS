@@ -4,8 +4,8 @@ GCC_VERSION := 11.2.0
 GCC_NAME := gcc-$(GCC_VERSION)
 GCC_LINK := https://ftp.gnu.org/gnu/gcc/$(GCC_NAME)/$(GCC_NAME).tar.gz
 
-GCC_SRC_DIR := $(EXT_SRC_DIR)/gcc
-GCC_BUILD_DIR := $(EXT_BUILD_DIR)/gcc
+GCC_SRC_DIR := $(EXT_SRC_DIR)/gcc/
+GCC_BUILD_DIR := $(EXT_BUILD_DIR)/gcc/
 
 GCC_TARGET 		 := x86_64-elf
 GCC_PREFIX 		 := $(BUILD_SYSROOT)
@@ -35,10 +35,10 @@ $(GCC_MAKEFILE): binutils $(GCC_SRC_DIR)
 		--prefix=$(GCC_PREFIX) $(GCC_CONFIGURE_FLAGS)
 
 $(GCC_BIN): $(GCC_MAKEFILE)
-	$(CD) $(GCC_BUILD_DIR) && $(MAKE) all-gcc
-	$(CD) $(GCC_BUILD_DIR) && $(MAKE) all-target-libgcc
-	$(CD) $(GCC_BUILD_DIR) && $(MAKE) install-gcc
-	$(CD) $(GCC_BUILD_DIR) && $(MAKE) install-target-libgcc
+	$(MAKE) -C $(GCC_BUILD_DIR) all-gcc
+	$(MAKE) -C $(GCC_BUILD_DIR) all-target-libgcc
+	$(MAKE) -C $(GCC_BUILD_DIR) install-gcc
+	$(MAKE) -C $(GCC_BUILD_DIR) install-target-libgcc
 
 .PHONY: gcc-src-update gcc-configure gcc gcc-rm gcc-clean
 gcc-src-update: $(GCC_SRC_DIR)

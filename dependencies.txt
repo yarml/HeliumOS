@@ -14,6 +14,9 @@ mkbootimg build dependencies:
 bootboot build dependencies:
     - gnu-efi
 
+qemu dependencies:
+    - edk2-ovmf
+
 Package names can be different from distro to distro
 
 *Depending on how lazy I am* I might have implemented a ´make dep´ target to install these automatically

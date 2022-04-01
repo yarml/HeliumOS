@@ -1,0 +1,9 @@
+{
+    "iso9660": true,
+    "config": "kernel/bootboot.config",
+    "initrd": { "type": "echfs", "gzip": true, "directory": "sysroots/initrd" },
+    "partitions": [
+        { "type": "boot" , "size": 16 },
+        { "type": "echfs", "size": 512, "name": "data","directory": "sysroots/host" }
+    ]
+}

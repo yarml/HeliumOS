@@ -14,12 +14,19 @@ $(MKBOOTIMG_SRC_DIR):
 	$(CURL) -o $(BUILD_DIR)/mkbootimg.tar.gz $(MKBOOTIMG_LINK)
 	$(CD) $(BUILD_DIR) && $(TAR) -xvf $(BUILD_DIR)/mkbootimg.tar.gz
 	$(MV) $(BUILD_DIR)/bootboot-master-mkbootimg/mkbootimg/* $(MKBOOTIMG_SRC_DIR)
+# We modify some files to use our build of bootboot and only include the efi version in the boot image
+	$(SED) -i -f $(SEDDIR)/mkbootimg_makefile.sed \
+		-e "s|#CC#|${CC}|g" -e "s|#BOOTBOOT_BIN#|$(BOOTBOOT_BIN)|g" \
+		$(MKBOOTIMG_SRC_DIR)/Makefile
+	$(SED) -i -f $(SEDDIR)/mkbootimg_esp.c.sed $(MKBOOTIMG_SRC_DIR)/esp.c
+	$(RM) $(MKBOOTIMG_SRC_DIR)/data.*
 
-$(MKBOOTIMG_BIN): $(MKBOOTIMG_SRC_DIR)
+$(MKBOOTIMG_BIN): $(MKBOOTIMG_SRC_DIR) $(BOOTBOOT_BIN)
+	$(RM) $(MKBOOTIMG_SRC_DIR)/data.*
+	$(MAKE) -C $(MKBOOTIMG_SRC_DIR) data.c
 	$(MAKE) -C $(MKBOOTIMG_SRC_DIR)
-	$(RM) -rf $(MKBOOTIMG_SRC_DIR)/../mkbootimg-$(shell uname -s).zip
+	$(RM) $(MKBOOTIMG_SRC_DIR)/../mkbootimg-$(shell uname -s).zip
 	$(MV) $(MKBOOTIMG_SRC_DIR)/mkbootimg $(MKBOOTIMG_BIN)
-# We touch the file one last time so that the timestamps are guarenteed to be later than the folder's timestamp
 	$(TOUCH) $(MKBOOTIMG_BIN)
 
 
@@ -28,7 +35,7 @@ mkbootimg-src-update: $(MKBOOTIMG_SRC_DIR)
 mkbootimg: $(MKBOOTIMG_BIN)
 
 mkbootimg-rm:
-	$(RM) -rf $(MKBOOTIMG_SRC_DIR)
+	$(RM) $(MKBOOTIMG_SRC_DIR)
 mkbootimg-clean:
 	$(MAKE) -C $(MKBOOTIMG_SRC_DIR) clean
 

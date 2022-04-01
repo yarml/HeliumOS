@@ -4,7 +4,9 @@ $(BUILD_DIR):
 
 
 clean:
-	$(RM) -rf $(CLEAN)
+	$(RM) $(CLEAN)
 
 # Will remove EVERYTHING inluding gcc and binutils builds
 clean-all: clean gcc-rm binutils-rm mkbootimg-rm 
+
+export CC = $(BUILD_CC)

@@ -1,18 +1,6 @@
-# Ignore build files
-
+ext/
+sysroots/build
+sysroots/initrd/sys/helium
 build/
-isodir/boot/*.kernel
-
-# Ignore VMs files
-
-run/bochslog.txt
-run/*.iso
-run/bx_enh_dbg.ini
-run/*.out
-run/copy.txt
-
-# Ignore IDEs files
+kernel/font.psf
 .vscode/
-*.kdev4
-.clang
-

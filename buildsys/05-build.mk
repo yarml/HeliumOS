@@ -7,6 +7,6 @@ clean:
 	$(RM) $(CLEAN)
 
 # Will remove EVERYTHING inluding gcc and binutils builds
-clean-all: clean gcc-rm binutils-rm mkbootimg-rm 
+clean-all: clean gcc-rm binutils-rm mkbootimg-rm bootboot-rm
 
 export CC = $(BUILD_CC)

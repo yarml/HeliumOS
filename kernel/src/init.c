@@ -1,12 +1,8 @@
-
-#include <stdint.h>
-#include <bootboot.h>
-
-extern BOOTBOOT bootboot;
-extern unsigned char environment[4096];
-extern uint8_t fb;
+#include <debug.h>
+#include <fb.h>
 
 void init()
 {
-    
+    fb_init();
+    LOOP;
 }

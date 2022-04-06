@@ -30,8 +30,9 @@ MV     := mv -f
 RM     := rm -rf
 
 KERNEL_DIR := kernel/
-KERNEL_SRC_DIR := $(KERNEL_DIR)/src
-KERNEL_INC_DIR := $(KERNEL_DIR)/include
+KERNEL_SRC_DIR := $(KERNEL_DIR)/src/
+KERNEL_INC_DIR := $(KERNEL_DIR)/include/
+STD_INC        := $(KERNEL_DIR)/stdinc/
 LINKER_SCRIPT  := $(KERNEL_DIR)/link.ld
 FONT_FILE      := $(KERNEL_DIR)/font.psf
 

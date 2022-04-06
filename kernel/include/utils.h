@@ -1,7 +1,11 @@
 #ifndef HELIUM_UTILS_H
 #define HELIUM_UTILS_H
 
-/** @brief returns the nth bit of b */
+/** 
+ * \brief Returns the \a n th bit of \a b
+ * \param b
+ * \param n
+ */
 #define BIT(b, n) (((b) >> (n)) & 0x01)
 
 #endif

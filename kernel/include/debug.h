@@ -1,18 +1,21 @@
-#ifndef HELIUM_CLR_DBG_H
-#define HELIUM_CLR_DBG_H
+#ifndef HELIUM_DEBUG_H
+#define HELIUM_DEBUG_H
 
 #include <stdint.h>
 
+/**
+ * \brief Puts the thread in an infinite loop(with no way out!).
+ */
 #define LOOP while(1)
 
 /**
- * @brief Draws colored suqres used for debugging with colors consistent along all framebuffer types. 
- * @param r: The red component of the color
- * @param g: The green component of the color
- * @param b: the blue component of the color
- * @param offx: The X offset of the square in grid unit
- * @param offy: The Y offset of the square in grid unit
-**/
+ * \brief Draws a square of color (\a r, \a g, \a b) at (\a offx, \a offy) for debugging purposes.
+ * \param r
+ * \param g
+ * \param b
+ * \param offx
+ * \param offy
+ */
 void dbg_draw(uint8_t r, uint8_t g, uint8_t b, uint32_t offx, uint32_t offy);
 
 #endif

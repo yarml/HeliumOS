@@ -24,34 +24,6 @@ void init()
                      LOOP;
        }
        fb_init();
-       // Test sorted lists
-       ;
-       int test_heap[12];
-
-       sorted_array tl;
-
-       col_sa_init(&tl, test_heap, (fpt_diff) int_compare, sizeof(int), 12);
-       int tmp = 1;
-       col_sa_pins(&tl, &tmp);
-       tmp = 2;
-       col_sa_pins(&tl, &tmp);
-       tmp = 4;
-       col_sa_pins(&tl, &tmp);
-       tmp = 5;
-       col_sa_pins(&tl, &tmp);
-       tmp = 6;
-       col_sa_pins(&tl, &tmp);
-       tmp = 1;
-       col_sa_pins(&tl, &tmp);
-       tmp = 3;
-       col_sa_pins(&tl, &tmp);
-       tmp = 6;
-       col_sa_pins(&tl, &tmp);
-
-       for(size_t i = 0; i < tl.size; ++i)
-              printf("%d ", *(int*) col_sa_get(&tl, i, 0));
-
-       LOOP;
 
        print_info();
        mem_init();

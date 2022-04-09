@@ -3,10 +3,11 @@
 
 #include <stdarg.h>
 #include <stdint.h>
+#include <stddef.h>
 #include <pack.h>
 
 #define PSF_MAGIC (0x864ab572)
- 
+
 typedef struct 
 {
     uint32_t magic        ;
@@ -18,6 +19,8 @@ typedef struct
     uint32_t height       ;
     uint32_t width        ;
 } pack psf_font;
+
+// namespace fb
 
 /**
  * \brief Loads the fonts and initializes the frambuffer for writing text.
@@ -66,6 +69,13 @@ void fb_wrc(char c);
  * \param s
  */
 void fb_wrs(char const* s);
+
+/**
+ * \brief Writes \a len characters from \a s, ignoring any null termination
+ * \param s
+ * \param len
+ */
+void fb_wrm(char const* s, size_t len);
 
 /**
  * \brief Writes the null terminated string \a s to the framebuffer with support to printf-like % commands.

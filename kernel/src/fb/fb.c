@@ -3,6 +3,7 @@
 #include <boot_info.h>
 #include <debug.h>
 #include <utils.h>
+#include <io.h>
 
 extern psf_font _binary_kernel__font_psf_start;
 
@@ -31,8 +32,7 @@ void fb_init()
     curs_x = 0;
     curs_y = 0;
 
-    //fb_wrs("Ini");
-    fb_wrs("Done initializing text framebuffer.\n");
+    fb_wrs("Done initializing text framebuffer.\n");;
 }
 
 void fb_pxs(uint32_t c, uint32_t x, uint32_t y)
@@ -48,9 +48,12 @@ uint32_t fb_pxg(uint32_t x, uint32_t y)
 void fb_scroll(uint32_t n)
 {
     for(int x = 0; x < bootboot.fb_width; ++x)
+    {
         for(int y = 0; y < (FB_HEIGHT - n) * CHRH; ++y)
             fb_pxs(fb_pxg(x, y + n * CHRH), x, y);
-
+        for(int y = (FB_HEIGHT - n) * CHRH; y < FB_HEIGHT * CHRH; ++y)
+            fb_pxs(0, x, y);
+    }
 }
 
 void fb_putc(char c, uint32_t dx, uint32_t dy)
@@ -116,4 +119,9 @@ void fb_wrs(char const* s)
         fb_wrc(*s);
 }
 
-
+void fb_wrm(char const* s, size_t len)
+{
+    for(; len != 0; --len, ++s)
+        fb_wrc(*s);
+        
+}

@@ -1,5 +1,5 @@
-#ifndef HELIUM_MATH_H
-#define HELIUM_MATH_H
+#ifndef CSTD_MATH_H
+#define CSTD_MATH_H
 
 /**
  * \brief Calculates \a to the power of \a power.

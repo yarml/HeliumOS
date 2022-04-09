@@ -22,43 +22,45 @@ void vfb_wr(char const* s, va_list args)
         {
             case '%':
                 int  width     = 0    ;
+                int precision  = 0    ;
                 bool prefix    = false;
                 bool sign      = false;
                 bool long_mode = false;
                 ++s;
-                read_flag:
-                switch(*s)
+                // read flags
+                while(*s == '#' || *s == '+')
                 {
-                    case '#':
-                        prefix = true;
-                        break;
-                    case '+':
-                        sign = true;
-                        break;
-                    default:
-                        goto read_width;
+                    bool* target = *s == '#' ? &prefix : &sign;
+                    *target = true;
+                    ++s;
                 }
-                ++s;
-                goto read_flag;
-                read_width:
+                // read width
                 if(*s == '*')
                 {
                     width = va_arg(args, int);
                     ++s;
-                    goto read_length;
                 }
-                char* lsd = strpred(s, isndigit) - 1;
-                if(s > lsd)
-                    goto read_length;
-                for(; s <= lsd; ++s)
-                    width += (*s - '0') * exp10i(lsd - s);
-                read_length:
+                else
+                    width = stou(s, &s, 10);
+                // read precision
+                if(*s == '.')
+                {
+                    ++s;
+                    if(*s == '*')
+                    {
+                        precision = va_arg(args, int);
+                        ++s;
+                    }
+                    else
+                        precision = ston(s, &s, 10);
+                }
+                // read length
                 if(*s == 'l')
                 {
                     long_mode = true;
                     ++s;
                 }
-                // read_specifier
+                // read specifier
                 int base = 0;
                 bool usigned = false;
                 switch(*s)
@@ -81,6 +83,11 @@ void vfb_wr(char const* s, va_list args)
                     case 'x':
                         base = 16;
                         usigned = true;
+                        goto print_num;
+                    case 'p':
+                        base = 16;
+                        usigned = true;
+                        long_mode = true;
                         goto print_num;
                     print_num:
                         char* result = 0;
@@ -140,25 +147,11 @@ void vfb_wr(char const* s, va_list args)
                         break;
                     case 's':
                         char const* str = va_arg(args, char const*);
-                        width -= strlen(str);
+                        int len = precision == 0 ? strlen(str) : precision;
+                        width -= len;
                         for(; width > 0; --width)
                             fb_wrc(' ');
-                        fb_wrs(str);
-                        break;
-                    case 'p':
-                        void* ptr = va_arg(args, void*);
-                        if(width > 0)
-                        {
-                            char command[15];
-                            char* w = utos(width, 10, command + 12);
-                            *(w - 1) = '%';
-                            command[12] = 'l';
-                            command[13] = 'x';
-                            command[14] = 0  ;
-                            fb_wr(w - 1, (unsigned long long int) ptr);
-                        }
-                        else
-                            fb_wr("%lx", (unsigned long long int) ptr);
+                        fb_wrm(str, len);
                         break;
                     case '%':
                         fb_wrc('%');
@@ -170,7 +163,7 @@ void vfb_wr(char const* s, va_list args)
                         LOOP;
                         break;
                     }
-                ++s;
+                break;
             default:
                 fb_wrc(*s);
                 break;

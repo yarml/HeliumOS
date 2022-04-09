@@ -1,0 +1,6 @@
+In this file, I write anything that I should do in the near future, but don't have to/can't rn:
+
+- faster framebuffer writes on real hardware, turns out plotting pixel by pixel is a bad idea for real framebuffers
+  It works just fine in qemu, so no pressure
+- Disable all AP cores, until we enable them again with a kernel module(Still lots of work to be done)
+- Turn all(most) for loops into while loops, they just look better tbh

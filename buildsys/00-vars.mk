@@ -2,8 +2,7 @@
 QEMU_BIN   := qemu-system-x86_64
 OVMF_CODE  := /usr/share/edk2-ovmf/x64/OVMF_CODE.fd
 OVMF_VARS  := /usr/share/edk2-ovmf/x64/OVMF_VARS.fd
-QEMU_FLAGS := -cpu qemu64 -net none -serial stdio
-
+QEMU_FLAGS := -cpu qemu64 -smp 1 -net none -m 64M
 
 
 # Toolchain to build targets for the build machine
@@ -21,6 +20,7 @@ FIND   := find
 GZIP   := gzip -f
 MAKE   := make -j4
 CUT    := cut
+GIT    := git
 TAR    := tar
 SED    := sed
 CD 	   := cd

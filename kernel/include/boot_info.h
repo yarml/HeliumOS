@@ -1,6 +1,7 @@
 #ifndef HELIUM_BOOTINFO_H
 #define HELIUM_BOOTINFO_H
 
+#include <stdint.h>
 #include <bootboot.h>
 
 extern char     environment[4096];

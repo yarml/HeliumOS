@@ -28,6 +28,17 @@ void init()
                      LOOP;
        }
        fb_init();
+
+       uint8_t bleb[31];
+       memset(bleb, 0xCE, 31);
+       for(int i = 0; i < 31; ++i)
+              if(bleb[i] != 0xCE)
+                     printf("N");
+              else
+                     printf("Y");
+       printf("H\n");
+       LOOP;
+
        // Testing sorted array
        int heap[24];
        for(int i = 0; i < 24; ++i)

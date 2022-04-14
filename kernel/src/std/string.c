@@ -66,16 +66,10 @@ int memcmp (const void* b1, const void* b2, size_t size)
 
 void* memset(void* block, int c, size_t size)
 {
-/*     void* org_block = block;
-    for(; size != 0; --size, ++block)
-        *(char*)block = c;
-    return org_block;; */
-/*     as_stosq(QORG(block), QBYTE(c), QLEN(size));
+    as_stosq(QORG(block), QBYTE(c), QLEN(size));
     as_stosd(DORG(block), DBYTE(c), DLEN(size));
     as_stosw(WORG(block), WBYTE(c), WLEN(size));
-    as_stosb(BORG(block), BBYTE(c), BLEN(size)); */
-
-    as_stosb((uint64_t) block, c, size);
+    as_stosb(BORG(block), BBYTE(c), BLEN(size));
 
     return block;
 }

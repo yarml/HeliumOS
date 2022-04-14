@@ -28,7 +28,7 @@ $(OUT_DIR)/%.asm.o: %.asm
 
 # Link target
 # Will also build the toolchain if not available
-$(KERNEL_BIN): $(FONT_O) $(HOST_CC) $(LINKER_SCRIPT) $(OBJS)
+$(KERNEL_BIN): $(FONT_O) $(HOST_CC) $(MKBOOTIMG_BIN) $(LINKER_SCRIPT) $(OBJS)
 	$(MKDIR) -p $(dir $@)
 	$(MKDIR) -p $(OUT_DIR)
 	$(HOST_CC) $(CFLAGS) $(OBJS) $(FONT_O) -o $(OUT_DIR)/kernel.elf -T $(LINKER_SCRIPT)
@@ -41,6 +41,7 @@ $(HELIUM_IMG): $(BOOTBOOT_CFG) $(BOOTIMG_CFG) $(KERNEL_BIN) $(INITRD_SYSROOT) $(
 
 # Font file
 $(FONT_FILE):
+	$(MKDIR) -p $(BUILD_DIR)
 	$(CURL) -o $(BUILD_DIR)/font.tar.gz $(FONT_LINK)
 	$(CD) $(BUILD_DIR) && $(TAR) -xvf $(BUILD_DIR)/font.tar.gz
 	$(CD) $(BUILD_DIR)/$(FONT_NAME)/ && $(GZIP) -d $(FONT_TYPE).psf.gz

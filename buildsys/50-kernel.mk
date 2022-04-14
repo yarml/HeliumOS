@@ -30,8 +30,9 @@ $(OUT_DIR)/%.asm.o: %.asm
 # Will also build the toolchain if not available
 $(KERNEL_BIN): $(FONT_O) $(HOST_CC) $(LINKER_SCRIPT) $(OBJS)
 	$(MKDIR) -p $(dir $@)
-	$(HOST_CC) $(CFLAGS) $(OBJS) $(FONT_O) -o $@ -T $(LINKER_SCRIPT)
-	$(HOST_STRIP) $(STRIPFLAGS) $@
+	$(MKDIR) -p $(OUT_DIR)
+	$(HOST_CC) $(CFLAGS) $(OBJS) $(FONT_O) -o $(OUT_DIR)/kernel.elf -T $(LINKER_SCRIPT)
+	$(HOST_STRIP) $(STRIPFLAGS) $(OUT_DIR)/kernel.elf  -o $@
 	$(MKBOOTIMG_BIN) check $@
 
 $(HELIUM_IMG): $(BOOTBOOT_CFG) $(BOOTIMG_CFG) $(KERNEL_BIN) $(INITRD_SYSROOT) $(HOST_SYSROOT) $(MKBOOTIMG_BIN)

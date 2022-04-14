@@ -4,6 +4,9 @@
 #include <ctype.h>
 #include <math.h>
 
+#include <asm/movs.h>
+#include <asm/stos.h>
+
 size_t strlen(char const* s)
 {
     size_t len = 0;
@@ -27,6 +30,26 @@ char* strpred(char const* s, fpt_chr_predicate pred)
     return (char*) s;
 }
 
+#define QLEN(size)    ((size                                                   ) / 8)
+#define DLEN(size)    ((size - 8 * QLEN(size)                                  ) / 4)
+#define WLEN(size)    ((size - 8 * QLEN(size) - 4 * DLEN(size)                 ) / 2)
+#define BLEN(size)    ((size - 8 * QLEN(size) - 4 * DLEN(size) - 2 * WLEN(size)) / 1)
+
+#define QORG(h) (uint64_t) (     h                  )
+#define DORG(h) (uint64_t) (QORG(h) + 8 * QLEN(size))
+#define WORG(h) (uint64_t) (DORG(h) + 4 * DLEN(size))
+#define BORG(h) (uint64_t) (WORG(h) + 2 * WLEN(size))
+
+#define RQORG(h, size) (uint64_t) (     (h + size) - 1             )
+#define RDORG(h, size) (uint64_t) (RQORG(h,  size) - 8 * QLEN(size))
+#define RWORG(h, size) (uint64_t) (RDORG(h,  size) - 4 * DLEN(size))
+#define RBORG(h, size) (uint64_t) (RWORG(h,  size) - 2 * WLEN(size))
+
+#define BBYTE(c) ((uint8_t ) (                                         (c)))
+#define WBYTE(c) ((uint16_t) ((c << 8 )                         | BBYTE(c)))
+#define DBYTE(c) ((uint32_t) (((uint32_t) c << 24) | ((uint32_t) c << 16)             | WBYTE(c)))
+#define QBYTE(c) ((uint64_t) (((uint64_t) c << 56) | ((uint64_t) c << 48) | ((uint64_t) c << 40)| ((uint64_t) c << 32) | DBYTE(c)))
+
 void* memchr (const void* block, int c, size_t size)
 {
     for(; size != 0; --size, ++block)
@@ -43,36 +66,54 @@ int memcmp (const void* b1, const void* b2, size_t size)
 
 void* memset(void* block, int c, size_t size)
 {
-    void* org_block = block;
+/*     void* org_block = block;
     for(; size != 0; --size, ++block)
         *(char*)block = c;
-    return org_block;;
+    return org_block;; */
+/*     as_stosq(QORG(block), QBYTE(c), QLEN(size));
+    as_stosd(DORG(block), DBYTE(c), DLEN(size));
+    as_stosw(WORG(block), WBYTE(c), WLEN(size));
+    as_stosb(BORG(block), BBYTE(c), BLEN(size)); */
+
+    as_stosb((uint64_t) block, c, size);
+
+    return block;
 }
+
 
 void* memcpy(void* to, const void* from, size_t size)
 {
-    void* org_to = to;
-    for(; size != 0; --size, ++to, ++from)
-        *(char*)to = *(char*)from;
-    return org_to;
+    as_movsq(QORG(to), QORG(from), QLEN(size));
+    as_movsd(DORG(to), DORG(from), DLEN(size));
+    as_movsw(WORG(to), WORG(from), WLEN(size));
+    as_movsb(BORG(to), BORG(from), BLEN(size));
+    return to;
 }
+
+#include <stdio.h>
 
 void* memmove(void* to, void const* from, size_t size)
 {
-    if(from == to || size == 0) // These arent really special cases, I just think its more natural to skip them
-        return to;
-    int direction = (from - to) / abs(from - to);
-    uint8_t const* from_org = direction == -1 ? from + size - 1 : from;
-    uint8_t*       to_org   = direction == -1 ? to   + size - 1 : to  ;
-    while(size != 0)
+    if(to < from || from + size < to)
     {
-        *to_org = *from_org;
-        --size;
-        from_org += direction;
-        to_org += direction;
+        as_movsq(QORG(to), QORG(from), QLEN(size));
+        as_movsd(DORG(to), DORG(from), DLEN(size));
+        as_movsw(WORG(to), WORG(from), WLEN(size));
+        as_movsb(BORG(to), BORG(from), BLEN(size));
+        return to;
     }
+
+/*     as_rmovsq(QORG(to), QORG(from), QLEN(size));
+    as_rmovsd(DORG(to), DORG(from), DLEN(size));
+    as_rmovsw(WORG(to), WORG(from), WLEN(size));
+    as_rmovsb(BORG(to), BORG(from), BLEN(size)); */
+
+    // TODO: I don't know why the above code doesn't work, using movsb for now
+    as_rmovsb((uint64_t) (to + size - 1), (uint64_t) (from + size - 1) , size);
+
     return to;
 }
+
 
 int memsum(void* block, size_t size)
 {
@@ -81,6 +122,21 @@ int memsum(void* block, size_t size)
         sum += *(int8_t*)block;
     return sum;
 }
+
+#undef QLEN
+#undef DLEN
+#undef WLEN
+#undef BLEN
+
+#undef QORG
+#undef DORG
+#undef WORG
+#undef BORG
+
+#undef RQORG
+#undef RDORG
+#undef RWORG
+#undef RBORG
 
 char* ntos(intmax_t n, int base, char* null){
     bool negative = n < 0;

@@ -6,11 +6,15 @@
 #include <mem.h>
 #include <fb.h>
 
+
 #include <collections/sorted_array.h>
+#include <asm/movs.h>
 
 static void print_info();
 
-int int_compare(int* i1, int* i2)
+
+
+int compare(int* i1, int* i2)
 {
        return *i1 - *i2;
 }
@@ -24,7 +28,50 @@ void init()
                      LOOP;
        }
        fb_init();
+       // Testing sorted array
+       int heap[24];
+       for(int i = 0; i < 24; ++i)
+              heap[i] = 0xABCDEF12;
+       
+       sorted_array sa;
+       col_sa_init(&sa, heap, (fpt_diff) compare, sizeof(int), 24);
+       printf("heap: %16p\n", heap);
+       col_sa_vins(&sa, 7);
+       for(size_t i = 0; i < sa.size + 2; ++i)
+              printf("%x ", heap[i]);
+       printf("\n");
+       col_sa_vins(&sa, 6);
+       for(size_t i = 0; i < sa.size + 2; ++i)
+              printf("%x ", heap[i]);
+       printf("\n");
+       col_sa_vins(&sa, 5);
+       for(size_t i = 0; i < sa.size + 2; ++i)
+              printf("%x ", heap[i]);
+       printf("\n");
+       col_sa_vins(&sa, 4);
+       for(size_t i = 0; i < sa.size + 2; ++i)
+              printf("%x ", heap[i]);
+       printf("\n");
+       // LOOP;
+       col_sa_vins(&sa, 2);
+       for(size_t i = 0; i < sa.size + 2; ++i)
+              printf("%x ", heap[i]);
+       printf("\n");
+       col_sa_vins(&sa, 1);
+       for(size_t i = 0; i < sa.size + 2; ++i)
+              printf("%x ", heap[i]);
+       printf("\n");
+       col_sa_vins(&sa, 3);
+       for(size_t i = 0; i < sa.size + 2; ++i)
+              printf("%x ", heap[i]);
+       printf("\n");
 
+       col_sa_idel(&sa, 1, 0);
+
+       for(size_t i = 0; i < sa.size + 2; ++i)
+              printf("%x ", heap[i]);
+       printf("\n");
+       // LOOP;
        print_info();
        mem_init();
        LOOP;
@@ -33,8 +80,8 @@ static void print_info()
 {
        if(!memcmp(&bootboot, "BOOT", 4))
               printf("Valid bootboot structure.\n");
-       else // We don't know how we were loaded, as such, the only safe thing to do is loop
-              LOOP;
+       else // We don't know how we were loaded, as such, the only safe thing to do is // LOOP
+              // LOOP;
        printf("BOOTBOOT signature     : %10.4s        \n", bootboot.magic   );
        printf("BOOTBOOT struct size   : %10d          \n", bootboot.size    );
        printf("BOOTBOOT protocol      : %10d          \n", bootboot.protocol);

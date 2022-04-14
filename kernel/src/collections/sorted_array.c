@@ -26,6 +26,7 @@ size_t col_sa_pins(sorted_array* sa, void const* entry)
     return (next - sa->heap) / sa->entry_len;
 }
 
+// TODO: binary search here too
 void col_sa_vdel(sorted_array* sa, void const* entry, void* save)
 {
     void* next = sa->heap;

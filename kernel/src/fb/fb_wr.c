@@ -25,6 +25,7 @@ void vfb_wr(char const* s, bool flush, va_list args)
         switch(*s)
         {
             case '%':
+            {
                 int  width     = 0    ;
                 int precision  = 0    ;
                 bool prefix    = false;
@@ -89,6 +90,7 @@ void vfb_wr(char const* s, bool flush, va_list args)
                         usigned = true;
                         goto print_num;
                     case 'p':
+                    {
                         base = 16;
                         usigned = true;
                         long_mode = true;
@@ -110,6 +112,7 @@ void vfb_wr(char const* s, bool flush, va_list args)
                             else
                                 result = ntos(va_arg(args, int), base, buf + 65);
                         }
+                        buf[65] = 0;
                         if(prefix)
                         {
                             switch(base)
@@ -144,6 +147,7 @@ void vfb_wr(char const* s, bool flush, va_list args)
                             fb_wrc(base == 10 ? ' ' : '0', false);
                         fb_wrs(result, false);
                         break;
+                    }
                     case 'c':
                     {
                         for(; width > 1; --width)
@@ -251,6 +255,32 @@ void vfb_wr(char const* s, bool flush, va_list args)
                         }
                         break;
                     }
+                    case 'z':
+                    {
+                        uint64_t val = 0;
+                        if(long_mode)
+                            val = va_arg(args, uint64_t);
+                        else
+                            val = va_arg(args, uint32_t);
+                        char buf[33];
+                        char* head = buf + 33;
+#define UNIT(v, sym) if(v % 1024 != 0) { *(--head) = sym; head = utos(v % 1024, 10, head); }
+                        UNIT(UNITS(val), 0  )
+                        UNIT(KILOS(val), 'K')
+                        UNIT(MEGS (val), 'M')
+                        UNIT(GIGS (val), 'G')
+                        UNIT(TERAS(val), 'T')
+                        UNIT(PETAS(val), 'P')
+                        UNIT(EXAS (val), 'E')
+#undef UNIT
+                        buf[32] = 0;
+                        size_t len = strlen(head);
+                        width -= len;
+                        for(; width > 0; --width)
+                            fb_wrc(' ', false);
+                        fb_wrs(head, false);
+                        break;
+                    }
                     case '%':
                         fb_wrc('%', false);
                         break;
@@ -261,6 +291,7 @@ void vfb_wr(char const* s, bool flush, va_list args)
                         break;
                 }
                 break;
+            }
             default:
                 fb_wrc(*s, false);
                 break;

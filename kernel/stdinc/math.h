@@ -22,4 +22,12 @@ int exp10i(int power);
  */
 int abs(int i);
 
+#define UNITS(n) (     (n)       )
+#define KILOS(n) (UNITS(n) / 1024)
+#define MEGS( n) (KILOS(n) / 1024)
+#define GIGS( n) (MEGS( n) / 1024)
+#define TERAS(n) (GIGS( n) / 1024)
+#define PETAS(n) (TERAS(n) / 1024)
+#define EXAS( n) (PETAS(n) / 1024)
+
 #endif

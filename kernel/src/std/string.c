@@ -132,40 +132,38 @@ int memsum(void* block, size_t size)
 #undef RWORG
 #undef RBORG
 
-char* ntos(intmax_t n, int base, char* null){
+char* ntos(intmax_t n, int base, char* tail){
     bool negative = n < 0;
-    *null = 0;
     do
     {
-        --null;
+        --tail;
         if(abs(n % base) < 10)
-            *null = '0' + abs(n % base);
+            *tail = '0' + abs(n % base);
         else
-            *null = 'A' + abs(n % base - 10);
+            *tail = 'A' + abs(n % base - 10);
         n /= base;
     } while(n != 0);
     if(negative)
     {
-        --null;
-        *null = '-';
+        --tail;
+        *tail = '-';
     }
-    return null;
+    return tail;
 }
 
 
-char* utos(uintmax_t n, int base, char* null)
+char* utos(uintmax_t n, int base, char* tail)
 {
-    *null = 0;
     do
     {
-        --null;
+        --tail;
         if(n % base < 10)
-            *null = '0' + n % base;
+            *tail = '0' + n % base;
         else
-            *null = 'A' + n % base - 10;
+            *tail = 'A' + n % base - 10;
         n /= base;
     } while(n != 0);
-    return null;
+    return tail;
 }
 
 intmax_t ston(char const* s, char const** tail, int base)

@@ -95,26 +95,28 @@ int memsum(void* block, size_t size);
 // * functions
 
 /**
- * \brief Converts the signed integer \a i into a string null terminated at \a null.
+ * \brief Converts the signed integer \a i into a string ending at \a tail - 1.
  * \param i: The number to convert
  * \param base: The base with which \a i is interpreted
- * \param null: Pointer to where the caller expects there to be the null termination of the string,
- *              this function will start from there and write the number backwards untils it finishes,
- *              as such, the caller should reserve enough area before \a null
+ * \param tail: Pointer to where the caller expects there to be the end of the string,
+ *              this function will start from there and write the number backwards untils it finishes
+ *              (not inclusing tail in the write),
+ *              as such, the caller should reserve enough area before \a tail
  * \return A pointer to the new string
  */
-char* ntos(intmax_t n, int base, char* null);
+char* ntos(intmax_t n, int base, char* tail);
 
 /**
- * \brief Converts the unsigned integer \a i into a string null terminated at \a null.
+ * \brief Converts the unsigned integer \a i into a string ending at \a tail - 1.
  * \param i: The number to convert
  * \param base: The base with which \a i is interpreted
- * \param null: Pointer to where the caller expects there to be the null termination of the string,
- *              this function will start from there and write the number backwards untils it finishes,
- *              as such, the caller should reserve enough area before \a null
+ * \param tail: Pointer to where the caller expects there to be the end of the string,
+ *              this function will start from there and write the number backwards untils it finishes
+ *              (not inclusing tail in the write),
+ *              as such, the caller should reserve enough area before \a tail
  * \return A pointer to the new string
  */
-char* utos(uintmax_t n, int base, char* null);
+char* utos(uintmax_t n, int base, char* tail);
 
 /**
  * \brief Converts a string to a signed number

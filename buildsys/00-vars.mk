@@ -1,3 +1,4 @@
+M ?= DEBUG
 
 QEMU_BIN   := qemu-system-x86_64
 OVMF_CODE  := /usr/share/edk2-ovmf/x64/OVMF_CODE.fd

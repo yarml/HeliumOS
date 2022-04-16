@@ -22,16 +22,17 @@ void init()
        if(memcmp(&bootboot, "BOOT", 4))
               // We don't know how we were loaded, as such, the only safe thing to do is LOOP
               LOOP;
-       // stupid way of """disabling""" all cores but one
        {
+              // stupid way of """disabling""" all cores but one
               uint8_t stack_top;
               if((uintmax_t) &stack_top < 0xFFFFFFFFFFFFFC00)
                      LOOP;
        }
-       fb_init();
 
+       fb_init();
        print_info();
        mem_init();
+       
        LOOP;
 }
 static void print_info()

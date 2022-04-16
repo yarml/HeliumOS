@@ -11,12 +11,12 @@ void mem_init()
     printf("Memory map entries(%d):\n", mmap_size);
     for(MMapEnt* c = &bootboot.mmap; mmap_size != 0; ++c, --mmap_size)
     {
-    printf(" - %16p-%16p %5dK %4e1:Free,2:ACPI,3:MMIO,#:Used\n", MMapEnt_Ptr(c), MMapEnt_Ptr(c) + MMapEnt_Size(c)-1, MMapEnt_Size(c) / 1024, MMapEnt_Type(c));
+    printf(" - %16p-%16p %7z %4e1:Free,2:ACPI,3:MMIO,#:Used\n", MMapEnt_Ptr(c), MMapEnt_Ptr(c) + MMapEnt_Size(c)-1, MMapEnt_Size(c) / 1024, MMapEnt_Type(c));
         if(MMapEnt_IsFree(c))
             mem_usable += MMapEnt_Size(c);
     }
-    printf("initrd: %16p-%16p %5dK\n", bootboot.initrd_ptr, bootboot.initrd_ptr + bootboot.initrd_size, bootboot.initrd_size / 1024);
-    printf("Total usable memory: %dM\n", mem_usable / 1024 / 1024);
+    printf(" i %16p-%16p %7z\n", bootboot.initrd_ptr, bootboot.initrd_ptr + bootboot.initrd_size, bootboot.initrd_size);
+    printf("Total usable memory: %z\n", mem_usable);
 
 
 }

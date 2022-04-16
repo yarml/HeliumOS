@@ -263,9 +263,9 @@ void vfb_wr(char const* s, bool flush, va_list args)
                         else
                             val = va_arg(args, uint32_t);
                         char buf[33];
-                        char* head = buf + 33;
+                        char* head = buf + 32;
 #define UNIT(v, sym) if(v % 1024 != 0) { *(--head) = sym; head = utos(v % 1024, 10, head); }
-                        UNIT(UNITS(val), 0  )
+                        UNIT(UNITS(val), 'B')
                         UNIT(KILOS(val), 'K')
                         UNIT(MEGS (val), 'M')
                         UNIT(GIGS (val), 'G')

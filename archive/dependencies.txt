@@ -1,6 +1,3 @@
-Helium on its own does not depend on anyting, however, the tools that are automatically compiled with helium do have
-build dependencies:
-
 binutils/gcc build dependencies:
     - bison
     - flex
@@ -16,6 +13,8 @@ bootboot build dependencies:
 
 qemu dependencies:
     - edk2-ovmf
+
+Basic *nix tools are also obviously needed(stuff like mkdir, cp, cd...)
 
 Package names can be different from distro to distro
 

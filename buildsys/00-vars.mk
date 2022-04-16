@@ -1,12 +1,14 @@
+M ?= DEBUG
 
 QEMU_BIN   := qemu-system-x86_64
 OVMF_CODE  := /usr/share/edk2-ovmf/x64/OVMF_CODE.fd
 OVMF_VARS  := /usr/share/edk2-ovmf/x64/OVMF_VARS.fd
 QEMU_FLAGS := -cpu qemu64 -smp 1 -net none -m 64M
 
-
 # Toolchain to build targets for the build machine
 BUILD_CC := gcc
+
+LSB_RELEASE := lsb_release
 
 UMOUNT := umount
 MKDIR  := mkdir
@@ -28,6 +30,10 @@ CP     := cp -rf
 LS     := ls
 MV     := mv -f
 RM     := rm -rf
+TR     := tr
+
+# if this has a problem detecting your distro, just put your distro name manually
+DISTRO := $(shell $(LSB_RELEASE) -i | $(CUT) -d ':' -f2 | $(TR) -d " \t")
 
 KERNEL_DIR := kernel/
 KERNEL_SRC_DIR := $(KERNEL_DIR)/src/

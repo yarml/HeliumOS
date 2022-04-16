@@ -5,6 +5,7 @@
 #include <debug.h>
 #include <ctype.h>
 #include <math.h>
+#include <lambda.h>
 
 #include "internal_fb.h"
 
@@ -144,11 +145,14 @@ void vfb_wr(char const* s, bool flush, va_list args)
                         fb_wrs(result, false);
                         break;
                     case 'c':
+                    {
                         for(; width > 1; --width)
                             fb_wrc(' ', false);
                         fb_wrc((char) va_arg(args, int), false);
                         break;
+                    }
                     case 's':
+                    {
                         char const* str = va_arg(args, char const*);
                         int len = precision == 0 ? strlen(str) : precision;
                         width -= len;
@@ -156,6 +160,97 @@ void vfb_wr(char const* s, bool flush, va_list args)
                             fb_wrc(' ', false);
                         fb_wrm(str, len, false);
                         break;
+                    }
+                    case 'e':
+                    {
+                        // this isn't for exponential writing of a float, but to display enum values
+                        // it reads a 32/64bit uint(depending on l flag) from the arguments 
+                        // and displays text depending on its value
+                        // for example "%e0:BAR,2:FOO,#:UNDEF"
+                        // would write BAR if arg = 0, or FOO if arg = 2, or UNDEF otherwise
+                        // # for else should be at the end and is optional
+                        // * can be used to indicate that the enum value is 
+                        // passed in the argument list AFTER the enum value
+                        // * can also be used to indicate that the string to display is passed 
+                        // in the argument list AFTER the enum value
+                        // so ("%e0:A,2:E", enum_value) is equivalent to ("%e*:*.*,*:*", enum_value, 0, "A", 2, "E")
+                        // # cannot be passed in the argument list as it would be indi
+                        ++s;
+                        char const* str = 0;
+                        uint64_t enum_value;
+                        if(long_mode)
+                            enum_value = va_arg(args, uint64_t);
+                        else
+                            enum_value = va_arg(args, uint32_t);
+                        while(*s == '*' || *s == '#' || isdigit(*s))
+                        {
+                            uint64_t switch_val = UINT64_MAX;
+                            if(*s == '*')
+                            {
+                                if(long_mode)
+                                    switch_val = va_arg(args, uint64_t);
+                                else
+                                    switch_val = va_arg(args, uint32_t);
+                                ++s;
+                            }
+                            else if(isdigit(*s))
+                                switch_val = stou(s, &s, 10);
+                            else if(*s == '#')
+                                ++s;
+                            if(*(s - 1) == '#' || switch_val == enum_value)
+                            {
+                                if(*s != ':')
+                                {
+                                    fb_wrs("EXPECTED ':' FOUND '", false);
+                                    fb_wrc(*s, false);
+                                    fb_wrc('\'', false);
+                                    break;
+                                }
+                                str = ++s;
+                                char const* cmd_end = strpred(
+                                    s,
+                                    lambda(
+                                        int, (int c)
+                                        {
+                                            return isnalnum(c) && c != ',' && c != ':' && c != '#';
+                                        }
+                                    )
+                                );
+                                s = (cmd_end ? cmd_end : s + strlen(s)) - 1;
+                                // - 1 cause the for loop will increment s again
+                            }
+                            else
+                            {
+                                // we won't print the following string
+                                // *s = ':'
+                                char const* part_end = strpred(++s, isnalnum);
+                                s = part_end ? part_end : s + strlen(s);
+                                if(*s == ',')
+                                    ++s;
+                                else
+                                {
+                                    --s;
+                                    break; // while
+                                }
+                            }
+                        }
+                        if(str)
+                        {
+                            char const* end = strpred(str, isnalnum);
+                            width -= end - str;
+                        }
+                        for(; width > 0; --width)
+                            fb_wrc(' ', false);
+                        if(str)
+                        {
+                            while(isalnum(*str))
+                            {
+                                fb_wrc(*str, false);
+                                ++str;
+                            }
+                        }
+                        break;
+                    }
                     case '%':
                         fb_wrc('%', false);
                         break;
@@ -163,9 +258,8 @@ void vfb_wr(char const* s, bool flush, va_list args)
                         fb_wrs("INVALID % COMMAND!(", false);
                         fb_wrc(*s, false);
                         fb_wrc(')', false);
-                        LOOP;
                         break;
-                    }
+                }
                 break;
             default:
                 fb_wrc(*s, false);

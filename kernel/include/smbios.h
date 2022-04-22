@@ -1,8 +1,8 @@
 #ifndef HELIUM_SMBIOS_H
 #define HELIUM_SMBIOS_H
 
+#include <attributes.h>
 #include <stdint.h>
-#include <pack.h>
 
 typedef struct
 {

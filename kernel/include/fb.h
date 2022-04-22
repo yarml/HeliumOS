@@ -1,11 +1,14 @@
 #ifndef HELIUM_FB_H
 #define HELIUM_FB_H
 
+#include <attributes.h>
 #include <stdbool.h>
 #include <stdarg.h>
 #include <stdint.h>
 #include <stddef.h>
-#include <pack.h>
+
+
+// namespace psf
 
 #define PSF_MAGIC (0x864ab572)
 
@@ -92,6 +95,6 @@ void fb_wr(char const* s, bool flush, ...);
  * \param s
  * \param args: A va_list of optional arguments for % commands
  */
-void vfb_wr(char const* s, bool flush, va_list args);
+void fb_v_wr(char const* s, bool flush, va_list args);
 
 #endif

@@ -5,6 +5,7 @@
 #include <debug.h>
 #include <utils.h>
 #include <stdbool.h>
+#include <asm/io.h>
 
 #include "internal_fb.h"
 
@@ -101,6 +102,7 @@ void fb_putc(char c, uint32_t dx, uint32_t dy, bool flush)
 
 void fb_wrc(char c, bool flush)
 {
+    as_outb(DEBUG_CONSOLE, c);
     uint32_t curs_y_begin = internal_fb_curs_y;
     switch(c)
     {
@@ -118,6 +120,19 @@ void fb_wrc(char c, bool flush)
             break;
         case '\r':
             internal_fb_curs_x = 0;
+            break;
+        case '\b':
+            if(!internal_fb_curs_x)
+            {
+                if(internal_fb_curs_y)
+                {
+                    internal_fb_curs_x = FB_WIDTH - 1;
+                    --internal_fb_curs_y;
+                }
+            }
+            else
+                --internal_fb_curs_x;
+            fb_putc(' ', internal_fb_curs_x, internal_fb_curs_y, false);
             break;
         case '\f':
             fb_scroll(1, false);

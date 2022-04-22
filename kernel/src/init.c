@@ -8,7 +8,7 @@
 
 
 #include <collections/sorted_array.h>
-#include <asm/movs.h>
+#include <asm/io.h>
 
 static void print_info();
 

@@ -13,11 +13,11 @@ void fb_wr(char const* s, bool flush, ...)
 {
     va_list args;
     va_start(args, flush);
-    vfb_wr(s, flush, args);
+    fb_v_wr(s, flush, args);
     va_end(args);
 }
 
-void vfb_wr(char const* s, bool flush, va_list args)
+void fb_v_wr(char const* s, bool flush, va_list args)
 {
     uint32_t curs_y_begin = internal_fb_curs_y;
     for(; *s != 0; ++s)

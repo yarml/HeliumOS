@@ -1,0 +1,1 @@
+%define MSR_IA32_EFER 0xC0000080

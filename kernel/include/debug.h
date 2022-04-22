@@ -8,6 +8,8 @@
  */
 #define LOOP while(1)
 
+#define DEBUG_CONSOLE (0xE9)
+
 /**
  * \brief Draws a square of color (\a r, \a g, \a b) at (\a offx, \a offy) for debugging purposes.
  * \param r

@@ -26,11 +26,11 @@ endif
 # Compile targets
 $(OUT_DIR)/%.c.o: %.c
 	$(MKDIR) -p $(dir $@)
-	$(HOST_CC) $(CFLAGS) $(INC_FLAGS) -o $@ -c $^
+	$(HOST_CC) $(CFLAGS)  $(INC_FLAGS) -o $@ -c $^
 
 $(OUT_DIR)/%.asm.o: %.asm
 	$(MKDIR) -p $(dir $@)
-	$(HOST_AS) $(ASFLAGS) -o $@ $^
+	$(HOST_AS) $(ASFLAGS) $(INC_FLAGS) -o $@ $^
 
 # Link target
 # Will also build the toolchain if not available

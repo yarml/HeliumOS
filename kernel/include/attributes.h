@@ -1,5 +1,5 @@
-#ifndef HELIUM_PACK_H
-#define HELIUM_PACK_H
+#ifndef HELIUM_ATTRIBUTES_H
+#define HELIUM_ATTRIBUTES_H
 
 /**
  * \brief Marks a struct or variable as packed.

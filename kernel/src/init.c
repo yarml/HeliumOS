@@ -5,7 +5,7 @@
 #include <debug.h>
 #include <mem.h>
 #include <fb.h>
-
+#include <cpuid.h>
 
 #include <collections/sorted_array.h>
 #include <asm/io.h>
@@ -20,12 +20,16 @@ int compare(int* i1, int* i2)
 void init()
 {
        if(memcmp(&bootboot, "BOOT", 4))
-              // We don't know how we were loaded, as such, the only safe thing to do is LOOP
-              LOOP;
        {
-              // stupid way of """disabling""" all cores but one
-              uint8_t stack_top;
-              if((uintmax_t) &stack_top < 0xFFFFFFFFFFFFFC00)
+              // We don't know how we were loaded, as such, the only safe thing to do is LOOP
+              as_outb(DEBUG_CONSOLE, 'B');
+              LOOP;
+       }
+       
+       {
+              uint32_t a, b, c, d;
+              __cpuid(1, a, b, c, d);
+              if(b >> 24 != bootboot.bspid)
                      LOOP;
        }
 
@@ -41,7 +45,7 @@ static void print_info()
        printf("BOOTBOOT struct size   : %10d          \n", bootboot.size    );
        printf("BOOTBOOT protocol      : %10d          \n", bootboot.protocol);
        printf("Number of cores        : %10d          \n", bootboot.numcores);
-       printf("Local APIC Id          : %10d          \n", bootboot.bspid   );
+       printf("BSPID                  : %10d          \n", bootboot.bspid   );
        printf("Timezone               : %+9d          \n", bootboot.timezone);
        printf("UTC date               : %2x%2x/%2x/%2x\n"  ,
               bootboot.datetime[0], bootboot.datetime[1],

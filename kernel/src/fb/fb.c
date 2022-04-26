@@ -41,6 +41,7 @@ void fb_init()
     else
         memset(dfb, 0, bootboot.fb_height * bootboot.fb_scanline);
     fb_wrs("Done initializing text framebuffer.\n", true);
+    fb_wr("Double framebuffer at: %p\n", true, dfb);
 }
 
 void fb_flush(uint32_t scanline, uint32_t sl_count)

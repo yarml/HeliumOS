@@ -31,4 +31,8 @@ int abs(int i);
 #define PETAS(n) (uint64_t) ((uint64_t) TERAS((uint64_t) n) / (uint64_t) 1024)
 #define EXAS( n) (uint64_t) ((uint64_t) PETAS((uint64_t) n) / (uint64_t) 1024)
 
+// b should be a power of 2
+#define ALIGN_DN(n, b) (((n)          ) & ~((b) - 1))
+#define ALIGN_UP(n, b) (((n) + (b) - 1) & ~((b) - 1))
+
 #endif

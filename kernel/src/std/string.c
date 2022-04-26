@@ -6,6 +6,7 @@
 
 #include <asm/movs.h>
 #include <asm/stos.h>
+#include <asm/scas.h>
 
 size_t strlen(char const* s)
 {
@@ -14,9 +15,10 @@ size_t strlen(char const* s)
         ++len;
     return len;
 }
+
 char* strchr(char const* s, int c)
 {
-    for(; *s != c; ++s)
+    for(; *(unsigned char*)s != c; ++s)
         if(*s == 0) 
             return 0;
     return (char*) s;
@@ -50,18 +52,19 @@ char* strpred(char const* s, fpt_chr_predicate pred)
 #define DBYTE(c) ((uint32_t) (((uint32_t) c << 24) | ((uint32_t) c << 16)             | WBYTE(c)))
 #define QBYTE(c) ((uint64_t) (((uint64_t) c << 56) | ((uint64_t) c << 48) | ((uint64_t) c << 40)| ((uint64_t) c << 32) | DBYTE(c)))
 
-void* memchr (const void* block, int c, size_t size)
+
+void* memchr (void const* block, int c, size_t size)
 {
-    for(; size != 0; --size, ++block)
-        if(*(char*) block == c) 
-            return (void*) block;
-    return 0;
+    register size_t idx = size - as_scasb((uint64_t) block, c, size) - 1;
+    if(idx != size - 1)
+        return (void*) block + idx;
+    return (((unsigned char*)block)[idx] == c) ? (void*) block + idx : 0;
 }
 
-int memcmp (const void* b1, const void* b2, size_t size)
+int memcmp (void const* b1, void const* b2, size_t size)
 {
-    for(; *(char*)b1 == *(char*)b2 && size != 0; --size, ++b1, ++b2);
-    return *(char*)(b2 - 1) - *(char*)(b1 - 1);
+    for(; *(unsigned char*)b1 == *(unsigned char*)b2 && size != 0; --size, ++b1, ++b2);
+    return *(unsigned char*)(b2 - 1) - *(unsigned char*)(b1 - 1);
 }
 
 void* memset(void* block, int c, size_t size)
@@ -75,7 +78,7 @@ void* memset(void* block, int c, size_t size)
 }
 
 
-void* memcpy(void* to, const void* from, size_t size)
+void* memcpy(void* to, void const* from, size_t size)
 {
     as_movsq(QORG(to), QORG(from), QLEN(size));
     as_movsd(DORG(to), DORG(from), DLEN(size));

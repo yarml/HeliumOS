@@ -7,8 +7,8 @@ extern psf_font _binary_kernel__font_psf_start;
 
 #define font (_binary_kernel__font_psf_start)
 
-#define SCALEX (2)
-#define SCALEY (2)
+#define SCALEX (1)
+#define SCALEY (1)
 
 #define CHRW (font.width  * SCALEX)
 #define CHRH (font.height * SCALEY)

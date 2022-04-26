@@ -9,6 +9,7 @@
 
 #include <collections/sorted_array.h>
 #include <asm/io.h>
+#include <math.h>
 
 static void print_info();
 
@@ -32,8 +33,8 @@ void init()
               if(b >> 24 != bootboot.bspid)
                      LOOP;
        }
-
        fb_init();
+
        print_info();
        mem_init();
        

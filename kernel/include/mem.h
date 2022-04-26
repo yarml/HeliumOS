@@ -3,6 +3,7 @@
 
 #include <attributes.h>
 #include <stdint.h>
+#include <math.h>
 
 // namespace mem
 
@@ -34,14 +35,28 @@ typedef struct
 // HeliumOs memory structs
 typedef struct
 {
-    uint64_t region_phy ;
-    uint64_t mem_size   ;
-    uint64_t header_size;
-    uint64_t free_idx   ;
-} mem_pmm_header;
+    // physical address of the region
+    uint64_t padr ;
+
+    // number of physical pages here
+    uint64_t pg_count;
+} pack mem_pmm_header;
+// size should be a multiple of 8
 
 #define MEM_PMM_PAGE_SIZE (4096) // size of pages managed by the physical memory manager
 
+#define MEM_PMM_BITMAP_LEN(h) (ALIGN_UP(h.pg_count / 8, 8))
+// header size in pages
+#define MEM_PMM_HEADER_SIZE(h) (sizeof(mem_pmm_header) + MEM_PMM_BITMAP_LEN(h))
+
+typedef struct
+{
+    uint64_t header_pdar;
+    uint64_t page_idx   ;
+    uint64_t len        ;
+} mem_pmm_allocation;
+
 void mem_init();
+mem_pmm_allocation mem_pmm_alloc_phy_pages(uint64_t header, uint64_t count);
 
 #endif

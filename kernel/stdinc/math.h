@@ -22,17 +22,8 @@ int exp10i(int power);
  */
 int abs(int i);
 
-// cast cast cast cast cast cast cast
-#define UNITS(n) (uint64_t) (                ((uint64_t) n)                  )
-#define KILOS(n) (uint64_t) ((uint64_t) UNITS((uint64_t) n) / (uint64_t) 1024)
-#define MEGS( n) (uint64_t) ((uint64_t) KILOS((uint64_t) n) / (uint64_t) 1024)
-#define GIGS( n) (uint64_t) ((uint64_t) MEGS( (uint64_t) n) / (uint64_t) 1024)
-#define TERAS(n) (uint64_t) ((uint64_t) GIGS( (uint64_t) n) / (uint64_t) 1024)
-#define PETAS(n) (uint64_t) ((uint64_t) TERAS((uint64_t) n) / (uint64_t) 1024)
-#define EXAS( n) (uint64_t) ((uint64_t) PETAS((uint64_t) n) / (uint64_t) 1024)
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
+#define MIN(a,b) ((a) < (b) ? (a) : (b))
 
-// b should be a power of 2
-#define ALIGN_DN(n, b) (((n)          ) & ~((b) - 1))
-#define ALIGN_UP(n, b) (((n) + (b) - 1) & ~((b) - 1))
 
 #endif

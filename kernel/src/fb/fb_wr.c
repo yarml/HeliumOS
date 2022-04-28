@@ -4,7 +4,7 @@
 #include <string.h>
 #include <debug.h>
 #include <ctype.h>
-#include <math.h>
+#include <utils.h>
 #include <lambda.h>
 
 #include "internal_fb.h"
@@ -76,6 +76,7 @@ void fb_v_wr(char const* s, bool flush, va_list args)
                         goto print_num;
                     case 'b':
                         base = 2;
+                        usigned = true;
                         goto print_num;
                     case 'u':
                         base = 10;

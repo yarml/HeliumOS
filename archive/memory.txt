@@ -1,10 +1,6 @@
 Physical manager:
- - For each continuous free entry in the memory map, we store a header at the beginning that stores the following:
-    * Pointer in physical address space to the memory region they are bookkeeping (8 bytes)
-    * size of the memory region they are bookkeeping(in pages)                    (8 bytes)
-    * size of the header(in pages)                                                (8 bytes)
-    * index of first free 8-pages(only ne needs to be free )                      (8 bytes)
-    * bitmap of the memory region they are bookkeeping                            (region_size / 4096 / 8)
-   So the total size of the header in pages(as given by the field in the header itself) should be about:
-     4*8 + region_size / 4096 / 8
-   
+  - After all usable memory is detected, a big enough portion is allocated that contains an array of:
+    - A header pointing to a physical usable memory region(pointer & size)
+    - A bitmap: Each page has a bit, if it is set, then it is a free page, if the bit is clear, the page is used
+  The above is referred to as the physical memory manager struct, and when virtual memory is setup, it should be mapped
+  to a specific address(not defined yet)

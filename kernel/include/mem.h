@@ -3,7 +3,7 @@
 
 #include <attributes.h>
 #include <stdint.h>
-#include <math.h>
+#include <utils.h>
 
 // namespace mem
 
@@ -45,18 +45,25 @@ typedef struct
 
 #define MEM_PMM_PAGE_SIZE (4096) // size of pages managed by the physical memory manager
 
-#define MEM_PMM_BITMAP_LEN(h) (ALIGN_UP(h.pg_count / 8, 8))
+#define MEM_PMM_BITMAP_LEN(h) (ALIGN_UP((h).pg_count / 8, 8))
 // header size in pages
 #define MEM_PMM_HEADER_SIZE(h) (sizeof(mem_pmm_header) + MEM_PMM_BITMAP_LEN(h))
 
 typedef struct
 {
-    uint64_t header_pdar;
-    uint64_t page_idx   ;
-    uint64_t len        ;
+    uint64_t header_off;
+    uint64_t page_idx  ;
+    uint64_t len       ;
 } mem_pmm_allocation;
 
 void mem_init();
-mem_pmm_allocation mem_pmm_alloc_phy_pages(uint64_t header, uint64_t count);
+// match_type is one of
+//  - MEM_PMM_BEST_MATCH
+//  - MEM_PMM_FIRST_MATCH
+
+#define MEM_PMM_BEST_MATCH  (0)
+#define MEM_PMM_FIRST_MATCH (1)
+
+mem_pmm_allocation mem_pmm_alloc_phy_pages(uint64_t header, uint64_t count, int match_type);
 
 #endif

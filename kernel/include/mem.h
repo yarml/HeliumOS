@@ -57,13 +57,8 @@ typedef struct
 } mem_pmm_allocation;
 
 void mem_init();
-// match_type is one of
-//  - MEM_PMM_BEST_MATCH
-//  - MEM_PMM_FIRST_MATCH
 
-#define MEM_PMM_BEST_MATCH  (0)
-#define MEM_PMM_FIRST_MATCH (1)
-
-mem_pmm_allocation mem_pmm_alloc_phy_pages(uint64_t header, uint64_t count, int match_type);
+mem_pmm_allocation mem_pmm_alloc_phy_pages  (uint64_t header, uint64_t           count);
+void               mem_pmm_dealloc_phy_pages(uint64_t header, mem_pmm_allocation alloc);
 
 #endif

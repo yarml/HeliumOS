@@ -35,16 +35,6 @@ void init()
        }
        fb_init();
        mem_init();
-
-       mem_pmm_alloc_phy_pages(0, 2 , MEM_PMM_FIRST_MATCH);
-       mem_pmm_alloc_phy_pages(0, 2 , MEM_PMM_FIRST_MATCH);
-       mem_pmm_alloc_phy_pages(0, 50, MEM_PMM_FIRST_MATCH);
-       mem_pmm_alloc_phy_pages(0, 20, MEM_PMM_FIRST_MATCH);
-       mem_pmm_alloc_phy_pages(0, 2 , MEM_PMM_FIRST_MATCH);
-       mem_pmm_alloc_phy_pages(0, 2 , MEM_PMM_FIRST_MATCH);
-
-       LOOP;
-
        print_info();
        
        LOOP;

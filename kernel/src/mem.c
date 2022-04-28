@@ -104,36 +104,40 @@ void mem_init()
 // the arg header is only used to be able to alloacte before virtual mapping is done
 // this isnt meant to be a flexible function, it is depenedent on global variables
 // otherwise use MEM_PMM_ALLOC_PHY_PAGE(count, match_type) define when virtual mapping is available
-mem_pmm_allocation mem_pmm_alloc_phy_pages(uint64_t header, uint64_t count, int match_type)
+mem_pmm_allocation mem_pmm_alloc_phy_pages(uint64_t header, uint64_t count)
 {
     mem_pmm_allocation alloc;
     alloc.header_off = UINT64_MAX;
     alloc.len        = 0         ;
     alloc.page_idx   = UINT64_MAX;
     uint64_t org_header = header;
-    switch(match_type)
+
+    for(size_t i = 0; i < mmap_usable_len; ++i)
     {
-        case MEM_PMM_BEST_MATCH: // TODO: implement best match ,in the mean time, return first match
-        case MEM_PMM_FIRST_MATCH:
-        default:
-            for(size_t i = 0; i < mmap_usable_len; ++i)
-            {
-                mem_pmm_header* acheader = (mem_pmm_header*) header;
-                header += sizeof(mem_pmm_header);
-                uint64_t* bitmap = (uint64_t*) header;
-                uint64_t qwords = MEM_PMM_BITMAP_LEN(*acheader) / 8;
-                
-                uint64_t idx = qwords - as_nscasq(header, 0, qwords) - 1;
-                if(!bitmap[idx]) // all pages allocated in this region
-                    continue;
-                size_t from = FFS(bitmap[idx]);
-                size_t to = MIN(MIN(count, 64 - from), FFS((~bitmap[idx]) >> from)) + from;
-                bitmap[idx] ^= BITRANGE(from, to);
-                alloc.header_off = header - sizeof(mem_pmm_header) - org_header;
-                alloc.page_idx   = 64 * idx + from;
-                alloc.len        = to - from;
-                return alloc;
-            }
-            return alloc;
+        mem_pmm_header* acheader = (mem_pmm_header*) header;
+        uint64_t* bitmap = (uint64_t*) (header + sizeof(mem_pmm_header));
+        uint64_t qwords = MEM_PMM_BITMAP_LEN(*acheader) / sizeof(uint64_t);
+        
+        uint64_t idx = qwords - as_nscasq(header + sizeof(mem_pmm_header), 0, qwords) - 1;
+        if(!bitmap[idx]) // all pages allocated in this region
+        {
+            header += sizeof(mem_pmm_header) + MEM_PMM_BITMAP_LEN(*acheader);
+            continue;
+        }
+        size_t from = FFS(bitmap[idx]);
+        size_t to = MIN(MIN(count, 64 - from), FFS((~bitmap[idx]) >> from)) + from;
+        bitmap[idx] &= ~(BITRANGE(from, to));
+        alloc.header_off = header - org_header;
+        alloc.page_idx   = 64 * idx + from;
+        alloc.len        = to - from;
+        return alloc;
     }
+    return alloc;
+}
+
+void mem_pmm_dealloc_phy_pages(uint64_t header, mem_pmm_allocation alloc)
+{
+    mem_pmm_header* acheader = (mem_pmm_header*) (alloc.header_off + header);
+    uint64_t* bitmap = (uint64_t*) (header + sizeof(mem_pmm_header));
+    bitmap[alloc.page_idx / 64] |= BITRANGE(alloc.page_idx % 64, alloc.page_idx % 64 + alloc.len);
 }

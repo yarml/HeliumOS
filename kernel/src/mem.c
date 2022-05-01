@@ -87,18 +87,20 @@ void mem_init()
     }
     mmap_usable_len -= empty_entries;
 
+    printf("PMM header physical address: %16p\n", pmm_header);
+
+    // Setup virtual memory
+
     ctlr_cr3_npcid cr3 = as_scr3();
     pml4 = (mem_pml4e*) CTLR_CR3_NPCID_PML4_PADR(cr3);
 
-    printf("PML4 physical address: %16p\n", pml4);
+    // Map pmm_header to MEM_VIRT_PMM_HEADER
+    for(size_t i = 0; i < header_pg_count; ++i)
+        mem_vmm_map(pmm_header + i * MEM_PAGE_SIZE, MEM_VIRT_PMM_HEADER + i * MEM_PAGE_SIZE, pmm_header);
 
-
-    mem_vmm_map(pmm_header, 0xFFFF800000000000, pmm_header);
-    printf("1\n");
-    char* p = (char*) 0xFFFF800000000000;
-    *p = 0;
-    printf("2\n");
-    LOOP;
+    // Remove identity mapping of the first 16Gib
+    memset(pml4, 0, 16 * sizeof(mem_pml4e));
+    as_rlcr3();
 }
 
 // the arg header is only used to be able to alloacte before virtual mapping is done
@@ -147,7 +149,7 @@ void* mem_pmm_alloc_adr(uint64_t header, mem_pmm_allocation alloc)
     return (void*) (acheader->padr + alloc.page_idx * MEM_PAGE_SIZE);
 }
 
-uint64_t mem_vmm_map(uint64_t pmm_header, uint64_t vadr, uint64_t padr)
+uint64_t mem_vmm_map(uint64_t pmm_header_, uint64_t vadr, uint64_t padr)
 {
     if(MEM_PML4_IDX(vadr) == 511)
         error_physical_memory_alloc("Cannot map pages at index 511 of the PML4");
@@ -155,17 +157,17 @@ uint64_t mem_vmm_map(uint64_t pmm_header, uint64_t vadr, uint64_t padr)
     mem_pml4e* tpml4e = &(pml4[MEM_PML4_IDX(vadr)]);
     if(!tpml4e->present) // we need a new pdpt
     {
-        mem_pmm_allocation alloc = mem_pmm_alloc_phy_pages(pmm_header, 1);
+        mem_pmm_allocation alloc = mem_pmm_alloc_phy_pages(pmm_header_, 1);
         if(!alloc.len)
             error_physical_memory_alloc("Couldn't allocate memory for a new PDPT");
-        memset(mem_pmm_alloc_adr(pmm_header, alloc), 0, MEM_PAGE_SIZE);
+        memset(mem_pmm_alloc_adr(pmm_header_, alloc), 0, MEM_PAGE_SIZE);
         tpml4e->write     = 1;
         tpml4e->user      = MEM_PML4_IDX(vadr) < 256;
         tpml4e->pwt       = 0;
         tpml4e->pcd       = 0;
         tpml4e->accessed  = 0;
         tpml4e->ps        = 0;
-        tpml4e->pdpt_padr = (uint64_t)(mem_pmm_alloc_adr(pmm_header, alloc)) >> 12;
+        tpml4e->pdpt_padr = (uint64_t)(mem_pmm_alloc_adr(pmm_header_, alloc)) >> 12;
         tpml4e->zr1       = 0;
         tpml4e->xd        = 0;
         tpml4e->present   = 1;
@@ -173,17 +175,17 @@ uint64_t mem_vmm_map(uint64_t pmm_header, uint64_t vadr, uint64_t padr)
     mem_pdpte* tpdpte = &(((mem_pdpte*) MEM_PML4E_PDPT_PADR(*tpml4e))[MEM_PDPT_IDX(vadr)]);
     if(!tpdpte->present) // We need a new pd
     {
-        mem_pmm_allocation alloc = mem_pmm_alloc_phy_pages(pmm_header, 1);
+        mem_pmm_allocation alloc = mem_pmm_alloc_phy_pages(pmm_header_, 1);
         if(!alloc.len)
             error_physical_memory_alloc("Couldn't allocate memory for a new PD");
-        memset(mem_pmm_alloc_adr(pmm_header, alloc), 0, MEM_PAGE_SIZE);
+        memset(mem_pmm_alloc_adr(pmm_header_, alloc), 0, MEM_PAGE_SIZE);
         tpdpte->write     = 1;
         tpdpte->user      = MEM_PML4_IDX(vadr) < 256;
         tpdpte->pwt       = 0;
         tpdpte->pcd       = 0;
         tpdpte->accessed  = 0;
         tpdpte->ps        = 0;
-        tpdpte->pdpt_padr = (uint64_t)(mem_pmm_alloc_adr(pmm_header, alloc)) >> 12;
+        tpdpte->pdpt_padr = (uint64_t)(mem_pmm_alloc_adr(pmm_header_, alloc)) >> 12;
         tpdpte->zr1       = 0;
         tpdpte->xd        = 0;
         tpdpte->present   = 1;
@@ -191,17 +193,17 @@ uint64_t mem_vmm_map(uint64_t pmm_header, uint64_t vadr, uint64_t padr)
     mem_pde* tpde = &(((mem_pde*) MEM_PDPT_PD_PADR(*tpdpte))[MEM_PD_IDX(vadr)]);
     if(!tpde->present) // We need a new pt
     {
-        mem_pmm_allocation alloc = mem_pmm_alloc_phy_pages(pmm_header, 1);
+        mem_pmm_allocation alloc = mem_pmm_alloc_phy_pages(pmm_header_, 1);
         if(!alloc.len)
             error_physical_memory_alloc("Couldn't allocate memory for a new PT");
-        memset(mem_pmm_alloc_adr(pmm_header, alloc), 0, MEM_PAGE_SIZE);
+        memset(mem_pmm_alloc_adr(pmm_header_, alloc), 0, MEM_PAGE_SIZE);
         tpde->write     = 1;
         tpde->user      = MEM_PML4_IDX(vadr) < 256;
         tpde->pwt       = 0;
         tpde->pcd       = 0;
         tpde->accessed  = 0;
         tpde->ps        = 0;
-        tpde->pdpt_padr = (uint64_t)(mem_pmm_alloc_adr(pmm_header, alloc)) >> 12;
+        tpde->pdpt_padr = (uint64_t)(mem_pmm_alloc_adr(pmm_header_, alloc)) >> 12;
         tpde->zr1       = 0;
         tpde->xd        = 0;
         tpde->present   = 1;
@@ -226,7 +228,9 @@ uint64_t mem_vmm_map(uint64_t pmm_header, uint64_t vadr, uint64_t padr)
     return vadr;
 }
 
-void mem_vmm_unmap(uint64_t vadr)
+// FIXME: deallocate physical pages taken by the memory structures
+// There is a memory leak here, fix when it becomes really really serious!!!
+void mem_vmm_unmap(uint64_t pmm_header_, uint64_t vadr)
 {
     mem_pml4e* tpml4e = &(pml4[MEM_PML4_IDX(vadr)]);
     if(tpml4e->present)
@@ -238,7 +242,7 @@ void mem_vmm_unmap(uint64_t vadr)
             if(tpde->present)
             {
                 mem_pte* tpte = &(((mem_pte*) MEM_PD_PT_PADR(*tpde))[MEM_PT_IDX(vadr)]);
-                memset(tpte, 0, sizeof(mem_pte));
+                *((uint64_t*)tpte) = 0;
             }
         }
     }

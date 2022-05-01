@@ -110,6 +110,7 @@ typedef struct
 // header size in pages
 #define MEM_PMM_HEADER_SIZE(h) (sizeof(mem_pmm_header) + MEM_PMM_BITMAP_LEN(h))
 
+
 typedef struct
 {
     uint64_t header_off;
@@ -124,6 +125,13 @@ void               mem_pmm_dealloc_phy_pages(uint64_t header, mem_pmm_allocation
 void* mem_pmm_alloc_adr(uint64_t header, mem_pmm_allocation alloc);
 
 uint64_t mem_vmm_map(uint64_t pmm_header, uint64_t vadr, uint64_t padr);
-void mem_vmm_unmap(uint64_t vadr);
+void mem_vmm_unmap(uint64_t pmm_header, uint64_t vadr);
+
+// namespace mem::virt
+// contains virtual addresses of kernel structures
+#define MEM_VIRT_PMM_HEADER (0xFFFF800000000000)
+
+#define MEM_MAP(vadr, padr) (mem_vmm_map(MEM_VIRT_PMM_HEADER, (vadr), (padr)))
+#define MEM_UNMAP(vadr)     (mem_vmm_unmap(MEM_VIRT_PMM_HEADER, (vadr)))
 
 #endif

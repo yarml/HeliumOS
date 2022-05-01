@@ -83,15 +83,15 @@ typedef struct
     uint64_t xd      :1 ;
 } pack mem_pte;
 
-#define MEM_PML4E_PDPT_PADR(e) (uint64_t)((uint64_t)(e).pdpt_padr << 12)
-#define MEM_PDPT_PD_PADR(   e) (uint64_t)((uint64_t)(e).pdpt_padr << 12)
-#define MEM_PD_PT_PADR(     e) (uint64_t)((uint64_t)(e).pdpt_padr << 12)
-#define MEM_PT_PADR(        e) (uint64_t)((uint64_t)(e).pdpt_padr << 12)
+#define MEM_PML4E_PDPT_PADR(e) ((uint64_t)((uint64_t)(e).pdpt_padr << 12))
+#define MEM_PDPT_PD_PADR(   e) ((uint64_t)((uint64_t)(e).pdpt_padr << 12))
+#define MEM_PD_PT_PADR(     e) ((uint64_t)((uint64_t)(e).pdpt_padr << 12))
+#define MEM_PT_PADR(        e) ((uint64_t)((uint64_t)(e).pdpt_padr << 12))
 
-#define MEM_PML4_IDX(pg) (((pg) / (512 * 1024UL*1024UL*1024UL/MEM_PAGE_SIZE)) % MEM_PML4_LEN)
-#define MEM_PDPT_IDX(pg) (((pg) / (1   * 1024UL*1024UL*1024UL/MEM_PAGE_SIZE)) % MEM_PDPT_LEN)
-#define MEM_PD_IDX(  pg) (((pg) / (2   * 1024*1024           /MEM_PAGE_SIZE)) % MEM_PD_LEN  )
-#define MEM_PT_IDX(  pg) (((pg) / (4   * 1024                /MEM_PAGE_SIZE)) % MEM_PT_LEN  )
+#define MEM_PML4_IDX(pg) (((0x0000FFFFFFFFFFFF & pg) >> 39) % MEM_PML4_LEN)
+#define MEM_PDPT_IDX(pg) (((0x0000FFFFFFFFFFFF & pg) >> 30) % MEM_PDPT_LEN)
+#define MEM_PD_IDX(  pg) (((0x0000FFFFFFFFFFFF & pg) >> 21) % MEM_PD_LEN  )
+#define MEM_PT_IDX(  pg) (((0x0000FFFFFFFFFFFF & pg) >> 12) % MEM_PT_LEN  )
 
 // HeliumOs memory structs
 typedef struct
@@ -121,5 +121,9 @@ void mem_init();
 
 mem_pmm_allocation mem_pmm_alloc_phy_pages  (uint64_t header, uint64_t           count);
 void               mem_pmm_dealloc_phy_pages(uint64_t header, mem_pmm_allocation alloc);
+void* mem_pmm_alloc_adr(uint64_t header, mem_pmm_allocation alloc);
+
+uint64_t mem_vmm_map(uint64_t pmm_header, uint64_t vadr, uint64_t padr);
+void mem_vmm_unmap(uint64_t vadr);
 
 #endif

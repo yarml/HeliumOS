@@ -4,3 +4,5 @@ In this file, I write anything that I should do in the near future, but don't ha
   It works just fine in qemu, so no pressure
 - Disable all AP cores, until we enable them again with a kernel module(Still lots of work to be done)
 - Turn all(most) for loops into while loops, they just look better tbh
+- Reuse the memory taken by bootboot's identity paging
+- Make page invalidation inter processor proof(after multi processing is enabled)

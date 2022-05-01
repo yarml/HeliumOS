@@ -34,8 +34,8 @@ void init()
                      LOOP;
        }
        fb_init();
-       mem_init();
        print_info();
+       mem_init();
        
        LOOP;
 }

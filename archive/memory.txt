@@ -4,3 +4,5 @@ Physical manager:
     - A bitmap: Each page has a bit, if it is set, then it is a free page, if the bit is clear, the page is used
   The above is referred to as the physical memory manager struct, and when virtual memory is setup, it should be mapped
   to a specific address(not defined yet)
+Virtual memory manager:
+  - When the physical memory manager is setup, we unmap all

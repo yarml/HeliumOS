@@ -228,8 +228,6 @@ uint64_t mem_vmm_map(uint64_t pmm_header, uint64_t vadr, uint64_t padr)
 
 void mem_vmm_unmap(uint64_t vadr)
 {
-    vadr /= MEM_PAGE_SIZE;
-
     mem_pml4e* tpml4e = &(pml4[MEM_PML4_IDX(vadr)]);
     if(tpml4e->present)
     {
@@ -244,6 +242,6 @@ void mem_vmm_unmap(uint64_t vadr)
             }
         }
     }
-    as_rlcr3();
+    as_invlpg(vadr);
 }
 

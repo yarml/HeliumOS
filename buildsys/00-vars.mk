@@ -21,6 +21,7 @@ CURL   := curl
 FIND   := find
 GZIP   := gzip -f
 MAKE   := make -j4
+CAT    := cat
 CUT    := cut
 GIT    := git
 TAR    := tar

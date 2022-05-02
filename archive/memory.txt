@@ -5,4 +5,6 @@ Physical manager:
   The above is referred to as the physical memory manager struct, and when virtual memory is setup, it should be mapped
   to a specific address(not defined yet)
 Virtual memory manager:
-  - When the physical memory manager is setup, we unmap all
+  - The virtual memory manager uses the same CPU structures to manage the virtual address space, as such it doesnt take any additional space or need any additional setup
+Kernel heap:
+  - 

@@ -49,6 +49,9 @@ char* strapred(char const* s, fpt_chr_predicate_args pred);
  * \return If found, a pointer to the first occurence of \a, otherwise returns \a NULL.
  */
 void* memchr (void const* block, int c, size_t size);
+
+void* memnchr (void const* block, int c, size_t size);
+
 /**
  * \brief Compares the blocks of memory \a b1 and \a b2 of size.
  * \param b1

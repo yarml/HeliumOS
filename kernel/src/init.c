@@ -10,6 +10,7 @@
 #include <collections/sorted_array.h>
 #include <asm/io.h>
 #include <math.h>
+#include <stdlib.h>
 
 static void print_info();
 
@@ -37,6 +38,13 @@ void init()
        print_info();
        mem_init();
        
+       printf("Testing kernel heap\n");
+       int* a = malloc(4);
+       printf("%p ", a);
+       *a = 10;
+       printf("%d\n", *a);
+       printf("Done testing kernel heap\n");
+
        LOOP;
 }
 static void print_info()

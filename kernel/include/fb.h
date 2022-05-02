@@ -28,8 +28,14 @@ typedef struct
 
 /**
  * \brief Loads the fonts and initializes the frambuffer for writing text.
+ *        WARNING: this function is expected to be called before memory is setup
  */
 void fb_init();
+
+/**
+ * \brief Properly setup the double framebuffer by allocating from the memory manager
+ */
+void fb_dfb_init();
 
 void fb_flush(uint32_t scanline, uint32_t sl_count);
 
@@ -96,5 +102,7 @@ void fb_wr(char const* s, bool flush, ...);
  * \param args: A va_list of optional arguments for % commands
  */
 void fb_v_wr(char const* s, bool flush, va_list args);
+
+#define VIRT_DB_DFB (0xFFFF)
 
 #endif

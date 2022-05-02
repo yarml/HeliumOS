@@ -6,6 +6,7 @@
 #include <utils.h>
 #include <stdbool.h>
 #include <asm/io.h>
+#include <stdlib.h>
 
 #include "internal_fb.h"
 
@@ -26,6 +27,7 @@ void fb_init()
     internal_fb_curs_x = 0;
     internal_fb_curs_y = 0;
 
+    // Memory structures arent setup yet, so we allocate using the mmaps directly
     size_t mmap_size = (bootboot.size - sizeof(BOOTBOOT)) / sizeof(MMapEnt) + 1;
     for(MMapEnt* c = &bootboot.mmap; mmap_size != 0; ++c, --mmap_size)
         if(MMapEnt_IsFree(c) && MMapEnt_Size(c) >= bootboot.fb_height * bootboot.fb_scanline)
@@ -42,6 +44,13 @@ void fb_init()
         memset(dfb, 0, bootboot.fb_height * bootboot.fb_scanline);
     fb_wrs("Done initializing text framebuffer.\n", true);
     fb_wr("Double framebuffer at: %p\n", true, dfb);
+}
+
+// Allocates a dfb from the memory manager
+void fb_dfb_init()
+{
+    dfb = malloc(bootboot.fb_height * bootboot.fb_scanline);
+    
 }
 
 void fb_flush(uint32_t scanline, uint32_t sl_count)

@@ -61,6 +61,14 @@ void* memchr (void const* block, int c, size_t size)
     return (((unsigned char*)block)[idx] == c) ? (void*) block + idx : 0;
 }
 
+void* memnchr(void const* block, int c, size_t size)
+{
+    register size_t idx = size - as_nscasb((uint64_t) block, c, size) - 1;
+    if(idx != size - 1)
+        return (void*) block + idx;
+    return (((unsigned char*)block)[idx] != c) ? (void*) block + idx : 0;
+}
+
 int memcmp (void const* b1, void const* b2, size_t size)
 {
     for(; *(unsigned char*)b1 == *(unsigned char*)b2 && size != 0; --size, ++b1, ++b2);

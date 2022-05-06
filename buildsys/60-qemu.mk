@@ -1,8 +1,17 @@
 
 .PHONY: run-qemu
-run-qemu: $(HELIUM_IMG)
-	$(QEMU_BIN) $(QEMU_FLAGS) \
+
+QEMU_CMD := $(QEMU_BIN) $(QEMU_FLAGS) \
 		-drive if=pflash,format=raw,unit=0,file=$(OVMF_CODE),readonly=on \
 		-drive if=pflash,format=raw,unit=1,file=$(OVMF_VARS) \
-		-drive format=raw,file=$(HELIUM_IMG)
+		-drive format=raw,file=$(HELIUM_IMG) -debugcon stdio
 
+run-qemu: $(HELIUM_IMG)
+	$(QEMU_CMD)
+
+
+debug: $(HELIUM_IMG)
+	$(TMUX) new $(GDB) -tui \; \
+		splitp -h $(QEMU_CMD) -s -S\
+			-monitor unix:$(BUILD_DIR)/qms,server\; \
+		splitp -v $(SH) $(BUILDSYS)/monitor.sh "$(SOCAT) -,echo=0,icanon=0 unix-connect:$(BUILD_DIR)/qms"

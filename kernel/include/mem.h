@@ -46,6 +46,27 @@ typedef struct
     uint64_t xd      :1 ;
 } pack mem_pdpte;
 
+typedef struct
+{
+    uint64_t present :1 ;
+    uint64_t write   :1 ;
+    uint64_t user    :1 ;
+    uint64_t pwt     :1 ;
+    uint64_t pcd     :1 ;
+    uint64_t accessed:1 ;
+    uint64_t dirty   :1 ;
+    uint64_t ps      :1 ;
+    uint64_t g       :1 ;
+    uint64_t ig0     :3 ;
+    uint64_t pat     :1 ;
+    uint64_t zr0     :17;
+    uint64_t phy_padr:18;
+    uint64_t zr1     :4 ;
+    uint64_t ig1     :7 ;
+    uint64_t prot_key:4 ;
+    uint64_t xd      :1 ;
+} pack mem_pdpte_ps;
+
 
 typedef struct
 {
@@ -121,6 +142,8 @@ typedef struct
 
 void mem_init();
 
+void mem_rm_identity_map();
+
 mem_pml4e* mem_pml4();
 
 mem_pmm_allocation mem_pmm_alloc_phy_pages  (uint64_t header, uint64_t                   count);
@@ -149,5 +172,14 @@ uint64_t mem_vmm_alloc_range(uint64_t start, uint64_t max, uint64_t len);
 #define VIRT_PMM_HEADER (0xFFFF800000000000)
 
 #define VIRT_HEAP       (0xFFFF808000000000)
+
+// Should be divisible by 512*1024^3
+#define VIRT_PHY_OFF    (0x0000FF0000000000)
+
+// TODO: do this properly
+// this wouldnt clear high bits if they should be cleared
+#define MAKE_CANONICAL(p) ((p) | (0xFFFF000000000000 * ((0x0000800000000000 & (p)) >> 47)))
+
+#define TO_VIRTUAL(p) ((void*) MAKE_CANONICAL((uint64_t)(p) + VIRT_PHY_OFF))
 
 #endif

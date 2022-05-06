@@ -18,7 +18,7 @@ STRIPFLAGS :=  -s -K mmio -K fb -K bootboot -K environment -K initstack
 HELIUM_IMG := $(OUT_DIR)/helium.img
 
 ifeq ($(M),DEBUG)
-CFLAGS += -DHELIUM_DEBUG -O0
+CFLAGS += -DHELIUM_DEBUG -O0 -g
 else
 CFLAGS += -O3
 endif
@@ -38,6 +38,8 @@ $(KERNEL_BIN): $(FONT_O) $(HOST_CC) $(MKBOOTIMG_BIN) $(LINKER_SCRIPT) $(OBJS)
 	$(MKDIR) -p $(dir $@)
 	$(MKDIR) -p $(OUT_DIR)
 	$(HOST_CC) $(CFLAGS) $(OBJS) $(FONT_O) -o $(OUT_DIR)/kernel.elf -T $(LINKER_SCRIPT)
+	$(HOST_OBJCOPY) --only-keep-debug $(OUT_DIR)/kernel.elf $(OUT_DIR)/kernel.sym
+	$(HOST_OBJCOPY) --strip-debug $(OUT_DIR)/kernel.elf
 	$(HOST_STRIP) $(STRIPFLAGS) $(OUT_DIR)/kernel.elf  -o $@
 	$(MKBOOTIMG_BIN) check $@
 

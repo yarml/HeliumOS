@@ -37,6 +37,8 @@ void init()
        fb_init();
        print_info();
        mem_init();
+       fb_dfb_init();
+       mem_rm_identity_map();
        
        printf("Testing kernel heap\n");
        int* a = malloc(4);

@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <asm/io.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include "internal_fb.h"
 
@@ -38,19 +39,21 @@ void fb_init()
     if(!dfb)
     {
         dfb = &fb;
-        fb_wrs("Couldn't find enough space for double framebuffer!\n", false);
+        printf("Couldn't find enough space for double framebuffer!\n");
     }
     else
         memset(dfb, 0, bootboot.fb_height * bootboot.fb_scanline);
-    fb_wrs("Done initializing text framebuffer.\n", true);
-    fb_wr("Double framebuffer at: %p\n", true, dfb);
+    printf("Done initializing text framebuffer.\n");
+    printf("Double framebuffer at: %p\n", dfb);
 }
 
 // Allocates a dfb from the memory manager
 void fb_dfb_init()
 {
+    printf("q");
     dfb = malloc(bootboot.fb_height * bootboot.fb_scanline);
-    
+    printf("j");
+    printf("New double framebuffer: %p\n", dfb);
 }
 
 void fb_flush(uint32_t scanline, uint32_t sl_count)

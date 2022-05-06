@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <errors.h>
+#include <stdio.h>
 #include <mem.h>
+#include <debug.h>
 
 // We only allocates units of multiples UNIT
 #define UNIT (8)
@@ -42,11 +44,22 @@ static block_header* first_block = 0;
 // sets prev and next to NULL
 static block_header* alloc_block(size_t size)
 {
+    printf("Allocating new block\n");
     // size in pages considering the block header and first unit header
     size = ALIGN_UP(size + sizeof(block_header) + sizeof(unit_header), MEM_PAGE_SIZE) / MEM_PAGE_SIZE;
-    block_header* b = (block_header*) (mem_vmm_alloc_range(MEM_ABS_IDX(VIRT_HEAP), 0x8000000000, size) * MEM_PAGE_SIZE);
+    block_header* b = (block_header*) 
+        MAKE_CANONICAL(
+            mem_vmm_alloc_range(
+                MEM_ABS_IDX(VIRT_HEAP),
+                0x8000000000,
+                size
+            ) * MEM_PAGE_SIZE
+        )
+    ;
     unit_header* u = (unit_header*) (((uint64_t)b) + sizeof(block_header));
+    printf("Writing to b->magic\n");
     b->magic = BLOCK_MAGIC;
+    printf("Can write to b->magic\n");
     b->pages = size;
     b->funit = u;
     b->lunit = (size * MEM_PAGE_SIZE - sizeof(block_header) - sizeof(unit_header)) / UNIT;
@@ -60,6 +73,7 @@ static block_header* alloc_block(size_t size)
     u->fprev = (unit_header*) b;
     u->rnext = 0;
     u->rprev = 0;
+    printf("New block at: %p of lunit: %lu pages: %lu\n", b, b->lunit, b->pages);
     return b;
 }
 
@@ -103,11 +117,13 @@ void* malloc(size_t size)
     size = ALIGN_UP(size, UNIT);
     // first look for a block that has a large enough unit
     block_header* b = first_block;
+    printf("malloc call\n");
     try_block:
     while(b)
     {
         if(b->lunit * UNIT >= size)
         {
+            printf("Found a block large enough\n");
             unit_header* u = b->funit;
             // we look if any unit is exactly of the requested size(or not large enough to be splitted)
             unit_header* larger = 0;
@@ -138,13 +154,20 @@ void* malloc(size_t size)
             // This should always be true, otherwise the block header needs recalculation
             if(larger)
             {
+                printf("Found larger at %p\n", larger);
+                u = larger;
                 if(u->size == b->lunit)
                     if(!--(b->lunit))
                         recalc_block(b);
                 // split
+                printf("unit size %lx\n", u->size);
+                printf("off %lx\n", sizeof(unit_header) + size);
+                printf("remaining %lx\n", u->size - sizeof(unit_header) - size);
                 u->size = size;
-                unit_header* new = (unit_header*) (((uint64_t)u) + sizeof(unit_header) + size * UNIT);
+                unit_header* new = (unit_header*) (((uint64_t)u) + sizeof(unit_header) + size);
+                printf("new at %p\n", new);
                 new->magic = UNIT_MAGIC;
+                printf("can write to new\n");
                 new->size = size - sizeof(unit_header) / UNIT;
                 new->fnext = u->fnext;
                 new->fprev = u->fprev;
@@ -162,6 +185,7 @@ void* malloc(size_t size)
 
                 u->rnext = new;
                 u->fnext = new;
+                printf("returning %lx\n", (uint64_t)u);
                 return (void*) ((uint64_t)u + sizeof(unit_header));
             }
             else
@@ -170,7 +194,9 @@ void* malloc(size_t size)
         b = b->next;
     }
     // no block large enough was found, allocate new one
+    printf("Didnt find a large enough block, allocating a new one\n");
     b = alloc_block(size);
+    printf("Allocated new block\n");
     first_block->prev = b;
     b->next = first_block;
     first_block = b;

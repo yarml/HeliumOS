@@ -3,51 +3,15 @@
 #include <smbios.h>
 #include <stdio.h>
 #include <debug.h>
-#include <mem.h>
-#include <fb.h>
-#include <cpuid.h>
-
-#include <collections/sorted_array.h>
-#include <asm/io.h>
-#include <math.h>
-#include <stdlib.h>
 
 static void print_info();
 
-int compare(int* i1, int* i2)
+int kmain()
 {
-       return *i1 - *i2;
-}
-
-void init()
-{
-       if(memcmp(&bootboot, "BOOT", 4))
-       {
-              // We don't know how we were loaded, as such, the only safe thing to do is LOOP
-              as_outb(DEBUG_CONSOLE, 'B');
-              LOOP;
-       }
-       
-       {
-              uint32_t a, b, c, d;
-              __cpuid(1, a, b, c, d);
-              if(b >> 24 != bootboot.bspid)
-                     LOOP;
-       }
-       fb_init();
+       printf("%y\n");
        print_info();
-       mem_init();
-       fb_dfb_init();
-       mem_rm_identity_map();
-       
-       printf("Testing kernel heap\n");
-       int* a = malloc(4);
-       printf("%p ", a);
-       *a = 10;
-       printf("%d\n", *a);
-       printf("Done testing kernel heap\n");
 
-       LOOP;
+       return 0;
 }
 static void print_info()
 {

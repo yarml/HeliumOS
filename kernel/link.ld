@@ -5,7 +5,7 @@ bootboot    = 0xffffffffffe00000;
 environment = 0xffffffffffe01000;
 initstack   = 1K                ;
 
-ENTRY(init);
+ENTRY(_start);
 
 PHDRS
 {

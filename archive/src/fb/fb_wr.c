@@ -35,6 +35,7 @@ void fb_v_wr(char const* s, bool flush, va_list args)
                 // read flags
                 while(*s == '#' || *s == '+')
                 {
+                    // why tf did I do it thiw way
                     bool* target = *s == '#' ? &prefix : &sign;
                     *target = true;
                     ++s;

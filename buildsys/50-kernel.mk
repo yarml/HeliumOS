@@ -11,7 +11,8 @@ FONT_TYPE := Tamsyn8x15r
 FONT_LINK := http://www.fial.com/~scott/tamsyn-font/download/$(FONT_NAME).tar.gz
 
 ASFLAGS := -felf64
-CFLAGS := -mno-red-zone -Wall -fpic -ffreestanding -fno-stack-protector -nostdlib
+CFLAGS := -mno-red-zone -Wall -fpic -ffreestanding -fno-stack-protector \
+		  -nostdlib
 INC_FLAGS := -I$(KERNEL_INC_DIR) -I$(BOOTBOOT_DIST_DIR) -I$(STD_INC)
 STRIPFLAGS :=  -s -K mmio -K fb -K bootboot -K environment -K initstack
 

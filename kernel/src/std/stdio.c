@@ -196,6 +196,9 @@ int vsnprintf(char* s, size_t size, char const* template, va_list va)
                     to_print = print_num(buf, 16, sign, pref, true , true , va);
                     break;
                 case 'z':
+                    to_print = "Not implemented";
+                    max = INT32_MAX;
+                    min = 0;
                     break;
                 // character types
                 case 'c':
@@ -207,6 +210,8 @@ int vsnprintf(char* s, size_t size, char const* template, va_list va)
                     break;
                 case 'e':
                     to_print = "Not implemented";
+                    max = INT32_MAX;
+                    min = 0;
                     break;
                 case '%':
                     buf[0] = '%';

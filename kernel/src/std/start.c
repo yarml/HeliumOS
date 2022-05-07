@@ -1,6 +1,7 @@
-#include <debug.h>
 #include <boot_info.h>
+#include <debug.h>
 #include <cpuid.h>
+#include <mem.h>
 
 void __init_stdio();
 
@@ -16,7 +17,7 @@ void _start()
                 LOOP;
     }
     __init_stdio();
-
+    mem_init();
     kmain();
 
     LOOP;

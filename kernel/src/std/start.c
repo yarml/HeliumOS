@@ -3,6 +3,8 @@
 #include <cpuid.h>
 #include <mem.h>
 
+#include <asm/scas.h>
+
 void __init_stdio();
 
 int kmain();
@@ -18,6 +20,7 @@ void _start()
     }
     __init_stdio();
     mem_init();
+
     kmain();
 
     LOOP;

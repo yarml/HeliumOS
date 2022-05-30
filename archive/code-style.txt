@@ -1,0 +1,9 @@
+use the suffix _size for variables holding the size of a structure in bytes
+use the suufix _len for variables holding the length of a structure in elements unit
+
+use _off for variables holding the offset from a pointer in bytes
+use _idx for variables holding the index from a pointer in elements units
+
+As a general rule(but not always true), with ESIZE the size of an element:
+    %_size = %_len * ESIZE
+    %_off = %_idx * ESIZE

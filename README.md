@@ -1,9 +1,11 @@
 # HeliumOs
 ## Index
-* [Introduction](#introduction)
-* [Getting the sources](#getting-the-sources)
-* [Source directory structure](#source-directory-structure)
-* [Build system](#build-system)
+- [HeliumOs](#heliumos)
+  - [Index](#index)
+  - [Introduction](#introduction)
+  - [Getting the sources](#getting-the-sources)
+  - [Source directory structure](#source-directory-structure)
+  - [Build system](#build-system)
 
 ## Introduction
 What is HeliumOs you may ask, it is a hobby operating system designed from 
@@ -63,9 +65,8 @@ then check [archive/dependencies.txt].
 and compile binutils, gcc, bootboot and mkbootimg before building the kernel,
 which can take a good half hour(or even more depending on your system))
 
-You can then run the boot image from a vm using `make run-qemu`
-
-Or install it in your system with `sudo make install`
+You can then run the boot image from a vm using `make run-qemu`, or install 
+it in your system with `sudo make install`
 (You may want to check [buildsys/70-install.mk] before running this one)
 
 [buildsys/]: buildsys/

@@ -10,10 +10,7 @@
 
 size_t strlen(char const* s)
 {
-    size_t len = 0;
-    for(; *s != 0; ++s)
-        ++len;
-    return len;
+    return -as_scasb((uint64_t) s, 0, -1) - 2;
 }
 
 char* strchr(char const* s, int c)
@@ -55,9 +52,7 @@ char* strpred(char const* s, fpt_chr_predicate pred)
 
 void* memchr (void const* block, int c, size_t size)
 {
-    register size_t idx = size - as_scasb((uint64_t) block, c, size) - 1;
-    if(idx != size - 1)
-        return (void*) block + idx;
+    size_t idx = size - as_scasb((uint64_t) block, c, size) - 1;
     return (((unsigned char*)block)[idx] == c) ? (void*) block + idx : 0;
 }
 

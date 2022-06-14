@@ -3,28 +3,48 @@
 
 #include <attributes.h>
 #include <stdbool.h>
+#include <stddef.h> 
+#include <error.h>
 
-typedef struct
+#include <arch/mem.h>
+
+struct MEM_PSEG_HEADER
 {
     void* padr;
     size_t size;
-} pack mem_pseg_header;
+} pack;
+typedef struct MEM_PSEG_HEADER mem_pseg_header;
 
-typedef struct
+struct MEM_PALLOCATION
 {
-    mem_pseg_header* header;
+    size_t header_off;
     void* padr;
     size_t size;
-} mem_pallocation;
+};
+typedef struct MEM_PALLOCATION mem_pallocation;
 
 void mem_init();
 
-/* mem_pp* */
+/* mem_p* */
 
 mem_pallocation mem_ppalloc(void* pheader, size_t size, bool cont, void* below);
-void mem_ppfree(mem_pallocation alloc);
+void mem_ppfree(void* pheader, mem_pallocation alloc);
 
-// Page size
-#define MEM_PS (4096)
+/* mem_v* */
+errno_t mem_vmap(void* vadr, void* padr, size_t size, int flags);
+errno_t mem_vumap(void* vadr, size_t size);
+
+// MAPF memory mapping flags
+#define MAPF_R   (1<<0) /* Read */
+#define MAPF_W   (1<<1) /* Write */
+#define MAPF_X   (1<<2) /* Execute */
+
+#define MAPF_U   (1<<3) /* User access */
+
+#define MAPF_P2M (1<<4) /* Map using 2 Mib page entries */
+#define MAPF_P1G (1<<5) /* Map using 1 Gib page entries */
+
+// MAPE memory mapping errors
+#define MAPE_ALN (-1) /* Alignment error */
 
 #endif

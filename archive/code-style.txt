@@ -7,3 +7,16 @@ use _idx for variables holding the index from a pointer in elements units
 As a general rule(but not always true), with ESIZE the size of an element:
     %_size = %_len * ESIZE
     %_off = %_idx * ESIZE
+
+
+Use #include <*> instead of "*" whenever possible
+
+Order #include from longest line to shortest line
+
+Separate #includes that include a file directly from those that include files inside a folder
+  Put those that include a file directly first
+  Example: even if asm/scas.h is longer than mem.h
+    we would still #include <mem.h> then #include <asm/scas.h>
+    #includes which have folders are separated with a line from other #includes
+
+

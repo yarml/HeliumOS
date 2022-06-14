@@ -1,18 +1,27 @@
 #include <math.h>
 
-int powi(int base, int power)
+intmax_t powi(intmax_t base, intmax_t power)
 {
-    int result = 1;
-    for(; power != 0; --power, result *= base);
+    intmax_t result = 1;
+    for (;;)
+    {
+        if (power & 1)
+            result *= base;
+        power >>= 1;
+        if (!power)
+            break;
+        base *= base;
+    }
+
     return result;
 }
 
-int exp10i(int power)
+intmax_t exp10i(intmax_t power)
 {
     return powi(10, power);
 }
 
-int abs(int i)
+intmax_t abs(intmax_t i)
 {
     return i < 0 ? -i : i;
 }

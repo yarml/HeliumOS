@@ -3,50 +3,79 @@
 * Allocate regions from physical address space, with a size hint
 * Free regions of the physical address space previously allocated
 * Prefer higher addresses when no constraints are forced
-* Constraints:
+* Support constraints:
   * Continuous region(Treat size as a must, not a hint)
   * Maximum address(The region should be below a certain address)
 
 ## Concepts
+### Memory segment
+A continuous range of addresses that point to valid RAM space, can be represented with a starting address and a size.
+Multiple allocations can be on the same segment.
+
 ### Memory region
-A continuous range of addresses that point to valid RAM addresses
+A part of a memory segment that represents a single allocation.
 
 ### PMM header
 The physical memory manager uses a header to keep track of different regions.
-The header is an array of variable sized elements(size is always a multiple of 8 bytes), each element is referred to as a segment header.
+The header is an array of variable sized elements(The size is a multiple of 8 bytes), each element is referred to as a segment header.
 
 ### Segment header
 The segment header consists of a small subheader containing a pointer to the memory area managed by that segment, and the size of the segment,
-followed by a bitmap where each bit represents the availability state of a MEM_PS@mem.h sized page.
+followed by a bitmap where each bit represents the availability state of a [mem.h]:MEM_PS sized page.
 
-## Implementation
+## Algorithms
 ### Initialization
-* Store bootboot's memory map backwards in a buffer(To make the algorithm prefer higher addresses)
-* Find a segment in physical space large enough to hold the PMM header(that buffer + bitmaps(The bitmaps are arrays of u64))
-* Subtract the size of the PMM header from the size of the segment
-* Initialize the bitmaps to 0s(except leftover pages, to 1s)
-* Copy the PMM header to its new place
-    
+```mermaid
+graph TD;
+  A[Copy bootboot's memory map backwards* to a buffer]-->B[Truncate segment sizes to be multiple of MEM_PS and aligned to MEM_PS];
+  B-->C[Find a segment in physical space large enough to hold the PMM header];
+  C-->D[Remove the size of the PMM header from the size of the segment];
+  D-->E[Copy the PMM header to its new place];
+  E-->F[Initialize the bitmaps to 0s, and leftover pages to 1s];
+```
+*: Copy the map backwards to make the algorithm prefer higher addresses
 ### Allocation
-* Traverse the memory map found in PMM header and find a segment that is below the maximum address if requested
-* Travers that segment's bitmap and find a free page that is still below the maximum address if requested
-* Count how many free pages are after this one until the requested size or a used page is reached
-* If the request was for a continuous region and size was reached, or if the request wasnt for a continuous region
-  * Mark the pages as used and return a mem_pallocation structure containing:
-    * The offset of the segment's header after the PMM header
-    * The physical address marking the start of the allocated region
-    * the actual size of the allocated region(Could be different than the requested size, even if continuous pages are requested)
-* Otherwise, find next free page and loop again
-* If no region meeting the contraints are found, return a mem_pallocation with all fields set to 0.
-
+```mermaid
+graph TD;
+  A[Find an adequat memory segment]-->B[Find the next free page];
+  B-->C[Count the number free pages, until the requested size or the first used page is reached];
+  C-->D{The region is adequat};
+  D--No-->B;
+  D--Yes-->E[Done];
+  A--No adequat region found-->F[Return a null allocation];
+```
 ### Deallocation
-* Use the offset to figure out the segment header address relative to the PMM header
-* Mark the requested pages as free
+Deallocation is as simple as clearing the bits pointed to by the allocation structure.
 
 ## Interface
 * struct mem_pallocation { header_off, padr, size }
 * func mem_ppaloc(pheader, size, continuous : bool, below : ptr) : mem_pallocation
 * func mem_ppfree(pheader, alloc : mem_pallocation) : void
+* func mem_init() : void
+* file [mem.h]
+* file [mem.c]
+* file [pmem.c]
+* file [internal_mem.h]
 
 # Virtual memory manager
-yes
+## Features
+* Map a region from virtual address space to a region from physical address space
+* Unmap a region from virtual address space
+* Set permissions on a maping
+* Support 4K, 2M and 1G page sizes
+
+## Concepts
+### VMM header
+Not implemented yet.
+
+## Implementation
+Not implemented yet.
+
+## Interface
+Not implemented yet.
+
+
+[mem.h]: ../kernel/include/mem.h
+[mem.c]: ../kernel/src/mem/mem.c
+[pmem.c]: ../kernel/src/mem/pmem.c
+[internal_mem.h]: ../kernel/src/mem/internal_mem.h

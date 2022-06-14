@@ -3,8 +3,6 @@
 #include <cpuid.h>
 #include <mem.h>
 
-#include <asm/scas.h>
-
 void __init_stdio();
 
 int kmain();

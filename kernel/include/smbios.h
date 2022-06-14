@@ -4,7 +4,7 @@
 #include <attributes.h>
 #include <stdint.h>
 
-typedef struct
+struct SMBIOS_ENTRY_POINT
 {
     char     anchor[4]        ;
     int8_t   checksum         ;
@@ -20,7 +20,7 @@ typedef struct
     uint32_t struct_adr       ;
     uint16_t struct_count     ;
     uint8_t  bcd_rev          ;
-} pack smbios_entry_point;
-
+} pack;
+typedef struct SMBIOS_ENTRY_POINT smbios_entry_point;
 
 #endif

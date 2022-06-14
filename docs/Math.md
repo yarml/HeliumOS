@@ -4,7 +4,7 @@ if the maximum order was $n - 1$.
 With the exception of the maximim pages of order $0$, which has a size of 1 page
 
 This can be represented as the recursive sequence:
-$$\begin{cases}S_{n+1} = 4K + 512 \bullet S_n \\ S_0 = 4K\end{cases}$$
+$$\begin{cases}S_{n+1} = 4K + 512 \bullet S_n \\\\ S_0 = 4K\end{cases}$$
 
 This recursive sequence can then be written in an absolute way as(idk how to formally prove this one, but it works):
 $$S_n = 4K \sum_{i=0}^{n-1} {512^i} + 4K \bullet 512^n$$

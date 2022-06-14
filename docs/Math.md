@@ -9,7 +9,8 @@ $$\begin{cases}S_{n+1} = 4K + 512 \bullet S_n \\\\ S_0 = 4K\end{cases}$$
 This recursive sequence can then be written in an absolute way as(idk how to formally prove this one, but it works):
 $$S_n = 4K \sum_{i=0}^{n-1} {512^i} + 4K \bullet 512^n$$
 
-Since $512^n$ is a geometric sequence, then $\sum_{i=0}^{n-1} {512^i} = \frac{1 - 512^n}{1 - 512}$
+Since $512^n$ is a geometric sequence, then
+$${\sum^{n-1}_{i=0}} {512^i} = \frac{1 - 512^n}{1 - 512}$$
 
 And so it follows that:
 $$S_n = 4K (\frac{1 - 512^n}{1 - 512} + 512^n)$$

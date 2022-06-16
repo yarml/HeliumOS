@@ -45,9 +45,6 @@ Otherwise you can download the sources in a [zip file].
 * ## [docs/]
   * `*` Documentation for HeliumOs.
 
-* ## [archive/]
-  * `*` files waiting to be integrated with the documentation.
-
 * ## ext/ (Build system generated)
   * `src/` contains source code for gcc, binutils, bootboot and mkbootimg.
   * `build` conatins configured build folder for gcc and binutils.
@@ -72,15 +69,12 @@ it in your system with `sudo make install`
 (You may want to check [buildsys/70-install.mk] before running this one)
 
 # Documentation
-Current documentation for HeliumOs can be found in [docs/]. 
-Additionally, [archive/] contains documentation in text files that 
-still need to be ported to markdown.
+Current documentation for HeliumOs can be found in [docs/].
 
 [buildsys/]: buildsys/
 [kernel/]: kernel/
 [sysroots/]: sysroots/
 [docs/]: docs/
-[archive/]: archive/
 [buildsys/70-install.mk]: buildsys/70-install.mk
 
 [dependencies]: docs/dependencies

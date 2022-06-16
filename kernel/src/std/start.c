@@ -14,7 +14,7 @@ void _start()
         uint32_t a, b, c, d;
         __cpuid(1, a, b, c, d);
         if(b >> 24 != bootboot.bspid)
-                LOOP;
+            LOOP;
     }
     __init_stdio();
     mem_init();

@@ -77,7 +77,7 @@ Current documentation for HeliumOs can be found in [docs/].
 [docs/]: docs/
 [buildsys/70-install.mk]: buildsys/70-install.mk
 
-[dependencies]: docs/dependencies
+[dependencies]: docs/Dependencies.md
 
 [make]: https://en.wikipedia.org/wiki/Make_(software)
 [zip file]: https://github.com/YavaCoco/HeliumOS/archive/refs/heads/master.zip

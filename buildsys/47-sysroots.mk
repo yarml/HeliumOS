@@ -1,0 +1,2 @@
+$(HOST_SYSROOT):
+	$(MKDIR) -p $(HOST_SYSROOT)

@@ -1,6 +1,6 @@
 # Targets to update gcc source code, configure gcc, and build gcc
 
-GCC_VERSION := 12.1.0
+GCC_VERSION := 11.2.0
 GCC_NAME := gcc-$(GCC_VERSION)
 GCC_LINK := https://ftp.gnu.org/gnu/gcc/$(GCC_NAME)/$(GCC_NAME).tar.gz
 

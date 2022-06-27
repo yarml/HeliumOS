@@ -68,6 +68,7 @@ OUT_DIR := $(BUILD_DIR)/out/
 
 BUILDSYS := buildsys/
 SEDDIR   := $(BUILDSYS)/sedscripts/
+IDEDIR   := $(BUILDSYS)/IDE/
 
 CLEAN := build
 

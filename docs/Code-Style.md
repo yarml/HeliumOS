@@ -13,6 +13,7 @@
     - [Subfolder includes](#subfolder-includes)
     - [Source folder include](#source-folder-include)
   - [Example](#example)
+- [Assembly](#assembly)
 
 # Variable naming
 ## Suffix `_size`
@@ -54,6 +55,9 @@ Those are includes that include files from `kernel/src` (i.e includes that are f
 
 ## Example
 The best example for how to #include is in [mem.c] as it has all three categories.
+
+# Assembly
+When it is necessary to execute specific instructions(ie necessary to use assembly), inline assembly is to be preffered only when a single, no argument instruction is to be executed, or when execution speed is very crucial, otherwise, it is always preferred to make an assembly function and call it from C code.
 
 
 [mem.c]: ../kernel/src/mem/mem.c

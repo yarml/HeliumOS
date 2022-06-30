@@ -7,13 +7,18 @@
 #include <debug.h>
 
 FILE* stdout;
+FILE* stderr;
 
 static FILE __stdout;
+static FILE __stderr;
 
 void __init_stdio()
 {
     stdout = &__stdout;
+    stderr = &__stderr;
+
     __stdout = dbg_output_file();
+    __stderr = dbg_output_file();
 }
 
 
@@ -52,9 +57,7 @@ int vfprintf(FILE* stream, char const* template, va_list va)
 
     vsnprintf(buf, len + 1, template, va);
     int ret = stream->write_string(stream, buf);
-    if(ret)
-        return ret;
-    return len;
+    return ret ? ret : len;
 }
 
 int snprintf(char* s, size_t size, char const* template, ...)
@@ -259,4 +262,27 @@ int vsnprintf(char* s, size_t size, char const* template, va_list va)
     if(s)
         *s = 0;
     return total_chars;
+}
+
+
+int fputc(int c, FILE* stream)
+{
+    if(stream->write_chr(stream, c))
+        return EOF;
+    return c;
+}
+
+int putchar(int c)
+{
+    return fputc(c, stdout);
+}
+
+int fputs(char const* s, FILE* stream)
+{
+    return stream->write_string(stream, s) ? EOF : strlen(s);
+}
+
+int puts(char const* s)
+{
+    return fputs(s, stdout);
 }

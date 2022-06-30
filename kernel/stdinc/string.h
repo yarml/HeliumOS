@@ -25,6 +25,8 @@ size_t strlen(char const* s);
 **/
 char* strchr(char const* s, int c);
 
+char* strcat(char* to, char const* from);
+char* strcpy(char* to, char const* from);
 
 /**
  * \brief Finds the first occurence of a character that verifies a condition

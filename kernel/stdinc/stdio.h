@@ -4,6 +4,8 @@
 #include <stddef.h>
 #include <stdarg.h>
 
+#define EOF (int)(-1)
+
 struct __stdio__file;
 typedef struct __stdio__file FILE;
 struct __stdio__file
@@ -13,6 +15,7 @@ struct __stdio__file
 };
 
 extern FILE* stdout;
+extern FILE* stderr;
 
 int printf(const char* template, ...);
 int vprintf(char const* template, va_list va);
@@ -22,5 +25,15 @@ int vfprintf(FILE* stream, char const* template, va_list va);
 
 int snprintf(char* s, size_t size, char const* template, ...);
 int vsnprintf(char* s, size_t size, char const* template, va_list va);
+
+
+int fputc(int c, FILE* stream);
+int putchar(int c);
+
+// idk they said it's usually implemented as a macro
+#define putc(c, s) (s->write_chr(s, c) ? EOF : c)
+
+int fputs(char const* s, FILE* stream);
+int puts(char const* s);
 
 #endif

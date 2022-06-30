@@ -21,6 +21,17 @@ char* strchr(char const* s, int c)
     return (char*) s;
 }
 
+char* strcat(char* to, char const* from)
+{
+    strcpy(to + strlen(to), from);
+    return to;
+}
+
+char* strcpy(char* to, char const* from)
+{
+    return memcpy(to, from, strlen(from) + 1);
+}
+
 char* strpred(char const* s, fpt_chr_predicate pred)
 {
     for(; !pred(*s); ++s)

@@ -13,20 +13,24 @@
 
 void* i_pmm_header = 0;
 size_t i_mmap_usable_len = 0;
-mem_vpstruct_ptr* i_pml4 = 0;
+mem_vpstruct_ptr* i_pmlmax = 0;
 
 
 size_t i_order_struct_sizes[ORDER_COUNT];
+size_t i_order_ps[ORDER_COUNT];
 
 void mem_init()
 {
     printf("begin mem_init()\n");
 
-    /* precalculate order structure sizes */
+    /* precalculate order structure sizes and page sizes */
     // TODO: figure a way to do it at compile time
     for(size_t i = 0; i < ORDER_COUNT; ++i)
-        i_order_struct_sizes[i] = ORDER_STRUCT_SIZE(i);
-
+    {
+        i_order_struct_sizes[i]  = ORDER_STRUCT_SIZE(i);
+        i_order_ps[i] = ORDER_PS(i);
+    }
+    
 
     size_t mmap_len = (bootboot.size - sizeof(BOOTBOOT)) / sizeof(MMapEnt) + 1;
 
@@ -75,11 +79,9 @@ void mem_init()
     }
     printf("pmm header(%016p, %05lu)\n", i_pmm_header, pmm_header_off);
 
+
     ctlr_cr3_npcid cr3 = as_scr3();
-    i_pml4 = CTLR_CR3_NPCID_PML4_PADR(cr3);
+    i_pmlmax = CTLR_CR3_NPCID_PML4_PADR(cr3);
 
     printf("end mem_init()\n");
-
-    printf("order %u struct size would be %lup\n", 3, ORDER_STRUCT_SIZE(3) / MEM_PS);
-
 }

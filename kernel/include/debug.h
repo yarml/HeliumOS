@@ -3,11 +3,12 @@
 
 #include <stdint.h>
 #include <stdio.h>
+#include <sys.h>
 
 /**
  * \brief Puts the thread in an infinite loop(with no way out!).
  */
-#define LOOP while(1)
+#define LOOP halt()
 
 #define DEBUG_CONSOLE (0xE9)
 

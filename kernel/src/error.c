@@ -1,12 +1,12 @@
 #include <string.h>
 #include <error.h>
 #include <stdio.h>
-#include <asm/sys.h>
+#include <sys.h>
 
 void error_general(char const* details)
 {
     fputs(details, stderr);
-    as_sys_stop();
+    stop();
 }
 
 void error_out_of_memory(char const* details)

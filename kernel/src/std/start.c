@@ -1,5 +1,5 @@
 #include <boot_info.h>
-#include <debug.h>
+#include <sys.h>
 #include <cpuid.h>
 #include <mem.h>
 
@@ -14,12 +14,12 @@ void _start()
         uint32_t a, b, c, d;
         __cpuid(1, a, b, c, d);
         if(b >> 24 != bootboot.bspid)
-            LOOP;
+            stop();
     }
     __init_stdio();
     mem_init();
 
     kmain();
 
-    LOOP;
+    halt();
 }

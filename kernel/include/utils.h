@@ -21,7 +21,11 @@
 #define ALIGN_DN(n, b) (((n)          ) & ~((b) - 1))
 #define ALIGN_UP(n, b) (((n) + (b) - 1) & ~((b) - 1))
 
-// returns index of first set bit, -1 if not bit is set
+// b could be of any base
+#define GALIGN_UP(n, b) (((n) % (b)) ? ((n) + ((b) - ((n)%(b)))) : (n))
+#define GALIGN_DN(n, b) ((n) - ((n) % (b)))
+
+// returns index of first set bit, -1 if no bit is set
 #define FFS(n) (__builtin_ffsll((uint64_t) n) - 1)
 
 #define BITRANGE(s, e) ((uint64_t)((UINT64_MAX >> (64 - ((e) - (s)))) << (s)))

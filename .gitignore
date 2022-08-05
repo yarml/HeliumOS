@@ -4,3 +4,4 @@ sysroots/initrd/sys/helium
 build/
 kernel/font.psf
 .vscode/
+tests/

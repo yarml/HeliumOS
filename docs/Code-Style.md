@@ -57,7 +57,7 @@ Those are includes that include files from `kernel/src` (i.e includes that are f
 The best example for how to #include is in [mem.c] as it has all three categories.
 
 # Assembly
-When it is necessary to execute specific instructions(ie necessary to use assembly), inline assembly is to be preffered only when a single, no argument instruction is to be executed, or when execution speed is very crucial, otherwise, it is always preferred to make an assembly function and call it from C code.
+Assembly code is to always be minimized, and when necessary it should always be abstracted in a function written in an `.asm` file or a preprocessor macro with inline assembly if the instruction is simple enough.
 
 
 [mem.c]: ../kernel/src/mem/mem.c

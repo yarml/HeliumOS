@@ -37,10 +37,6 @@ char* strcpy(char* to, char const* from);
 **/
 char* strpred(char const* s, fpt_chr_predicate pred);
 
-/** Like strpred, except the predicate function also takes a va_list for additional arguments */
-// TODO: Implement it
-char* strapred(char const* s, fpt_chr_predicate_args pred);
-
 // mem* functions
 
 /**

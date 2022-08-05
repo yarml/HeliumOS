@@ -2,11 +2,14 @@
 #include <stdint.h>
 #include <string.h>
 #include <ctype.h>
+#include <utils.h>
 #include <math.h>
 
 #include <asm/movs.h>
 #include <asm/stos.h>
 #include <asm/scas.h>
+
+#define MASS_OP_MIN_BYTES (64)
 
 size_t strlen(char const* s)
 {
@@ -40,27 +43,6 @@ char* strpred(char const* s, fpt_chr_predicate pred)
     return (char*) s;
 }
 
-#define QLEN(size)    ((size                                                   ) / 8)
-#define DLEN(size)    ((size - 8 * QLEN(size)                                  ) / 4)
-#define WLEN(size)    ((size - 8 * QLEN(size) - 4 * DLEN(size)                 ) / 2)
-#define BLEN(size)    ((size - 8 * QLEN(size) - 4 * DLEN(size) - 2 * WLEN(size)) / 1)
-
-#define QORG(h) (uint64_t) (     h                  )
-#define DORG(h) (uint64_t) (QORG(h) + 8 * QLEN(size))
-#define WORG(h) (uint64_t) (DORG(h) + 4 * DLEN(size))
-#define BORG(h) (uint64_t) (WORG(h) + 2 * WLEN(size))
-
-#define RQORG(h, size) (uint64_t) (     (h + size) - 1             )
-#define RDORG(h, size) (uint64_t) (RQORG(h,  size) - 8 * QLEN(size))
-#define RWORG(h, size) (uint64_t) (RDORG(h,  size) - 4 * DLEN(size))
-#define RBORG(h, size) (uint64_t) (RWORG(h,  size) - 2 * WLEN(size))
-
-#define BBYTE(c) ((uint8_t ) (                                         (c)))
-#define WBYTE(c) ((uint16_t) ((c << 8 )                         | BBYTE(c)))
-#define DBYTE(c) ((uint32_t) (((uint32_t) c << 24) | ((uint32_t) c << 16)             | WBYTE(c)))
-#define QBYTE(c) ((uint64_t) (((uint64_t) c << 56) | ((uint64_t) c << 48) | ((uint64_t) c << 40)| ((uint64_t) c << 32) | DBYTE(c)))
-
-
 void* memchr (void const* block, int c, size_t size)
 {
     size_t idx = size - as_scasb((uint64_t) block, c, size) - 1;
@@ -83,46 +65,138 @@ int memcmp (void const* b1, void const* b2, size_t size)
 
 void* memset(void* block, int c, size_t size)
 {
-    as_stosq(QORG(block), QBYTE(c), QLEN(size));
-    as_stosd(DORG(block), DBYTE(c), DLEN(size));
-    as_stosw(WORG(block), WBYTE(c), WLEN(size));
-    as_stosb(BORG(block), BBYTE(c), BLEN(size));
+    void* oblock = block;
 
-    return block;
+
+    while((uintptr_t)block % 8 && size)
+    {
+        *(uint8_t*)block++ = c;
+        --size;
+    }
+    if(size >= MASS_OP_MIN_BYTES)
+    {
+        uint64_t c64 = c;
+        c64 = c64 << 8  | c64;
+        c64 = c64 << 16 | c64;
+        c64 = c64 << 32 | c64;
+        as_stosq((uint64_t)block, c64, size / 8);
+        block += size / 8;
+        size -= size / 8;
+    }
+    as_stosb((uint64_t)block, c, size);
+
+    return oblock;
 }
-
 
 void* memcpy(void* to, void const* from, size_t size)
 {
-    as_movsq(QORG(to), QORG(from), QLEN(size));
-    as_movsd(DORG(to), DORG(from), DLEN(size));
-    as_movsw(WORG(to), WORG(from), WLEN(size));
-    as_movsb(BORG(to), BORG(from), BLEN(size));
-    return to;
+    void* oto = to;
+
+    // TODO: Maybe max_alignment can be calculated in constant time
+    size_t max_alignment = 1;
+
+    if((uintptr_t) to % 8 == (uintptr_t)from % 8)
+        max_alignment = 8;
+    else if((uintptr_t)to % 4 == (uintptr_t)from % 4)
+        max_alignment = 4;
+    else if((uintptr_t)to % 2 == (uintptr_t)from % 2)
+        max_alignment = 2;
+
+    // copy individual bytes until both from and to are aligned to max_alignment
+    // at worst case, it should individually copy 7 bytes
+    while(((uintptr_t)to % max_alignment || (uintptr_t)from % max_alignment) && size)
+    {
+        *(uint8_t*)to++ = *(uint8_t*)from++;
+        --size;
+    }
+    // Mass copy the now aligned bytes if there exist enough of them for mass copying to be efficient
+    if(size >= MASS_OP_MIN_BYTES)
+    {
+        void(*movsfp)(uint64_t, uint64_t, uint64_t);   
+        switch(max_alignment)
+        {
+            case 8:
+                movsfp = as_movsq;
+                break;
+            case 4:
+                movsfp = as_movsd;
+                break;
+            case 2:
+                movsfp = as_movsw;
+                break;
+            default:
+                movsfp = as_movsb;
+                break;
+        }
+        movsfp((uint64_t)to, (uint64_t)from, size / max_alignment);
+        to += ALIGN_DN(size, max_alignment);
+        from += ALIGN_DN(size, max_alignment);
+        size -= ALIGN_DN(size, max_alignment);
+    }
+    // Copy leftover bytes, should be a maximum of 7
+    as_movsb((uint64_t)to, (uint64_t)from, size);
+
+    return oto;
 }
 
-#include <stdio.h>
 
 void* memmove(void* to, void const* from, size_t size)
 {
     if(to < from || from + size < to)
     {
-        as_movsq(QORG(to), QORG(from), QLEN(size));
-        as_movsd(DORG(to), DORG(from), DLEN(size));
-        as_movsw(WORG(to), WORG(from), WLEN(size));
-        as_movsb(BORG(to), BORG(from), BLEN(size));
-        return to;
+        return memcpy(to, from, size);
     }
 
-/*     as_rmovsq(QORG(to), QORG(from), QLEN(size));
-    as_rmovsd(DORG(to), DORG(from), DLEN(size));
-    as_rmovsw(WORG(to), WORG(from), WLEN(size));
-    as_rmovsb(BORG(to), BORG(from), BLEN(size)); */
+    void* oto = to;
 
-    // TODO: I don't know why the above code doesn't work, using movsb for now
-    as_rmovsb((uint64_t) (to + size - 1), (uint64_t) (from + size - 1) , size);
+    to += size - 1;
+    from += size - 1;
 
-    return to;
+    // TODO: Maybe max_alignment can be calculated in constant time
+    size_t max_alignment = 1;
+
+    if((uintptr_t) to % 8 == (uintptr_t)from % 8)
+        max_alignment = 8;
+    else if((uintptr_t)to % 4 == (uintptr_t)from % 4)
+        max_alignment = 4;
+    else if((uintptr_t)to % 2 == (uintptr_t)from % 2)
+        max_alignment = 2;
+
+    // copy individual bytes until both from and to are aligned to max_alignment
+    // at worst case, it should individually copy 7 bytes
+    while(((uintptr_t)to % max_alignment || (uintptr_t)from % max_alignment) && size)
+    {
+        *(uint8_t*)to-- = *(uint8_t*)from--;
+        --size;
+    }
+    // Mass copy the now aligned bytes if there exist enough of them for mass copying to be efficient
+    if(size >= MASS_OP_MIN_BYTES)
+    {
+        void(*movsfp)(uint64_t, uint64_t, uint64_t);   
+        switch(max_alignment)
+        {
+            case 8:
+                movsfp = as_rmovsq;
+                break;
+            case 4:
+                movsfp = as_rmovsd;
+                break;
+            case 2:
+                movsfp = as_rmovsw;
+                break;
+            default:
+                movsfp = as_rmovsb;
+                break;
+        }
+        movsfp((uint64_t)to, (uint64_t)from, size / max_alignment);
+        to -= ALIGN_DN(size, max_alignment);
+        from -= ALIGN_DN(size, max_alignment);
+        size -= ALIGN_DN(size, max_alignment);
+    }
+    // Copy leftover bytes, should be a maximum of 7
+    as_rmovsb((uint64_t)to, (uint64_t)from, size);
+
+    return oto;
 }
 
 
@@ -133,21 +207,6 @@ int memsum(void* block, size_t size)
         sum += *(int8_t*)block;
     return sum;
 }
-
-#undef QLEN
-#undef DLEN
-#undef WLEN
-#undef BLEN
-
-#undef QORG
-#undef DORG
-#undef WORG
-#undef BORG
-
-#undef RQORG
-#undef RDORG
-#undef RWORG
-#undef RBORG
 
 char* ntos(intmax_t n, int base, char* tail){
     bool negative = n < 0;

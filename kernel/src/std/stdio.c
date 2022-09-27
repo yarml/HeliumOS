@@ -196,7 +196,6 @@ int vsnprintf(char* s, size_t size, char const* template, va_list va)
                     break;
                 case 'z':
                 {
-                    printf("begin z_vsnprintf()\n");
                     char* tail = buf + PRINTF_BUF_SIZE - 1;
                     size_t unit_order = 0;
                     size_t denom = 1;
@@ -209,18 +208,15 @@ int vsnprintf(char* s, size_t size, char const* template, va_list va)
                     --tail;
                     while(unit_order < UNITS_COUNT)
                     {
-                        printf("begin unit_order(%ld, %ld)\n", unit_order, denom);
                         if(num / denom % 1024)
                         {
                             *tail = g_units_sign[unit_order];
                             tail = utos(num / denom % 1024, 10, tail) - 1;
                         }
-                        printf("end unit_order(%ld, %ld)\n", unit_order, denom);
                         denom *= 1024;
                         ++unit_order;
                     }
                     to_print = tail + 1;
-                    printf("end z_vsnprintf()\n");
                     break;
                 }
                 // character types

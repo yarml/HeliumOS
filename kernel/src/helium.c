@@ -1,8 +1,3 @@
-#include <boot_info.h>
-#include <string.h>
-#include <smbios.h>
-#include <stdio.h>
-#include <debug.h>
 
 // called from std/start.c:_start()
 int kmain()

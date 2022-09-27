@@ -1,6 +1,6 @@
 # Targets to update binutils source code, configure binutils, and build binutils
 
-BINUTILS_VERSION := 2.38
+BINUTILS_VERSION := 2.39
 BINUTILS_NAME := binutils-$(BINUTILS_VERSION)
 BINUTILS_LINK := https://ftp.gnu.org/gnu/binutils/$(BINUTILS_NAME).tar.gz
 

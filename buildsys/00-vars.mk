@@ -35,7 +35,7 @@ CP     := cp -rf
 LS     := ls
 MV     := mv -f
 RM     := rm -rf
-SH     := sh
+SH     := bash
 TR     := tr
 
 # if this has a problem detecting your distro, just put your distro name manually
@@ -46,7 +46,6 @@ KERNEL_SRC_DIR := $(KERNEL_DIR)/src/
 KERNEL_INC_DIR := $(KERNEL_DIR)/include/
 STD_INC        := $(KERNEL_DIR)/stdinc/
 LINKER_SCRIPT  := $(KERNEL_DIR)/link.ld
-FONT_FILE      := $(KERNEL_DIR)/font.psf
 
 BOOTBOOT_CFG := $(KERNEL_DIR)/bootboot.config
 BOOTIMG_CFG  := $(KERNEL_DIR)/bootimg.json

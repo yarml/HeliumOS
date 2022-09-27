@@ -33,7 +33,7 @@ graph TD;
   D-->E[Copy the PMM header to its new place];
   E-->F[Initialize the bitmaps to 0s, and leftover pages to 1s];
 ```
-*: Copy the map backwards to make the algorithm prefer higher addresses
+*: Copy the map backwards to make the algorithm prefer higher addresses when not constrained
 ### Allocation
 ```mermaid
 graph TD;
@@ -42,7 +42,9 @@ graph TD;
   C-->D{The region is adequat};
   D--No-->B;
   D--Yes-->E[Done];
+  
   A--No adequat region found-->F[Return a null allocation];
+  B--No more free pages found-->A;
 ```
 ### Deallocation
 Deallocation is as simple as clearing the bits pointed to by the allocation structure.

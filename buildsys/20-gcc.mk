@@ -1,5 +1,8 @@
 # Targets to update gcc source code, configure gcc, and build gcc
 
+# TODO: Idk, but I have an urge to use clang instead
+
+# TODO: figure out why any more recent version does not work
 GCC_VERSION := 11.2.0
 GCC_NAME := gcc-$(GCC_VERSION)
 GCC_LINK := https://ftp.gnu.org/gnu/gcc/$(GCC_NAME)/$(GCC_NAME).tar.gz

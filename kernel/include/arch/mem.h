@@ -21,6 +21,7 @@ struct MEM_VPSTRUCT_PTR
     uint64_t xd      :1 ;
 } pack;
 typedef struct MEM_VPSTRUCT_PTR mem_vpstruct_ptr;
+
 /* pdpte, pdte with ps=1 */
 struct MEM_VPSTRUCT
 {

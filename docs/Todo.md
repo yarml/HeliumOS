@@ -4,6 +4,7 @@
 - [Do no forget](#do-no-forget)
 - [Optimizations](#optimizations)
 - [Cosmetics](#cosmetics)
+- [Todo for the far far future](#todo-for-the-far-far-future)
 
 # Features
 * [X] Physical memory management
@@ -24,3 +25,6 @@
 # Cosmetics
 * Turn all for loops into while loops.
 
+# Todo for the far far future
+* Implement HeliumBootboot, instead of relying on the reference implementation.
+The implementation can be minimal to Helium's needs at first, that is boot from UEFI.

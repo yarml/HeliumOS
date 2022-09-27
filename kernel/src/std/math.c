@@ -1,9 +1,9 @@
 #include <math.h>
 
-intmax_t powi(intmax_t base, intmax_t power)
+intmax_t powi(intmax_t base, uintmax_t power)
 {
     intmax_t result = 1;
-    for (;;)
+    while(1)
     {
         if (power & 1)
             result *= base;
@@ -12,16 +12,15 @@ intmax_t powi(intmax_t base, intmax_t power)
             break;
         base *= base;
     }
-
     return result;
 }
 
-intmax_t exp10i(intmax_t power)
+uintmax_t exp10i(uintmax_t power)
 {
     return powi(10, power);
 }
 
-intmax_t abs(intmax_t i)
+uintmax_t abs(intmax_t i)
 {
     return i < 0 ? -i : i;
 }

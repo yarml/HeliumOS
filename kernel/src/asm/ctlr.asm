@@ -1,7 +1,7 @@
-global as_scr3
+global as_rcr3
 global as_rlcr3
 
-as_scr3:
+as_rcr3:
     mov rax, cr3
     ret
 

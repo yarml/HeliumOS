@@ -79,8 +79,8 @@ void mem_init()
     }
     printf("pmm header(%016p, %05lu)\n", i_pmm_header, pmm_header_off);
 
-
-    ctlr_cr3_npcid cr3 = as_scr3();
+    /* Initialize virtual memory manager */
+    ctlr_cr3_npcid cr3 = as_rcr3();
     i_pmlmax = CTLR_CR3_NPCID_PML4_PADR(cr3);
 
     printf("end mem_init()\n");

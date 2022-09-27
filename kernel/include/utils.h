@@ -30,4 +30,8 @@
 
 #define BITRANGE(s, e) ((uint64_t)((UINT64_MAX >> (64 - ((e) - (s)))) << (s)))
 
+#define UNITS_COUNT (7)
+
+extern char g_units_sign[UNITS_COUNT];
+
 #endif

@@ -97,7 +97,7 @@ int memsum(void* block, size_t size);
 
 /**
  * \brief Converts the signed integer \a i into a string ending at \a tail - 1.
- * \param i: The number to convert
+ * \param n: The number to convert
  * \param base: The base with which \a i is interpreted
  * \param tail: Pointer to where the caller expects there to be the end of the string,
  *              this function will start from there and write the number backwards untils it finishes
@@ -109,7 +109,7 @@ char* ntos(intmax_t n, int base, char* tail);
 
 /**
  * \brief Converts the unsigned integer \a i into a string ending at \a tail - 1.
- * \param i: The number to convert
+ * \param n: The number to convert
  * \param base: The base with which \a i is interpreted
  * \param tail: Pointer to where the caller expects there to be the end of the string,
  *              this function will start from there and write the number backwards untils it finishes

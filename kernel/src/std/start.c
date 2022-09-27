@@ -19,14 +19,15 @@ void _start()
         if(b >> 24 != bootboot.bspid)
             stop();
     }
+    // We can't printf("Initializing stdio") :P
     __init_stdio();
-    printf("Initialized stdio");
+    printf("Initialized stdio\n");
     
-    printf("Initializing memory structures");
+    printf("Initializing memory structures\n");
     mem_init();
 
-    printf("Calling main function");
+    printf("Calling main function\n");
     kmain();
-
+    
     halt();
 }

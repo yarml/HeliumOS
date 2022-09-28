@@ -29,5 +29,6 @@ void _start()
     printf("Calling main function\n");
     kmain();
     
+    printf("halt()\n");
     halt();
 }

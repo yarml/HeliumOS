@@ -9,6 +9,7 @@
 # Features
 * [X] Physical memory management
 * [ ] Virtual memory management
+* [ ] Docker based build system
 * [ ] Kernel heap
 * [ ] Interrupt handling
 * [ ] Load kernel modules

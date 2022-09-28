@@ -1,10 +1,18 @@
 
 .PHONY: dep
 dep:
+	$(info ***README*** It is preferred to refer to docs/Dependencies.md and install dependencies on your own, or check $(BUILDSYS)/90-dep.mk)
+	$(info ***README*** If this fails, you should probably run make dep as root (sudo make dep))
+
+	@$(ECHO) -n 'Are you sure you want to continue? [Y/n]: ' && $(READ) ans && \
+		if [ $${ans:-'N'} != 'y' ] && [ $${ans:-'N'} != 'Y' ]; then \
+			$(ECHO) Operation canceled; \
+			$(EXIT) 1; \
+		fi
+
 	$(info Installing dependencies for '$(DISTRO)')
-	$(info If this fails, you should probably run make dep as root (sudo make dep))
 ifeq ($(DISTRO),Arch)
-	pacman -S base-devel gmp libmpc mpfr nasm zip gnu-efi qemu edk2-ovmf gdb tmux socat
+	pacman -S base-devel gmp libmpc mpfr nasm zip gnu-efi qemu edk2-ovmf gdb tmux socat python
 else
 	$(error Unsupported distro $(DISTRO), you'll need to install dependencies on your own)
 endif

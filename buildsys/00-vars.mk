@@ -14,16 +14,20 @@ MKFIFO := mkfifo
 UMOUNT := umount
 MKDIR  := mkdir
 MOUNT  := mount
+SHELL  := bash
 TOUCH  := touch
 ECHO   := echo
 EXIT   := exit
 SOCAT  := socat
-TEST   := test
-TMUX   := tmux
+FALSE  := false
 CURL   := curl
 FIND   := find
 GZIP   := gzip -f
 MAKE   := make -j4
+READ   := read
+TEST   := test
+TMUX   := tmux
+TRUE   := true
 CAT    := cat
 CUT    := cut
 GDB    := gdb
@@ -34,9 +38,10 @@ CD 	   := cd
 CP     := cp -rf
 LS     := ls
 MV     := mv -f
+PY	   := python3
 RM     := rm -rf
-SH     := bash
 TR     := tr
+WC     := wc
 
 # if this has a problem detecting your distro, just put your distro name manually
 DISTRO := $(shell $(LSB_RELEASE) -i | $(CUT) -d ':' -f2 | $(TR) -d " \t")
@@ -68,6 +73,8 @@ OUT_DIR := $(BUILD_DIR)/out/
 BUILDSYS := buildsys/
 SEDDIR   := $(BUILDSYS)/sedscripts/
 IDEDIR   := $(BUILDSYS)/IDE/
+PYDIR    := $(BUILDSYS)/pyscripts
+SHDIR    := $(BUILDSYS)/shscripts
 
 CLEAN := build
 

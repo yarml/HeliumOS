@@ -37,5 +37,8 @@ This is currently supported on:
 - tmux
 - socat
 
+# Additional dependencies
+Some features offered by the build system require additional features
+- python3
 
 Keep in mind that package names differ from distributions, so you might need to do more googling.

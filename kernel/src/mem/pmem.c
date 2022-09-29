@@ -27,7 +27,7 @@ mem_pallocation mem_ppalloc(void* pheader, size_t size, size_t alignment, bool c
 
     if(!size)
     {
-        alloc.error = ERR_MEM_SMALL_SIZE;
+        alloc.error = ERR_MEM_NULL_SIZE;
         return alloc;
     }
 

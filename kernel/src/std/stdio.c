@@ -24,9 +24,20 @@ void __init_stdio()
     __stderr = dbg_output_file();
 }
 
+int tpf(char const* template, ...)
+{
+    /* Implementation copied from printf() */
+    va_list va;
+    va_start(va, template);
+    int ret = vprintf(template, va);
+    va_end(va);
+    return ret;
+}
+
 
 int printf(const char* template, ...)
 {
+    // TODO: If this function changes, tpf() should also be updated to be similar
     va_list va;
     va_start(va, template);
     int ret = vprintf(template, va);

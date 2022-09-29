@@ -17,7 +17,7 @@ struct __stdio__file
 extern FILE* stdout;
 extern FILE* stderr;
 
-int printf(const char* template, ...);
+int printf(char const* template, ...);
 int vprintf(char const* template, va_list va);
 
 int fprintf(FILE* stream, char const* template, ...);
@@ -35,5 +35,8 @@ int putchar(int c);
 
 int fputs(char const* s, FILE* stream);
 int puts(char const* s);
+
+/* Temporary printf, used when in the middle of implementing a feature to debug out internal information */
+int tpf(char const* template, ...);
 
 #endif

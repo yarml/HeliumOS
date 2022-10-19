@@ -29,6 +29,12 @@ void _start()
     printf("Calling main function\n");
     kmain();
 
+
+    tpf("Testing mem_vmap()\n");
+
+    mem_vmap(0xFFFFFFFFF0000000, 0, 4096, 0);
+    tpf("Testing mem_vmap done.\n");
+
     printf("halt()\n");
     halt();
 }

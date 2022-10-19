@@ -62,11 +62,11 @@ struct MEM_VPSTRUCT2
     uint64_t free2   :7 ;
     uint64_t prot_key:4 ;
     uint64_t xd      :1 ;
-};
+} pack;
 typedef struct MEM_VPSTRUCT2 mem_vpstruct2;
 
 // Substruct address, s : mem_vpstruct_ptr*
-#define SS_PADR(s) (void*) (((s)->ss_padr << 28) & 0xFFFFFFFFFFFFF000)
+#define SS_PADR(s) (void*) (((s)->ss_padr << 12) & 0xFFFFFFFFFFFFF000)
 
 // Page size
 #define MEM_PS (4096)

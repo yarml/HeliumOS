@@ -23,11 +23,6 @@
 #define ORDER_COUNT (4)
 #define MAX_ORDER   (ORDER_COUNT - 1)
 
-// TODO: I am unsure if this would work with page sizes different than 4K
-// but hey, I only support x64 rn, so no worries
-// TODO: If n is known at compile time, ORDER_STRUCT_SIZE(n) can be known at compile time
-// but will be calculated at run time anyway... Figure out a way to calculate it at compile time whenever possible
-#define ORDER_VSPSTRUCT_SIZE(n) (size_t)(8 * powi(512, ORDER_COUNT - (n)))
 
 // TODO: calculate at compile time if possible
 #define ORDER_PS(n) (size_t)(4096 * powi(512, (n)))
@@ -39,10 +34,6 @@ extern void* i_pmm_header;
 extern size_t i_mmap_usable_len;
 extern mem_vpstruct_ptr* i_pmlmax;
 
-extern size_t i_order_vspstruct_sizes[ORDER_COUNT];
-extern size_t i_order_vspstruct_off[ORDER_COUNT];
 extern size_t i_order_ps[ORDER_COUNT];
-
-extern size_t i_vspstruct_total_size;
 
 #endif

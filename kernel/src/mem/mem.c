@@ -15,29 +15,17 @@ void* i_pmm_header = 0;
 size_t i_mmap_usable_len = 0;
 mem_vpstruct_ptr* i_pmlmax = 0;
 
-
-size_t i_order_vspstruct_sizes[ORDER_COUNT];
-size_t i_order_vspstruct_off[ORDER_COUNT];
 size_t i_order_ps[ORDER_COUNT];
-size_t i_vspstruct_total_size;
 
 void mem_init()
 {
     printf("begin mem_init()\n");
 
-    /* precalculate order structure sizes and page sizes */
+    /* precalculate order page sizes */
     // TODO: figure a way to do it at compile time
-    i_vspstruct_total_size = 0;
     for(size_t i = 0; i < ORDER_COUNT; ++i)
     {
-        size_t corder_vspstruct_size = ORDER_VSPSTRUCT_SIZE(i);
-        i_order_ps[i] = ORDER_PS(i);
-        i_order_vspstruct_sizes[i] = corder_vspstruct_size;
-        i_vspstruct_total_size += corder_vspstruct_size;
-        if(!i)
-            i_order_vspstruct_off[0] = 0;
-        else
-            i_order_vspstruct_off[i] = i_order_vspstruct_off[i - 1] + i_order_ps[i - 1];
+        i_order_ps[i] = ORDER_PS(i);        
     }
 
     size_t mmap_len = (bootboot.size - sizeof(BOOTBOOT)) / sizeof(MMapEnt) + 1;
@@ -90,17 +78,6 @@ void mem_init()
     /* Initialize virtual memory manager */
     ctlr_cr3_npcid cr3 = as_rcr3();
     i_pmlmax = CTLR_CR3_NPCID_PML4_PADR(cr3);
-
-    printf("VSPSTRUCT total size(%lz)\n", i_vspstruct_total_size);
-
-
-    printf("VSPSTRUCT offsets{%lz, %lz, %lz, %lz}\n",
-        i_order_vspstruct_off[0],
-        i_order_vspstruct_off[1],
-        i_order_vspstruct_off[2],
-        i_order_vspstruct_off[3]
-    );
-    
 
     printf("end mem_init()\n");
 }

@@ -18,4 +18,4 @@ debug: $(HELIUM_IMG)
 	$(TMUX) new $(GDB) -tui \; \
 		splitp -h $(QEMU_CMD) -s -S\
 			-monitor unix:$(BUILD_DIR)/qms,server\; \
-		splitp -v $(SH) $(SHDIR)/monitor.sh "$(SOCAT) -,echo=0,icanon=0 unix-connect:$(BUILD_DIR)/qms"
+		splitp -v $(SHELL) $(SHDIR)/monitor.sh "$(SOCAT) -,echo=0,icanon=0 unix-connect:$(BUILD_DIR)/qms"

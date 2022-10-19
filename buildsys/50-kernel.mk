@@ -14,7 +14,7 @@ STRIPFLAGS :=  -s -K mmio -K fb -K bootboot -K environment -K initstack
 HELIUM_IMG := $(OUT_DIR)/helium.img
 
 ifeq ($(M),DEBUG)
-CFLAGS += -DHELIUM_DEBUG -O0 -g
+CFLAGS += -DHELIUM_DEBUG -O0 -ggdb3
 else
 CFLAGS += -O3
 endif

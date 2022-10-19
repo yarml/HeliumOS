@@ -217,6 +217,12 @@ int vsnprintf(char* s, size_t size, char const* template, va_list va)
                         num = va_arg(va, uint32_t);
                     *tail = 0;
                     --tail;
+                    if(num == 0)
+                    {
+                        *tail = '0';
+                        to_print = tail;
+                        break;
+                    }
                     while(unit_order < UNITS_COUNT)
                     {
                         if(num / denom % 1024)

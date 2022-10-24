@@ -1,7 +1,6 @@
-ext/
-sysroots/build
-sysroots/initrd/sys/helium
-build/
-kernel/font.psf
-.vscode/
-tests/
+/ext
+/sysroots/build
+/sysroots/initrd/sys/helium
+/build
+/.vscode/
+/tests

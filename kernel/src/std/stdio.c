@@ -9,8 +9,8 @@
 
 #define PRINTF_BUF_SIZE (68) // This buffer is enough if we are printing anything other than a string
 
-FILE* stdout;
-FILE* stderr;
+FILE *stdout;
+FILE *stderr;
 
 static FILE __stdout;
 static FILE __stderr;
@@ -24,7 +24,7 @@ void __init_stdio()
     __stderr = dbg_output_file();
 }
 
-int tpf(char const* template, ...)
+int tpf(char const *template, ...)
 {
     /* Implementation copied from printf() */
     va_list va;
@@ -35,7 +35,7 @@ int tpf(char const* template, ...)
 }
 
 
-int printf(const char* template, ...)
+int printf(const char *template, ...)
 {
     // TODO: If this function changes, tpf() should also be updated to be similar
     va_list va;
@@ -45,13 +45,13 @@ int printf(const char* template, ...)
     return ret;
 }
 
-int vprintf(char const* template, va_list va)
+int vprintf(char const *template, va_list va)
 {
     return vfprintf(stdout, template, va);
 }
 
 
-int fprintf(FILE* stream, char const* template, ...)
+int fprintf(FILE *stream, char const *template, ...)
 {
     va_list va;
     va_start(va, template);
@@ -60,7 +60,7 @@ int fprintf(FILE* stream, char const* template, ...)
     return ret;
 }
 
-int vfprintf(FILE* stream, char const* template, va_list va)
+int vfprintf(FILE *stream, char const *template, va_list va)
 {
     va_list va2;
     va_copy(va2, va);
@@ -74,7 +74,7 @@ int vfprintf(FILE* stream, char const* template, va_list va)
     return ret ? ret : len;
 }
 
-int snprintf(char* s, size_t size, char const* template, ...)
+int snprintf(char *s, size_t size, char const *template, ...)
 {
     va_list va;
     va_start(va, template);
@@ -84,7 +84,7 @@ int snprintf(char* s, size_t size, char const* template, ...)
 }
 
 
-static inline char* __print_num(char* buf, int base, bool sign, bool pref, bool usign, uint64_t v)
+static inline char *__print_num(char *buf, int base, bool sign, bool pref, bool usign, uint64_t v)
 {
     char* result = 0;
 
@@ -127,13 +127,13 @@ static inline char* __print_num(char* buf, int base, bool sign, bool pref, bool 
     })
 
 
-int vsnprintf(char* s, size_t size, char const* template, va_list va)
+int vsnprintf(char *s, size_t size, char const *template, va_list va)
 {
     size_t total_chars = 0;
     while(*template)
     {
         char  buf[PRINTF_BUF_SIZE];
-        char const* to_print = buf;
+        char const *to_print = buf;
         int max = INT32_MAX;
         int min = 0;
         bool pad0 = false;
@@ -297,7 +297,7 @@ int vsnprintf(char* s, size_t size, char const* template, va_list va)
 }
 
 
-int fputc(int c, FILE* stream)
+int fputc(int c, FILE *stream)
 {
     if(stream->write_chr(stream, c))
         return EOF;
@@ -309,12 +309,12 @@ int putchar(int c)
     return fputc(c, stdout);
 }
 
-int fputs(char const* s, FILE* stream)
+int fputs(char const *s, FILE *stream)
 {
     return stream->write_string(stream, s) ? EOF : strlen(s);
 }
 
-int puts(char const* s)
+int puts(char const *s)
 {
     return fputs(s, stdout);
 }

@@ -16,7 +16,7 @@
     * Just keep in mind, that if the implementation of mem_ppalloc changes, some bugs in the kernel may start appearing(which should be good i guess)
 */
 
-mem_pallocation mem_ppalloc(void* pheader, size_t size, size_t alignment, bool cont, void* below)
+mem_pallocation mem_ppalloc(void *pheader, size_t size, size_t alignment, bool cont, void *below)
 {
     printf("begin mem_ppaloc(%016p,%lu, %lu,%d,%016p)\n", pheader, size, alignment, cont, below);
     mem_pallocation alloc;
@@ -44,7 +44,7 @@ mem_pallocation mem_ppalloc(void* pheader, size_t size, size_t alignment, bool c
     size_t pmm_header_off = 0;
     for(size_t i = 0; i < i_mmap_usable_len; ++i)
     {
-        mem_pseg_header* h = pheader + pmm_header_off;
+        mem_pseg_header *h = pheader + pmm_header_off;
         size_t bitmap_size = BITMAP_SIZE(h->size);
         printf("checking header %016p\n", h);
 
@@ -123,7 +123,7 @@ mem_pallocation mem_ppalloc(void* pheader, size_t size, size_t alignment, bool c
     return alloc;
 }
 
-void mem_ppfree(void* pheader, mem_pallocation alloc)
+void mem_ppfree(void *pheader, mem_pallocation alloc)
 {
     printf("begin mem_ppfree(%016p,%016p,%05lu)\n", alloc.header_off, alloc.padr, alloc.size);
     uint64_t* bitmap = (uint64_t*) (alloc.header_off + 1);

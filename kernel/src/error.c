@@ -3,15 +3,15 @@
 #include <stdio.h>
 #include <sys.h>
 
-void error_general(char const* details)
+void error_general(char const *details)
 {
     fputs(details, stderr);
     stop();
 }
 
-void error_out_of_memory(char const* details)
+void error_out_of_memory(char const *details)
 {
-    char const* prefix = "[Out of memory]";
+    char const *prefix = "[Out of memory]";
     size_t preflen = strlen(prefix);
     size_t detlen = strlen(details);
     char buf[preflen + detlen + 2]; // +1 space +1 null termination

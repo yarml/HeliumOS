@@ -7,6 +7,7 @@
   - [Suffix `_off`](#suffix-_off)
   - [Suffix `_idx`](#suffix-_idx)
 - [Variable typing](#variable-typing)
+- [Struct definition](#struct-definition)
 - [Include](#include)
   - [Order](#order)
   - [Categories](#categories)
@@ -41,8 +42,20 @@ As a general rule(but not always true), with `ESIZE` the size of a single elemen
 
 # Variable typing
 Variable types should come first, followed with any modifiers, followed by pointer sign, then by any pointer modifiers.
-Contrary to the popular `const type`, `type const` is to be used. The pointer sign should be next to the type name not variable name,
-for example `type* name` not `type *name`.
+Contrary to the popular `const type`, `type const` is to be used. The pointer sign should be next to the variable name not type name,
+for example `type *name` not `type* name`. This rule was changed in the middle of the developement, so `type* name` pointer declaration can stil be found in the source code.
+
+# Struct definition
+All struct definitions in the source code must follow the example for a struct called `example_struct`
+```c
+struct EXAMPLE_STRUCT;
+typedef struct EXAMPLE_STRUCT example_struct;
+struct EXAMPLE_STRUCT
+{
+  ...
+};
+```
+Like shown in the example, the actual struct should follow the `EVERYTHING_UPPERCASE` naming convention, while the typedef that is used in the source code is `everything_lowecase`.
 
 # Include
 Use `#include <%>` instead of `#include "%"` whenever possible.

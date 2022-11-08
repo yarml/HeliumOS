@@ -30,9 +30,10 @@
 // Kernel virtual space
 #define KVMSPACE ((void*)(0xFFFF800000000000)) // not to be mistaken with linux's kvm, this is Kernel Virtual Memory
 
-extern void* i_pmm_header;
+extern void *i_pmm_header;
 extern size_t i_mmap_usable_len;
-extern mem_vpstruct_ptr* i_pmlmax;
+extern mem_vpstruct_ptr *i_ppmlmax;
+extern mem_vpstruct_ptr *i_pmlmax;
 
 extern size_t i_order_ps[ORDER_COUNT];
 

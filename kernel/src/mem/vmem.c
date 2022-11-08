@@ -41,7 +41,7 @@ static mem_vpstruct i_default_vpstruct =
     .pat      = 0,
     .padr     = 0,
     .res0     = 0,
-    .free2    = 0,
+    .free1    = 0,
     .prot_key = 0,
     .xd       = 0
 };
@@ -61,12 +61,12 @@ static mem_vpstruct2 i_default_vpstruct2 =
     .free0    = 0,
     .padr     = 0,
     .res0     = 0,
-    .free2    = 0,
+    .free1    = 0,
     .prot_key = 0,
     .xd       = 0
 };
 
-errno_t mem_vmap(void* vadr, void* padr, size_t size, int flags)
+errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
 {
     printf("begin mem_vmap(%016p, %016p, %lu, %b)\n", vadr, padr, size, flags);
     
@@ -75,14 +75,13 @@ errno_t mem_vmap(void* vadr, void* padr, size_t size, int flags)
 
     // check if address is canonical
     // TODO: some architectures don't have non continuous virtual address
-    // space like current forms x64 with 48 bit addressing
+    // space like current forms of x64 with 48 bit addressing
     // When porting this should be disabled
     if((uintptr_t) (vadr           ) >> 47 != 0x1FFFF
     && (uintptr_t) (vadr           ) >> 47 != 0x00000
     && (uintptr_t) (vadr + size - 1) >> 47 != 0x1FFFF
     && (uintptr_t) (vadr + size - 1) >> 47 != 0x00000)
         return ERR_MEM_INV_VADR;
-
 
     int target_order = 0;
     if(flags & MAPF_P1G)
@@ -119,8 +118,12 @@ errno_t mem_vmap(void* vadr, void* padr, size_t size, int flags)
                 i_target_entry->ss_padr = (uintptr_t) alloc.padr >> 12;
                 i_target_entry->present = 1;
             }
-            i_target_entry = (mem_vpstruct_ptr*) SS_PADR(i_target_entry) + ENTRY_IDX(order - 1, vadr);
-            printf("%d\n", order - 1);
+            if(flags & MAPF_SETUP) // We have identity paging at 0:16, SS_PADR will work without new mapping
+                i_target_entry = (mem_vpstruct_ptr*) SS_PADR(i_target_entry) + ENTRY_IDX(order - 1, vadr);
+            else // If identity paging isn't guarenteed, we need to use the VMM CACHE to temporarely map the 
+            {
+                
+            }
             --order;
         }
         // i_target_entry points to the target entry
@@ -162,7 +165,7 @@ errno_t mem_vmap(void* vadr, void* padr, size_t size, int flags)
     return 0;
 }
 
-errno_t mem_vumap(void* vadr, size_t size)
+errno_t mem_vumap(void *vadr, size_t size)
 {
     return 0;
 }

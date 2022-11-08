@@ -1,13 +1,13 @@
 #include <debug.h>
 #include <asm/io.h>
 
-int dbg_write_chr(FILE* f, char c)
+int dbg_write_chr(FILE *f, char c)
 {
     as_outb(DEBUG_CONSOLE, c);
     return 0;
 }
 
-int dbg_write_string(FILE* f, char const* str)
+int dbg_write_string(FILE *f, char const *str)
 {
     while(str && *str)
     {

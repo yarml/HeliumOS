@@ -4,6 +4,8 @@
 #include <attributes.h>
 #include <stdint.h>
 
+struct SMBIOS_ENTRY_POINT;
+typedef struct SMBIOS_ENTRY_POINT smbios_entry_point;
 struct SMBIOS_ENTRY_POINT
 {
     char     anchor[4]        ;
@@ -21,6 +23,5 @@ struct SMBIOS_ENTRY_POINT
     uint16_t struct_count     ;
     uint8_t  bcd_rev          ;
 } pack;
-typedef struct SMBIOS_ENTRY_POINT smbios_entry_point;
 
 #endif

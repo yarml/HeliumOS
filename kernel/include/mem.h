@@ -8,32 +8,34 @@
 
 #include <arch/mem.h>
 
+struct MEM_PSEG_HEADER;
+typedef struct MEM_PSEG_HEADER mem_pseg_header;
 struct MEM_PSEG_HEADER
 {
-    void* padr;
+    void *padr;
     size_t size;
 } pack;
-typedef struct MEM_PSEG_HEADER mem_pseg_header;
 
+struct MEM_PALLOCATION;
+typedef struct MEM_PALLOCATION mem_pallocation;
 struct MEM_PALLOCATION
 {
+    void *padr;
     size_t header_off;
-    void* padr;
     size_t size;
     errno_t error;
 };
-typedef struct MEM_PALLOCATION mem_pallocation;
 
 void mem_init();
 
 /* mem_p* */
 
-mem_pallocation mem_ppalloc(void* pheader, size_t size, size_t alignement, bool cont, void* below);
-void mem_ppfree(void* pheader, mem_pallocation alloc);
+mem_pallocation mem_ppalloc(void *pheader, size_t size, size_t alignement, bool cont, void *below);
+void mem_ppfree(void *pheader, mem_pallocation alloc);
 
 /* mem_v* */
-errno_t mem_vmap(void* vadr, void* padr, size_t size, int flags);
-errno_t mem_vumap(void* vadr, size_t size);
+errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags);
+errno_t mem_vumap(void *vadr, size_t size);
 
 
 // ERR_MEM memory operations errors
@@ -41,6 +43,7 @@ errno_t mem_vumap(void* vadr, size_t size);
 #define ERR_MEM_NO_PHY_SPACE (-2) /* No physical space */
 #define ERR_MEM_NULL_SIZE    (-3) /* Allocation/mapping of size 0 */
 #define ERR_MEM_INV_VADR     (-4) /* Invalid virtual address(eg. non canonical address on systems that require it) */
+#define ERR_MEM_MANAGED      (-5) /* Memory area to be mapped is managed by another kernel system(eg; vcache) */
 
 // MAPF memory mapping flags
 #define MAPF_R   (1<<0) /* Read */
@@ -53,5 +56,10 @@ errno_t mem_vumap(void* vadr, size_t size);
 #define MAPF_P1G (1<<5) /* Map using 1 Gib page entries */
 
 #define MAPF_G   (1<<6) /* Global page (pages above KVMSPACE are always global) */
+
+#define MAPF_SETUP (1 << 31) /* Special flag used by mem_init to indicate that identity paging at 0:16G can be assumed */
+
+// FIXME: I think that if physical memory addresses go above 16G, which is what bootboot identity maps, then mem_init will fail
+// A fix that I thought about now is calling mem_palloc with a below constraint
 
 #endif

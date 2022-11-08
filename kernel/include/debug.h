@@ -23,8 +23,8 @@
 void dbg_draw(uint8_t r, uint8_t g, uint8_t b, uint32_t offx, uint32_t offy);
 
 // The FILE* is just to be compatible with stdio's functions
-int dbg_write_chr(FILE* f, char c);
-int dbg_write_string(FILE*, char const* str);
+int dbg_write_chr(FILE *f, char c);
+int dbg_write_string(FILE *, char const *str);
 
 FILE dbg_output_file();
 

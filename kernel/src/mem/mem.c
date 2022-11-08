@@ -10,10 +10,11 @@
 #include <asm/msr.h>
 
 #include "internal_mem.h"
+#include "vcache.h"
 
-void* i_pmm_header = 0;
+void *i_pmm_header = 0;
 size_t i_mmap_usable_len = 0;
-mem_vpstruct_ptr* i_pmlmax = 0;
+mem_vpstruct_ptr *i_pmlmax = 0;
 
 size_t i_order_ps[ORDER_COUNT];
 
@@ -34,7 +35,7 @@ void mem_init()
 
     size_t pmm_header_total_size = 0;
 
-    MMapEnt* mmap = &(bootboot.mmap);
+    MMapEnt *mmap = &(bootboot.mmap);
 
     /* Insert the regions backward, so that the PMM would prefer allocating pages
        with higher physical adresses and leave the lower addresses for hardware that requires it */
@@ -64,7 +65,7 @@ void mem_init()
     size_t pmm_header_off = 0;
     for(size_t i = 0; i < i_mmap_usable_len; ++i)
     {
-        mem_pseg_header* h = i_pmm_header + pmm_header_off;
+        mem_pseg_header *h = i_pmm_header + pmm_header_off;
         *h = *(mmap_usable + i);
         memset((void*) h + sizeof(mem_pseg_header), 0, BITMAP_SIZE(h->size));
         /* Mark the leftover pages from the bitmap as used */
@@ -77,7 +78,11 @@ void mem_init()
 
     /* Initialize virtual memory manager */
     ctlr_cr3_npcid cr3 = as_rcr3();
-    i_pmlmax = CTLR_CR3_NPCID_PML4_PADR(cr3);
+    i_ppmlmax = CTLR_CR3_NPCID_PML4_PADR(cr3);
+    i_pmlmax = i_ppmlmax;
+
+    /** Initialize vcache */
+    
 
     printf("end mem_init()\n");
 }

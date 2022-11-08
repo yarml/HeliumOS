@@ -11,31 +11,33 @@
 
 #define MASS_OP_MIN_BYTES (64)
 
-size_t strlen(char const* s)
+size_t strlen(char const *s)
 {
     return -as_scasb((uint64_t) s, 0, -1) - 2;
 }
 
-char* strchr(char const* s, int c)
+char *strchr(char const *s, int c)
 {
+    /* TODO: Idk why I didn't switch this to use memchr, wanted to change it
+        But I'm afraid of breaking it. Figure this out later. */
     for(; *(unsigned char*)s != c; ++s)
         if(*s == 0) 
             return 0;
     return (char*) s;
 }
 
-char* strcat(char* to, char const* from)
+char *strcat(char* to, char const* from)
 {
     strcpy(to + strlen(to), from);
     return to;
 }
 
-char* strcpy(char* to, char const* from)
+char *strcpy(char *to, char const* from)
 {
     return memcpy(to, from, strlen(from) + 1);
 }
 
-char* strpred(char const* s, fpt_chr_predicate pred)
+char *strpred(char const *s, fpt_chr_predicate pred)
 {
     for(; !pred(*s); ++s)
         if(*s == 0) 
@@ -43,13 +45,13 @@ char* strpred(char const* s, fpt_chr_predicate pred)
     return (char*) s;
 }
 
-void* memchr (void const* block, int c, size_t size)
+void *memchr (void const *block, int c, size_t size)
 {
     size_t idx = size - as_scasb((uint64_t) block, c, size) - 1;
     return (((unsigned char*)block)[idx] == c) ? (void*) block + idx : 0;
 }
 
-void* memnchr(void const* block, int c, size_t size)
+void *memnchr(void const *block, int c, size_t size)
 {
     register size_t idx = size - as_nscasb((uint64_t) block, c, size) - 1;
     if(idx != size - 1)
@@ -57,13 +59,13 @@ void* memnchr(void const* block, int c, size_t size)
     return (((unsigned char*)block)[idx] != c) ? (void*) block + idx : 0;
 }
 
-int memcmp (void const* b1, void const* b2, size_t size)
+int memcmp (void const *b1, void const *b2, size_t size)
 {
     for(; *(unsigned char*)b1 == *(unsigned char*)b2 && size != 0; --size, ++b1, ++b2);
     return *(unsigned char*)(b2 - 1) - *(unsigned char*)(b1 - 1);
 }
 
-void* memset(void* block, int c, size_t size)
+void *memset(void *block, int c, size_t size)
 {
     void* oblock = block;
 
@@ -88,9 +90,9 @@ void* memset(void* block, int c, size_t size)
     return oblock;
 }
 
-void* memcpy(void* to, void const* from, size_t size)
+void *memcpy(void *to, void const *from, size_t size)
 {
-    void* oto = to;
+    void *oto = to;
 
     // TODO: Maybe max_alignment can be calculated in constant time
     size_t max_alignment = 1;
@@ -106,7 +108,7 @@ void* memcpy(void* to, void const* from, size_t size)
     // at worst case, it should individually copy 7 bytes
     while(((uintptr_t)to % max_alignment || (uintptr_t)from % max_alignment) && size)
     {
-        *(uint8_t*)to++ = *(uint8_t*)from++;
+        *(uint8_t *)to++ = *(uint8_t*)from++;
         --size;
     }
     // Mass copy the now aligned bytes if there exist enough of them for mass copying to be efficient
@@ -140,13 +142,14 @@ void* memcpy(void* to, void const* from, size_t size)
 }
 
 
-void* memmove(void* to, void const* from, size_t size)
+void *memmove(void *to, void const *from, size_t size)
 {
     if(to < from || from + size < to)
     {
         return memcpy(to, from, size);
     }
 
+    // save to for return
     void* oto = to;
 
     to += size - 1;
@@ -200,7 +203,7 @@ void* memmove(void* to, void const* from, size_t size)
 }
 
 
-int memsum(void* block, size_t size)
+int memsum(void *block, size_t size)
 {
     int8_t sum = 0;
     for(; size != 0; --size, ++block)
@@ -208,7 +211,7 @@ int memsum(void* block, size_t size)
     return sum;
 }
 
-char* ntos(intmax_t n, int base, char* tail){
+char* ntos(intmax_t n, int base, char *tail){
     bool negative = n < 0;
     do
     {
@@ -228,7 +231,7 @@ char* ntos(intmax_t n, int base, char* tail){
 }
 
 
-char* utos(uintmax_t n, int base, char* tail)
+char *utos(uintmax_t n, int base, char *tail)
 {
     do
     {
@@ -242,7 +245,7 @@ char* utos(uintmax_t n, int base, char* tail)
     return tail;
 }
 
-intmax_t ston(char const* s, char const** tail, int base)
+intmax_t ston(char const *s, char const **tail, int base)
 {
     intmax_t res = 0;
     char* lsd = strpred(s, isndigit) - 1;
@@ -255,7 +258,7 @@ intmax_t ston(char const* s, char const** tail, int base)
     return res;    
 }
 
-uintmax_t stou(char const* s, char const** tail, int base)
+uintmax_t stou(char const *s, char const **tail, int base)
 {
     return ston(s, tail, base);
 }

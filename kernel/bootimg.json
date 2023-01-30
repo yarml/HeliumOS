@@ -1,9 +1,21 @@
 {
     "iso9660": true,
     "config": "kernel/bootboot.config",
-    "initrd": { "type": "tar", "gzip": true, "directory": "sysroots/initrd" },
+    "initrd": {
+        "type": "tar",
+        "gzip": true,
+        "directory": "sysroots/initrd"
+    },
     "partitions": [
-        { "type": "boot" , "size": 16 },
-        { "type": "tar", "size": 32, "name": "data","directory": "sysroots/host" }
+        {
+            "type": "boot" ,
+            "size": 16
+        },
+        {
+            "type": "tar",
+            "size": 32,
+            "name": "data",
+            "directory": "sysroots/host"
+        }
     ]
 }

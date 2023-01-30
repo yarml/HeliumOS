@@ -7,7 +7,8 @@
 
 #include <debug.h>
 
-#define PRINTF_BUF_SIZE (68) // This buffer is enough if we are printing anything other than a string
+#define PRINTF_BUF_SIZE (68) // This buffer is enough if we are printing
+                             // anything other than a string
 
 FILE *stdout;
 FILE *stderr;
@@ -35,9 +36,10 @@ int tpf(char const *template, ...)
 }
 
 
-int printf(const char *template, ...)
+int printf(char const *template, ...)
 {
-    // TODO: If this function changes, tpf() should also be updated to be similar
+    // TODO: If this function changes, tpf() should also be updated to be
+    // similar
     va_list va;
     va_start(va, template);
     int ret = vprintf(template, va);
@@ -84,7 +86,14 @@ int snprintf(char *s, size_t size, char const *template, ...)
 }
 
 
-static inline char *__print_num(char *buf, int base, bool sign, bool pref, bool usign, uint64_t v)
+static inline char *__print_num(
+    char *buf,
+    int base,
+    bool sign,
+    bool pref,
+    bool usign,
+    uint64_t v
+)
 {
     char* result = 0;
 
@@ -154,7 +163,8 @@ int vsnprintf(char *s, size_t size, char const *template, va_list va)
                 else if(*template == '0' && !pad0)
                     pad0 = true;
                 else // some flag was duplicated
-                    break; // break without incrementing template, subsequent code will deal with it
+                    break; // break without incrementing template, subsequent
+                           // code will deal with it
                 ++template;
             }
             // read min if found
@@ -264,7 +274,8 @@ int vsnprintf(char *s, size_t size, char const *template, va_list va)
             buf[0] = *template++;
             buf[1] = 0;
         }
-        // After this line, template is supposed to be pointing at the next character
+        // After this line, template is supposed to be pointing at the next
+        // character
         int printed = 0; // printed in this loop;
         size_t tplen;
         if(max == INT32_MAX)

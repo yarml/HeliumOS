@@ -8,7 +8,7 @@
 
 #include "internal_mem.h"
 
-static mem_vpstruct_ptr i_default_vpstruct_ptr = 
+static mem_vpstruct_ptr i_default_vpstruct_ptr =
 {
     .present  = 0, // present should be set after the address is set
     .write    = 1,
@@ -69,7 +69,7 @@ static mem_vpstruct2 i_default_vpstruct2 =
 errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
 {
     printf("begin mem_vmap(%016p, %016p, %lu, %b)\n", vadr, padr, size, flags);
-    
+
     if(!size)
         return ERR_MEM_NULL_SIZE;
 
@@ -88,11 +88,11 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
         target_order = 2;
     else if(flags & MAPF_P2M)
         target_order = 1;
-    
+
     if((uintptr_t) vadr % i_order_ps[target_order]
     || (uintptr_t) padr % i_order_ps[target_order])
         return ERR_MEM_ALN;
-    
+
     size_t mapped = 0;
 
     while(mapped < size)
@@ -103,33 +103,49 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
 
         while(order > target_order)
         {
-            // check if we should allocate space for this structure's substructures
+            // check if we should allocate space for this structure's
+            // substructures
             if(!i_target_entry->present)
             {
-                // TODO: I do not like the fact that we throw away this allocation struct
-                // and construct a new one when we are deallocating
-                // It's just not how it's supposed to be done
+                // TODO: I do not like the fact that we throw away this
+                // allocation struct and construct a new one when we are
+                // deallocating It's just not how it's supposed to be done
 
-                // What we do here is that we allocate 512 entries(4096 bytes, 1 page) to contain all sub structures of this entry
-                mem_pallocation alloc = mem_ppalloc(i_pmm_header, 512 * sizeof(mem_vpstruct_ptr), 0, true, 0);
+                // What we do here is that we allocate
+                // 512 entries(4096 bytes, 1 page) to contain all sub structures
+                // of this entry
+                mem_pallocation alloc = mem_ppalloc(
+                    i_pmm_header,
+                    512 * sizeof(mem_vpstruct_ptr),
+                    0,
+                    true,
+                    0
+                );
                 if(alloc.error) // Out of space
-                    error_out_of_memory("Couldn't allocate memory for VMM structres");
+                    error_out_of_memory(
+                        "Couldn't allocate memory for VMM structres"
+                    );
                 *i_target_entry = i_default_vpstruct_ptr;
                 i_target_entry->ss_padr = (uintptr_t) alloc.padr >> 12;
                 i_target_entry->present = 1;
             }
-            if(flags & MAPF_SETUP) // We have identity paging at 0:16, SS_PADR will work without new mapping
-                i_target_entry = (mem_vpstruct_ptr*) SS_PADR(i_target_entry) + ENTRY_IDX(order - 1, vadr);
-            else // If identity paging isn't guarenteed, we need to use the VMM CACHE to temporarely map the 
+            if(flags & MAPF_SETUP) // We have identity paging at 0:16G, SS_PADR
+                                   // will work without new mapping
+                i_target_entry = (mem_vpstruct_ptr*) SS_PADR(i_target_entry)
+                    + ENTRY_IDX(order - 1, vadr);
+            else // If identity paging isn't guarenteed, we need to use the
+                 // VMM CACHE to temporarely map the newly allocated entry to a
+                 // vcache page
             {
-                
+                // TODO: when VCache is implemented, figure out what
+                // i was trying to do here
             }
             --order;
         }
         // i_target_entry points to the target entry
         // and is of type mem_vpstructX
         // and order = target_order
-        
+
         if(target_order) // a pdpt or pde
         {
             mem_vpstruct* rtentry = (mem_vpstruct*) i_target_entry;
@@ -137,7 +153,9 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
             rtentry->write = (flags & MAPF_W) != 0;
             rtentry->user = (flags & MAPF_U) != 0;
             rtentry->global = vadr >= KVMSPACE || (flags & MAPF_G) != 0;
-            rtentry->padr = (uintptr_t) padr >> 13; // reserved bits should be clear because addresses are aligned
+            rtentry->padr = (uintptr_t) padr >> 13; // reserved bits should be
+                                                    // clear because addresses
+                                                    // are aligned
             rtentry->present = 1;
         }
         else // a pte
@@ -151,15 +169,25 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
             rtentry->present = 1;
         }
         // update the virtual tables
-        if(flags & MAPF_G || vadr >= KVMSPACE || size / i_order_ps[target_order] < RLCR3_THRESHOLD)
+        if(
+            flags & MAPF_G
+         || vadr >= KVMSPACE
+         || size / i_order_ps[target_order] < RLCR3_THRESHOLD
+        )
             as_invlpg((uint64_t) vadr);
-        
+
         vadr += i_order_ps[target_order];
         padr += i_order_ps[target_order];
         mapped += i_order_ps[target_order];
     }
 
-    if(!(flags & MAPF_G || vadr >= KVMSPACE || size / i_order_ps[target_order] < RLCR3_THRESHOLD))
+    if(
+        !(
+            flags & MAPF_G
+         || vadr >= KVMSPACE
+         || size / i_order_ps[target_order] < RLCR3_THRESHOLD
+        )
+    )
         as_rlcr3();
 
     return 0;

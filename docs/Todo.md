@@ -18,7 +18,8 @@
 * [ ] User space process execution
 
 # Do no forget
-* Make page invalidation inter processor proof(When multi processing is supported).
+* Make page invalidation inter processor proof(When multi processing is
+  supported).
 
 # Optimizations
 * Reuse memory taken by bootboot.
@@ -28,4 +29,5 @@
 
 # Todo for the far far future
 * Implement HeliumBootboot, instead of relying on the reference implementation.
-The implementation can be minimal to Helium's needs at first, that is boot from UEFI.
+The implementation can be minimal to Helium's needs at first, that is boot
+from UEFI.

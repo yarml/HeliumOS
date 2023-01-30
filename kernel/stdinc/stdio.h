@@ -36,7 +36,8 @@ int putchar(int c);
 int fputs(char const* s, FILE* stream);
 int puts(char const* s);
 
-/* Temporary printf, used when in the middle of implementing a feature to debug out internal information */
+/* Temporary printf, used when in the middle of implementing
+   a feature to debug out internal information */
 int tpf(char const* template, ...);
 
 #endif

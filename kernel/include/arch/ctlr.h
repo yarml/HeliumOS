@@ -19,6 +19,7 @@ struct CLTR_CR3_NCPID
     uint64_t res0     :16;
 } pack;
 
-#define CTLR_CR3_NPCID_PML4_PADR(cr3) ((mem_vpstruct_ptr*)((uint64_t)(cr3).pml4_padr << 12))
+#define CTLR_CR3_NPCID_PML4_PADR(cr3) \
+    ((mem_vpstruct_ptr*)((uint64_t)(cr3).pml4_padr << 12))
 
 #endif

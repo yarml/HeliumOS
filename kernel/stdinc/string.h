@@ -10,8 +10,8 @@ typedef int(*fpt_chr_predicate_args)(int, ...);
 
 // str* functions
 
-/** 
- * \brief Returns the length of the string 
+/**
+ * \brief Returns the length of the string
  * \param s: The target string
  * \return The length of the string
  **/
@@ -32,7 +32,7 @@ char* strcpy(char* to, char const* from);
  * \brief Finds the first occurence of a character that verifies a condition
  * \param s: The string to look in
  * \param pred: The condition to verify
- * \return A pointer to the first character c that verifies pred(c), 
+ * \return A pointer to the first character c that verifies pred(c),
  *         unless the null termination is reached, in which case NULL
 **/
 char* strpred(char const* s, fpt_chr_predicate pred);
@@ -40,11 +40,13 @@ char* strpred(char const* s, fpt_chr_predicate pred);
 // mem* functions
 
 /**
- * \brief Finds the first occurence of the byte \a c in the block \a block of size \a size.
+ * \brief Finds the first occurence of the byte \a c in the block \a block
+ *        of size \a size.
  * \param block
  * \param c
  * \param size
- * \return If found, a pointer to the first occurence of \a, otherwise returns \a NULL.
+ * \return If found, a pointer to the first occurence of \a,
+ *         otherwise returns \a NULL.
  */
 void* memchr (void const* block, int c, size_t size);
 
@@ -55,7 +57,8 @@ void* memnchr (void const* block, int c, size_t size);
  * \param b1
  * \param b2
  * \param size
- * \return The differecne between the first different bytes of \a b1 and \a b2, 0 if they are qual until \a size.
+ * \return The differecne between the first different bytes of \a b1
+ *         and \a b2, 0 if they are qual until \a size.
  */
 int memcmp (void const* b1, void const* b2, size_t size);
 
@@ -77,7 +80,8 @@ void* memset(void* block, int c, size_t size);
 void* memcpy(void* to, void const* from, size_t size);
 
 /**
- * \brief Moves \a size bytes from \a from to \a to, and those areas can be overlapping
+ * \brief Moves \a size bytes from \a from to \a to, and those areas
+ *        can be overlapping
  * \param to
  * \param from
  * \param size
@@ -99,21 +103,23 @@ int memsum(void* block, size_t size);
  * \brief Converts the signed integer \a i into a string ending at \a tail - 1.
  * \param n: The number to convert
  * \param base: The base with which \a i is interpreted
- * \param tail: Pointer to where the caller expects there to be the end of the string,
- *              this function will start from there and write the number backwards untils it finishes
- *              (not inclusing tail in the write),
- *              as such, the caller should reserve enough area before \a tail
+ * \param tail: Pointer to where the caller expects there to be the end of
+ *              the string, this function will start from there and write the
+ *              number backwards untils it finishes (not inclusing tail in the
+ *              write), as such, the caller should reserve enough area before
+ *              \a tail
  * \return A pointer to the new string
  */
 char* ntos(intmax_t n, int base, char* tail);
 
 /**
- * \brief Converts the unsigned integer \a i into a string ending at \a tail - 1.
+ * \brief Converts the unsigned integer \a i into a string ending at
+ *        \a tail - 1.
  * \param n: The number to convert
  * \param base: The base with which \a i is interpreted
- * \param tail: Pointer to where the caller expects there to be the end of the string,
- *              this function will start from there and write the number backwards untils it finishes
- *              (not inclusing tail in the write),
+ * \param tail: Pointer to where the caller expects there to be the end of the
+ *              string, this function will start from there and write the number
+ *              backwards untils it finishes (not inclusing tail in the write),
  *              as such, the caller should reserve enough area before \a tail
  * \return A pointer to the new string
  */
@@ -122,8 +128,8 @@ char* utos(uintmax_t n, int base, char* tail);
 /**
  * \brief Converts a string to a signed number
  * \param s: The string to convert
- * \param tail: Where to store the address of the character immediatly following the number, 
- *              if NULL, it is simply ignored
+ * \param tail: Where to store the address of the character immediatly following
+ *              the number, if NULL, it is simply ignored
  * \param base
  * \return The number
  */
@@ -132,8 +138,8 @@ intmax_t ston(char const* s, char const** tail, int base);
 /**
  * \brief Converts a string to an unsugned number
  * \param s: The string to convert
- * \param tail: Where to store the address of the character immediatly following the number, 
- *              if NULL, it is simply ignored
+ * \param tail: Where to store the address of the character immediatly following
+ *              the number, if NULL, it is simply ignored
  * \param base
  * \return The number
  */

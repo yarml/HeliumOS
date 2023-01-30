@@ -24,6 +24,6 @@ void error_out_of_memory(char const *details)
     strcpy(buf, prefix);
     strcat(buf, " ");
     strcat(buf, details);
-    
-    error_general(buf);    
+
+    error_general(buf);
 }

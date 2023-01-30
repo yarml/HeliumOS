@@ -69,15 +69,19 @@ int isalpha(int c);
 int isnalpha(int c);
 
 /**
- * \brief Checks if the character \a c is a decimal digit or an alphabetic symbol.
+ * \brief Checks if the character \a c is a decimal digit or an
+ *        alphabetic symbol.
  * \param c
- * \return 1 if the character is a decimal digit or an alphabetic symbol., 0 otherwise.
+ * \return 1 if the character is a decimal digit or an alphabetic symbol.
+ *         0 otherwise.
  */
 int isalnum(int c);
 /**
- * \brief Checks if the character \a c is not a decimal digit or an alphabetic symbol.
+ * \brief Checks if the character \a c is not a decimal digit or an
+ *        alphabetic symbol.
  * \param c
- * \return 1 if the character is not a decimal digit or an alphabetic symbol., 0 otherwise.
+ * \return 1 if the character is not a decimal digit or an alphabetic symbol.
+ *         0 otherwise.
  */
 int isnalnum(int c);
 

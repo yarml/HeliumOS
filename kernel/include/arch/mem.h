@@ -39,7 +39,8 @@ struct MEM_VPSTRUCT
     uint64_t global  :1 ;
     uint64_t free0   :3 ;
     uint64_t pat     :1 ;
-    uint64_t padr    :35; /* Address should be aligned to the correct boundary!!  */
+    uint64_t padr    :35; /* Address should be aligned to
+                             the correct boundary!! */
     uint64_t res0    :4 ; /* 0 */
     uint64_t free1   :7 ;
     uint64_t prot_key:4 ;

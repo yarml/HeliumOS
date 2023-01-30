@@ -1,7 +1,7 @@
 #ifndef HELIUM_UTILS_H
 #define HELIUM_UTILS_H
 
-/** 
+/**
  * \brief Returns the \a n th bit of \a b
  * \param b
  * \param n

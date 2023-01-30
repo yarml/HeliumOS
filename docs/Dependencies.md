@@ -1,4 +1,5 @@
-Before being able to build and emulate HeliumOs, some dependencies need to be met.
+Before being able to build and emulate HeliumOs, some dependencies need to be
+met.
 
 # General dependencies
 - Basic unix tools(cp, mkdir, ls yata yata yata)
@@ -41,4 +42,5 @@ This is currently supported on:
 Some features offered by the build system require additional features
 - python3
 
-Keep in mind that package names differ from distributions, so you might need to do more googling.
+Keep in mind that package names differ from distributions, so you might need to
+do more googling.

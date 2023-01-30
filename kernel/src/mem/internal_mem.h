@@ -17,7 +17,8 @@
 #define ADR_MASK(n)  (uintptr_t) ((uintptr_t) 0x1FF << (12 + 9 * (n)))
 #define ADR_SHIFT(n) (size_t) (12 + 9 * (n))
 
-#define ENTRY_IDX(n, ptr) (size_t) (((uintptr_t) (ptr) & ADR_MASK(n)) >> ADR_SHIFT(n))
+#define ENTRY_IDX(n, ptr) \
+    (size_t) (((uintptr_t) (ptr) & ADR_MASK(n)) >> ADR_SHIFT(n))
 
 // TODO: when porting to other architectures, this should be considered
 #define ORDER_COUNT (4)
@@ -28,7 +29,9 @@
 #define ORDER_PS(n) (size_t)(4096 * powi(512, (n)))
 
 // Kernel virtual space
-#define KVMSPACE ((void*)(0xFFFF800000000000)) // not to be mistaken with linux's kvm, this is Kernel Virtual Memory
+#define KVMSPACE ((void*)(0xFFFF800000000000)) // not to be mistaken with
+                                               // linux's kvm, this is
+                                               // Kernel Virtual Memory
 
 extern void *i_pmm_header;
 extern size_t i_mmap_usable_len;

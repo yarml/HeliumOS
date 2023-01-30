@@ -21,7 +21,7 @@ char *strchr(char const *s, int c)
     /* TODO: Idk why I didn't switch this to use memchr, wanted to change it
         But I'm afraid of breaking it. Figure this out later. */
     for(; *(unsigned char*)s != c; ++s)
-        if(*s == 0) 
+        if(*s == 0)
             return 0;
     return (char*) s;
 }
@@ -40,7 +40,7 @@ char *strcpy(char *to, char const* from)
 char *strpred(char const *s, fpt_chr_predicate pred)
 {
     for(; !pred(*s); ++s)
-        if(*s == 0) 
+        if(*s == 0)
             return 0;
     return (char*) s;
 }
@@ -61,7 +61,12 @@ void *memnchr(void const *block, int c, size_t size)
 
 int memcmp (void const *b1, void const *b2, size_t size)
 {
-    for(; *(unsigned char*)b1 == *(unsigned char*)b2 && size != 0; --size, ++b1, ++b2);
+    while(*(unsigned char*)b1 == *(unsigned char*)b2 && size != 0)
+    {
+        --size;
+        ++b1;
+        ++b2;
+    }
     return *(unsigned char*)(b2 - 1) - *(unsigned char*)(b1 - 1);
 }
 
@@ -106,15 +111,21 @@ void *memcpy(void *to, void const *from, size_t size)
 
     // copy individual bytes until both from and to are aligned to max_alignment
     // at worst case, it should individually copy 7 bytes
-    while(((uintptr_t)to % max_alignment || (uintptr_t)from % max_alignment) && size)
+    while(
+        (
+            (uintptr_t)to % max_alignment
+         || (uintptr_t)from % max_alignment
+        )
+        && size)
     {
         *(uint8_t *)to++ = *(uint8_t*)from++;
         --size;
     }
-    // Mass copy the now aligned bytes if there exist enough of them for mass copying to be efficient
+    // Mass copy the now aligned bytes if there exist enough of them for mass
+    // copying to be efficient
     if(size >= MASS_OP_MIN_BYTES)
     {
-        void(*movsfp)(uint64_t, uint64_t, uint64_t);   
+        void(*movsfp)(uint64_t, uint64_t, uint64_t);
         switch(max_alignment)
         {
             case 8:
@@ -167,15 +178,22 @@ void *memmove(void *to, void const *from, size_t size)
 
     // copy individual bytes until both from and to are aligned to max_alignment
     // at worst case, it should individually copy 7 bytes
-    while(((uintptr_t)to % max_alignment || (uintptr_t)from % max_alignment) && size)
+    while(
+        (
+            (uintptr_t)to % max_alignment
+         || (uintptr_t)from % max_alignment
+        )
+        && size
+    )
     {
         *(uint8_t*)to-- = *(uint8_t*)from--;
         --size;
     }
-    // Mass copy the now aligned bytes if there exist enough of them for mass copying to be efficient
+    // Mass copy the now aligned bytes if there exist enough of them for mass
+    // copying to be efficient
     if(size >= MASS_OP_MIN_BYTES)
     {
-        void(*movsfp)(uint64_t, uint64_t, uint64_t);   
+        void(*movsfp)(uint64_t, uint64_t, uint64_t);
         switch(max_alignment)
         {
             case 8:
@@ -255,7 +273,7 @@ intmax_t ston(char const *s, char const **tail, int base)
         return 0;
     for(; s <= lsd; ++s)
         res += (*s - '0') * powi(base, lsd - s);
-    return res;    
+    return res;
 }
 
 uintmax_t stou(char const *s, char const **tail, int base)

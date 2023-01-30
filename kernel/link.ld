@@ -1,4 +1,3 @@
-
 mmio        = 0xfffffffff8000000;
 fb          = 0xfffffffffc000000;
 bootboot    = 0xffffffffffe00000;

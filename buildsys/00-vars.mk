@@ -73,8 +73,8 @@ OUT_DIR := $(BUILD_DIR)/out/
 BUILDSYS := buildsys/
 SEDDIR   := $(BUILDSYS)/sedscripts/
 IDEDIR   := $(BUILDSYS)/IDE/
-PYDIR    := $(BUILDSYS)/pyscripts
-SHDIR    := $(BUILDSYS)/shscripts
+PYDIR    := $(BUILDSYS)/pyscripts/
+SHDIR    := $(BUILDSYS)/shscripts/
 
 CLEAN := build
 

@@ -32,7 +32,7 @@ void _start()
 
     tpf("Testing mem_vmap()\n");
 
-    mem_vmap(0xFFFFFFFFF0000000, 0, 4096, 0);
+    mem_vmap((void *) 0xFFFFFFFFF0000000, 0, 4096, 0);
     tpf("Testing mem_vmap done.\n");
 
     printf("halt()\n");

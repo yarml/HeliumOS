@@ -277,7 +277,7 @@ int vsnprintf(char *s, size_t size, char const *template, va_list va)
         // After this line, template is supposed to be pointing at the next
         // character
         int printed = 0; // printed in this loop;
-        size_t tplen;
+        size_t tplen; // to_print len
         if(max == INT32_MAX)
             tplen = strlen(to_print);
         else

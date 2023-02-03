@@ -8,63 +8,6 @@
 
 #include "internal_mem.h"
 
-static mem_vpstruct_ptr i_default_vpstruct_ptr =
-{
-    .present  = 0, // present should be set after the address is set
-    .write    = 1,
-    .user     = 1,
-    .pwt      = 0,
-    .pcd      = 0,
-    .accessed = 0,
-    .free0    = 0,
-    .ps       = 0,
-    .free1    = 0,
-    .ss_padr  = 0,
-    .res0     = 0,
-    .free2    = 0,
-    .xd       = 0
-};
-
-// defult pde, pdpte with ps = 1
-static mem_vpstruct i_default_vpstruct =
-{
-    .present  = 0, // present should be set after the address is set
-    .write    = 0,
-    .user     = 0,
-    .pwt      = 0,
-    .pcd      = 0,
-    .accessed = 0,
-    .dirty    = 0,
-    .ps       = 1,
-    .global   = 0,
-    .free0    = 0,
-    .pat      = 0,
-    .padr     = 0,
-    .res0     = 0,
-    .free1    = 0,
-    .prot_key = 0,
-    .xd       = 0
-};
-
-// default pte
-static mem_vpstruct2 i_default_vpstruct2 =
-{
-    .present  = 0,
-    .write    = 0,
-    .user     = 0,
-    .pwt      = 0,
-    .pcd      = 0,
-    .accessed = 0,
-    .dirty    = 0,
-    .pat      = 0,
-    .global   = 0,
-    .free0    = 0,
-    .padr     = 0,
-    .res0     = 0,
-    .free1    = 0,
-    .prot_key = 0,
-    .xd       = 0
-};
 
 errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
 {
@@ -81,7 +24,10 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
     && (uintptr_t) (vadr           ) >> 47 != 0x00000
     && (uintptr_t) (vadr + size - 1) >> 47 != 0x1FFFF
     && (uintptr_t) (vadr + size - 1) >> 47 != 0x00000)
+    {
+        print("end mem_vmap() -> ERR_MEM_INV_VADR\n");
         return ERR_MEM_INV_VADR;
+    }
 
     int target_order = 0;
     if(flags & MAPF_P1G)
@@ -91,15 +37,27 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
 
     if((uintptr_t) vadr % i_order_ps[target_order]
     || (uintptr_t) padr % i_order_ps[target_order])
+    {
+        print("end mem_vmap() -> ERR_MEM_ALN\n");
         return ERR_MEM_ALN;
+    }
 
     size_t mapped = 0;
+
+    // update the virtual tables using invlpg if:
+    //  - the mapping is explicitly global
+    //  - OR the mapping is in kernel space(implicitly global)
+    //  - OR the total number of pages to map is less than the rlcr3
+    //       threshold.
+    int use_invlpg = flags & MAPF_G
+        || vadr >= KVMSPACE
+        || size / i_order_ps[target_order] < RLCR3_THRESHOLD;
 
     while(mapped < size)
     {
         int order = MAX_ORDER;
 
-        mem_vpstruct_ptr* i_target_entry = i_pmlmax + ENTRY_IDX(order, vadr);
+        mem_vpstruct_ptr *i_target_entry = i_pmlmax + ENTRY_IDX(order, vadr);
 
         while(order > target_order)
         {
@@ -128,6 +86,12 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
                 *i_target_entry = i_default_vpstruct_ptr;
                 i_target_entry->ss_padr = (uintptr_t) alloc.padr >> 12;
                 i_target_entry->present = 1;
+
+                // If we are mapping aren't in the VMM domain, then the new
+                // pages we just allocated need to be mapped to their
+                // corresponding places in the VMM super structure
+                if(  (uintptr_t) vadr < (uintptr_t) KVMSPACE
+                  || (uintptr_t) vadr >= (uintptr_t) (KVMSPACE + ))
             }
             if(flags & MAPF_SETUP) // We have identity paging at 0:16G, SS_PADR
                                    // will work without new mapping
@@ -166,14 +130,17 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
             rtentry->user = (flags & MAPF_U) != 0;
             rtentry->global = vadr >= KVMSPACE || (flags & MAPF_G) != 0;
             rtentry->padr = (uintptr_t) padr >> 12;
-            rtentry->present = 1;
+
+            // With the PTE, we need to additionally check if we are
+            // setting up for VCache, or this is a normal mapping
+            if(flags & MAPF_VCSETUP)
+                rtentry->present = 0;
+            else
+                rtentry->present = 1;
         }
-        // update the virtual tables
-        if(
-            flags & MAPF_G
-         || vadr >= KVMSPACE
-         || size / i_order_ps[target_order] < RLCR3_THRESHOLD
-        )
+
+        // skip if VCSETUP
+        if(use_invlpg && !(flags & MAPF_VCSETUP))
             as_invlpg((uint64_t) vadr);
 
         vadr += i_order_ps[target_order];
@@ -181,15 +148,12 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
         mapped += i_order_ps[target_order];
     }
 
-    if(
-        !(
-            flags & MAPF_G
-         || vadr >= KVMSPACE
-         || size / i_order_ps[target_order] < RLCR3_THRESHOLD
-        )
-    )
+    // Reload mappings using rlcr3 if we didnt do so using invlpg
+    // skip if VCSETUP
+    if(!use_invlpg && !(flags & MAPF_VCSETUP))
         as_rlcr3();
 
+    print("end mem_vmap() -> SUCCESS\n");
     return 0;
 }
 

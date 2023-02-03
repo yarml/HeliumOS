@@ -105,7 +105,7 @@ is why Helium source provides `tpf` standing for *temporary printf* so that it
 could be easily found and removed when no longer needed
 
 ## Value printing format
-When an internal value of the system is the be displayed out, the format
+When an internal value of the system is to be displayed out, the format
 `decription(value1, ...)\n` is to be used. When only displaying a message,
 the format `message.\n` is to be used.
 

@@ -12,9 +12,13 @@
 #include "internal_mem.h"
 #include "vcache.h"
 
+// Physical memory
 void *i_pmm_header = 0;
 size_t i_mmap_usable_len = 0;
+
+// Virtual memory
 mem_vpstruct_ptr *i_pmlmax = 0;
+mem_vpstruct_ptr *i_ppmlmax = 0;
 
 size_t i_order_ps[ORDER_COUNT];
 
@@ -46,7 +50,6 @@ void mem_init()
         {
             mmap_usable[i_mmap_usable_len  ].padr =
                 (void*) ALIGN_UP(MMapEnt_Ptr(mmap + i - 1), MEM_PS);
-
 
             mmap_usable[i_mmap_usable_len++].size =
                 ALIGN_DN(MMapEnt_Size(mmap + i - 1), MEM_PS);
@@ -93,7 +96,41 @@ void mem_init()
     i_pmlmax = i_ppmlmax;
 
     /** Initialize vcache */
+    /* Initializing the vcache means:
+     *  - Initializing the VCache state
+     *     + Initialize all bitmap bytes to 0x55
+     *     + Clear vclp table
+     *  - Prepare VMM structures
+     *     + Create all the needed PML4s, PDPTs, PDs and PTs
+     *     + Enable all the needed PML4Es, PDPTEs, PDEs
+     *     + Setup the correct flags for the PTEs
+     *     All of these can be done through mem_vmap with MAPF_VCSETUP
+     */
 
+    i_vcache_lazy_count = 0;
+    memset(i_vcp_bitmap, 0x55, sizeof(i_vcp_bitmap));
+
+    /* Preparing VMM structures */
+
+    // The following can be assumed:
+    //  - Identity paging at [0;16G)
+
+    // This should be similar to the initial part of mem_vmap
+    // The target_order in this case is always 0 as we only use 4K pages
+    // in VCache
+
+    // When we reach the PTE, we set the flags, but not set the present flag
+
+    // The size of VCache in bytes
+    size_t size = VCACHE_PAGES * MEM_PS;
+
+    // Next, we call mem_vmap and it will prepare the VMM structures
+    mem_vmap(
+        VCACHE_PTR,
+        0, /* padr does not matter when we use MAPF_VCSETUP */
+        size,
+        MAPF_VCSETUP | MAPF_SETUP
+    );
 
     printf("end mem_init()\n");
 }

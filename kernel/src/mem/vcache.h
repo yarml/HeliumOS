@@ -11,33 +11,37 @@
                                    architectures: multiple of 8 * sizeof(size_t)
                                 */
 #define VCACHE_LAZY_PAGES (16)
-#define VCACHE_CC_FLUSH   (32) /* How many calls to VCache functions will force
-                                  a lazily unmapped page to be unmapped */
-
-
 
 struct VCAC_UNIT;
 typedef struct VCACHE_UNIT vcache_unit;
 struct VCACHE_UNIT
 {
-    // All the following pointers have the same value, they are there for the
-    // convenience of usage
-    mem_vpstruct_ptr *vvps_ptr;
-    mem_vpstruct *vvps;
-    mem_vpstruct2 *vvps2;
+    void* ptr;
     errno_t error;
 };
+
+
+#define ERR_VCM_NPG_FOUND (-1)
 
 /* Map one page of physical space to virtual memory chosen by vcache system */
 vcache_unit vcache_map(void *padr);
 
-/* Lazy unmap, mark the page as to be unmapped if vcache system is called
-   multiple times without referencing this page */
-void vcache_lumap(vcache_unit unit);
-/* Unmap the page, the system can choose to keep it until its space is needed */
+/* Unmap the page, the system can choose to keep it until its space is needed
+   WARNING: This function should be called once for each vcache unit
+            The behaviour is undefined if it is called on a free page */
 void vcache_umap(vcache_unit unit);
 
 /* Unmap all lazily unmapped pages */
 void vcache_flush();
+
+#define VCP_BITMAP_LEN (VCACHE_PAGES * 2 / (8 * sizeof(size_t)))
+
+extern size_t i_vcp_bitmap[VCP_BITMAP_LEN];
+
+// Indices of lazily unmapped pages
+extern size_t i_vclp_table[VCACHE_LAZY_PAGES];
+
+// Count of lazily unmapped pages
+extern size_t i_vcache_lazy_count;
 
 #endif

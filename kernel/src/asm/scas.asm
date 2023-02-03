@@ -9,6 +9,7 @@ global as_nscasd
 global as_nscasq
 
 as_scasb:
+    cld
     mov rax, rsi
     mov rcx, rdx
     repne scasb
@@ -16,6 +17,7 @@ as_scasb:
     ret
 
 as_scasw:
+    cld
     mov rax, rsi
     mov rcx, rdx
     repne scasw
@@ -23,6 +25,7 @@ as_scasw:
     ret
 
 as_scasd:
+    cld
     mov rax, rsi
     mov rcx, rdx
     repne scasd
@@ -30,6 +33,7 @@ as_scasd:
     ret
 
 as_scasq:
+    cld
     mov rax, rsi
     mov rcx, rdx
     repne scasq
@@ -38,6 +42,7 @@ as_scasq:
 
 
 as_nscasb:
+    cld
     mov rax, rsi
     mov rcx, rdx
     repe scasb
@@ -45,6 +50,7 @@ as_nscasb:
     ret
 
 as_nscasw:
+    cld
     mov rax, rsi
     mov rcx, rdx
     repe scasw
@@ -52,6 +58,7 @@ as_nscasw:
     ret
 
 as_nscasd:
+    cld
     mov rax, rsi
     mov rcx, rdx
     repe scasd
@@ -59,6 +66,7 @@ as_nscasd:
     ret
 
 as_nscasq:
+    cld
     mov rax, rsi
     mov rcx, rdx
     repe scasq

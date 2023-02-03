@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <utils.h>
 #include <mem.h>
+
 #include <asm/scas.h>
 
 #include "internal_mem.h"
@@ -122,15 +123,19 @@ mem_pallocation mem_ppalloc(
                         // the older implementation
                         size_t pg_count = ALIGN_UP(size, MEM_PS) / MEM_PS;
                         size_t lpg_idx = fpg_idx + pg_count - 1;
-                        if(fpg_idx - lpg_idx < 64) { // only one u64 to change
+                        if(fpg_idx - lpg_idx < 64) // only one u64 to change
+                        {
                             bitmap[fpg_idx / 64] |=
                                 BITRANGE(fpg_idx % 64, lpg_idx % 64);
-                        } else { // multiple u64s to set
+                        }
+                        else // multiple u64s to set
+                        {
                             bitmap[fpg_idx / 64] |=
                                 BITRANGE(64 - fpg_idx % 64, 63);
                             bitmap[lpg_idx / 64] |= BITRANGE(0, lpg_idx % 64);
                             size_t cpg_idx = ALIGN_UP(fpg_idx, 64);
-                            while(cpg_idx < lpg_idx + 64) {
+                            while(cpg_idx < lpg_idx + 64)
+                            {
                                 bitmap[cpg_idx / 64] = UINT64_MAX;
                                 cpg_idx += 64;
                             }

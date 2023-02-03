@@ -23,7 +23,7 @@ $$S_n = 4K \frac{1 - 512^{n+1}}{1 - 512}$$
 Which is the formula used by the macro `ORDER_STRUCT_SIZE(n)`:
 ```c
 #define ORDER_STRUCT_SIZE(n) \
-    (size_t)(4096 * ((1 - powi(512, (n) + 1)) / ( 1 - 512)))
+    (size_t)(MEM_PS * ((1 - powi(512, (n) + 1)) / ( 1 - 512)))
 ```
 
 In general, for any sequence $(U_n)_n$ of the recursive formula:

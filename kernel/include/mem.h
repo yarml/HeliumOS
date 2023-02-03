@@ -43,6 +43,10 @@ void mem_ppfree(void *pheader, mem_pallocation alloc);
 errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags);
 errno_t mem_vumap(void *vadr, size_t size);
 
+// Kernel virtual space
+#define KVMSPACE ((void*)(0xFFFF800000000000)) // not to be mistaken with
+                                               // linux's kvm, this is
+                                               // Kernel Virtual Memory
 
 // ERR_MEM memory operations errors
 #define ERR_MEM_ALN          (-1) /* Alignment error */
@@ -68,6 +72,8 @@ errno_t mem_vumap(void *vadr, size_t size);
 
 #define MAPF_SETUP (1 << 31) /* Special flag used by mem_init to indicate
                                 that identity paging at 0:16G can be assumed */
+#define MAPF_VCSETUP (1 << 30) /* Special flag used by vcache_init to tell
+                                  vmap to not set the present flags */
 
 // FIXME: I think that if physical memory addresses go above 16G,
 // which is what bootboot identity maps, then mem_init will fail

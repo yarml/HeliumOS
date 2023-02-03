@@ -72,7 +72,7 @@ struct MEM_VPSTRUCT2
 // Substruct address, s : mem_vpstruct_ptr*
 #define SS_PADR(s) (void*) (((s)->ss_padr << 12) & 0xFFFFFFFFFFFFF000)
 
-// Page size
+// Page size of order 0
 #define MEM_PS (4096)
 
 #endif

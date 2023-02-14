@@ -42,7 +42,7 @@ char *strpred(char const *s, fpt_chr_predicate pred)
   for(; !pred(*s); ++s)
     if(*s == 0)
       return 0;
-    return (char*) s;
+  return (char*) s;
 }
 
 void *memchr (void const *block, int c, size_t size)

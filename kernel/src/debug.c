@@ -1,4 +1,6 @@
 #include <debug.h>
+#include <string.h>
+
 #include <asm/io.h>
 
 int dbg_write_chr(FILE *f, char c)
@@ -9,11 +11,11 @@ int dbg_write_chr(FILE *f, char c)
 
 int dbg_write_string(FILE *f, char const *str)
 {
-  while(str && *str)
-  {
-    dbg_write_chr(f, *str);
-    ++str;
-  }
+  as_outsb(
+    DEBUG_CONSOLE,
+    (uint8_t *) str,
+    strlen(str)
+  );
   return 0;
 }
 

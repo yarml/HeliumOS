@@ -1,6 +1,9 @@
 
 # Index
 - [Index](#index)
+- [Code structure](#code-structure)
+  - [Indentation](#indentation)
+  - [Line limit](#line-limit)
 - [Variable naming](#variable-naming)
   - [Suffix `_size`](#suffix-_size)
   - [Suffix `_len`](#suffix-_len)
@@ -19,6 +22,17 @@
 - [Debug printing](#debug-printing)
   - [Mid-Implementation debug printing](#mid-implementation-debug-printing)
   - [Value printing format](#value-printing-format)
+
+# Code structure
+## Indentation
+All code must use 2 spaces for indentation. The only exception for this is when
+a language **requires** a different style for indentations.
+
+## Line limit
+All lines must have a limit of 80 characters. The only excpetion is when there
+is no way to break a line and continue on the next line, for example when
+referencing links in Markdown files. In all othr cases, it is preferrable to
+split the line into multiple ones.
 
 # Variable naming
 ## Suffix `_size`

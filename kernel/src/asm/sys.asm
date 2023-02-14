@@ -1,7 +1,7 @@
 global as_sys_stop
 
 as_sys_stop:
-    cli
+  cli
 .loop:
-    hlt
-    jmp .loop
+  hlt
+  jmp .loop

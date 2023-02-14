@@ -24,113 +24,73 @@ size_t i_order_ps[ORDER_COUNT];
 
 void mem_init()
 {
-    printf("begin mem_init()\n");
+  printf("begin mem_init()\n");
 
-    /* precalculate order page sizes */
-    // TODO: figure a way to do it at compile time
-    for(size_t i = 0; i < ORDER_COUNT; ++i)
+  /* precalculate order page sizes */
+  // TODO: figure a way to do it at compile time
+  for(size_t i = 0; i < ORDER_COUNT; ++i)
+  {
+      i_order_ps[i] = ORDER_PS(i);
+  }
+
+  size_t mmap_len = (bootboot.size - sizeof(BOOTBOOT)) / sizeof(MMapEnt) + 1;
+
+  mem_pseg_header mmap_usable[mmap_len];
+
+  size_t pmm_header_total_size = 0;
+
+  MMapEnt *mmap = &(bootboot.mmap);
+
+  /* Insert the regions backward, so that the PMM would prefer allocating
+     pages with higher physical adresses and leave the lower addresses for
+     hardware that requires it */
+  for(size_t i = mmap_len; i != 0; --i)
+  {
+    if(MMapEnt_IsFree(mmap + i - 1) && MMapEnt_Size(mmap + i - 1) >= MEM_PS)
     {
-        i_order_ps[i] = ORDER_PS(i);
+      mmap_usable[i_mmap_usable_len  ].padr =
+        (void*) ALIGN_UP(MMapEnt_Ptr(mmap + i - 1), MEM_PS);
+      mmap_usable[i_mmap_usable_len++].size =
+        ALIGN_DN(MMapEnt_Size(mmap + i - 1), MEM_PS);
+      pmm_header_total_size += BITMAP_SIZE(MMapEnt_Size(mmap + i - 1))
+                            + sizeof(mem_pseg_header);
     }
+  }
 
-    size_t mmap_len = (bootboot.size - sizeof(BOOTBOOT)) / sizeof(MMapEnt) + 1;
-
-    mem_pseg_header mmap_usable[mmap_len];
-
-    size_t pmm_header_total_size = 0;
-
-    MMapEnt *mmap = &(bootboot.mmap);
-
-    /* Insert the regions backward, so that the PMM would prefer allocating
-       pages with higher physical adresses and leave the lower addresses for
-       hardware that requires it */
-    for(size_t i = mmap_len; i != 0; --i)
+  /* Search for a place for the PMM header */
+  for(size_t i = 0; i < i_mmap_usable_len; ++i)
+  {
+    if(mmap_usable[i].size >= ALIGN_UP(pmm_header_total_size, MEM_PS))
     {
-        if(MMapEnt_IsFree(mmap + i - 1) && MMapEnt_Size(mmap + i - 1) >= MEM_PS)
-        {
-            mmap_usable[i_mmap_usable_len  ].padr =
-                (void*) ALIGN_UP(MMapEnt_Ptr(mmap + i - 1), MEM_PS);
-
-            mmap_usable[i_mmap_usable_len++].size =
-                ALIGN_DN(MMapEnt_Size(mmap + i - 1), MEM_PS);
-
-
-            pmm_header_total_size += BITMAP_SIZE(MMapEnt_Size(mmap + i - 1))
-                                    + sizeof(mem_pseg_header);
-        }
+      i_pmm_header = mmap_usable[i].padr;
+      mmap_usable[i].padr += ALIGN_UP(pmm_header_total_size, MEM_PS);
+      mmap_usable[i].size -= ALIGN_UP(pmm_header_total_size, MEM_PS);
+      break;
     }
+  }
 
-    /* Search for a place for the PMM header */
-    for(size_t i = 0; i < i_mmap_usable_len; ++i)
-    {
-        if(mmap_usable[i].size >= ALIGN_UP(pmm_header_total_size, MEM_PS))
-        {
-            i_pmm_header = mmap_usable[i].padr;
-            mmap_usable[i].padr += ALIGN_UP(pmm_header_total_size, MEM_PS);
-            mmap_usable[i].size -= ALIGN_UP(pmm_header_total_size, MEM_PS);
-            break;
-        }
-    }
+  /* Initialize the PMM header */
+  size_t pmm_header_off = 0;
+  for(size_t i = 0; i < i_mmap_usable_len; ++i)
+  {
+    mem_pseg_header *h = i_pmm_header + pmm_header_off;
+    *h = *(mmap_usable + i);
+    memset((void*) h + sizeof(mem_pseg_header), 0, BITMAP_SIZE(h->size));
+    /* Mark the leftover pages from the bitmap as used */
+    uint64_t* last = (void*) h + sizeof(mem_pseg_header)
+                               + BITMAP_SIZE(h->size) - 8;
+    *last = UINT64_MAX << (h->size / MEM_PS) % 64;
+    pmm_header_off += BITMAP_SIZE(mmap_usable[i].size)
+                   + sizeof(mem_pseg_header);
 
-    /* Initialize the PMM header */
-    size_t pmm_header_off = 0;
-    for(size_t i = 0; i < i_mmap_usable_len; ++i)
-    {
-        mem_pseg_header *h = i_pmm_header + pmm_header_off;
-        *h = *(mmap_usable + i);
-        memset((void*) h + sizeof(mem_pseg_header), 0, BITMAP_SIZE(h->size));
-        /* Mark the leftover pages from the bitmap as used */
-        uint64_t* last = (void*) h + sizeof(mem_pseg_header)
-                                   + BITMAP_SIZE(h->size) - 8;
-        *last = UINT64_MAX << (h->size / MEM_PS) % 64;
-        pmm_header_off += BITMAP_SIZE(mmap_usable[i].size)
-                        + sizeof(mem_pseg_header);
+    printf("header(%016p,%016p,%05lu)\n", h, h->padr, h->size / MEM_PS);
+  }
+  printf("pmm header(%016p, %05lu)\n", i_pmm_header, pmm_header_off);
 
-        printf("header(%016p,%016p,%05lu)\n", h, h->padr, h->size / MEM_PS);
-    }
-    printf("pmm header(%016p, %05lu)\n", i_pmm_header, pmm_header_off);
+  /* Initialize virtual memory manager */
+  ctlr_cr3_npcid cr3 = as_rcr3();
+  i_ppmlmax = CTLR_CR3_NPCID_PML4_PADR(cr3);
+  i_pmlmax = i_ppmlmax;
 
-    /* Initialize virtual memory manager */
-    ctlr_cr3_npcid cr3 = as_rcr3();
-    i_ppmlmax = CTLR_CR3_NPCID_PML4_PADR(cr3);
-    i_pmlmax = i_ppmlmax;
-
-    /** Initialize vcache */
-    /* Initializing the vcache means:
-     *  - Initializing the VCache state
-     *     + Initialize all bitmap bytes to 0x55
-     *     + Clear vclp table
-     *  - Prepare VMM structures
-     *     + Create all the needed PML4s, PDPTs, PDs and PTs
-     *     + Enable all the needed PML4Es, PDPTEs, PDEs
-     *     + Setup the correct flags for the PTEs
-     *     All of these can be done through mem_vmap with MAPF_VCSETUP
-     */
-
-    i_vcache_lazy_count = 0;
-    memset(i_vcp_bitmap, 0x55, sizeof(i_vcp_bitmap));
-
-    /* Preparing VMM structures */
-
-    // The following can be assumed:
-    //  - Identity paging at [0;16G)
-
-    // This should be similar to the initial part of mem_vmap
-    // The target_order in this case is always 0 as we only use 4K pages
-    // in VCache
-
-    // When we reach the PTE, we set the flags, but not set the present flag
-
-    // The size of VCache in bytes
-    size_t size = VCACHE_PAGES * MEM_PS;
-
-    // Next, we call mem_vmap and it will prepare the VMM structures
-    mem_vmap(
-        VCACHE_PTR,
-        0, /* padr does not matter when we use MAPF_VCSETUP */
-        size,
-        MAPF_VCSETUP | MAPF_SETUP
-    );
-
-    printf("end mem_init()\n");
+  printf("end mem_init()\n");
 }

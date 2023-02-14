@@ -8,23 +8,23 @@ ENTRY(_start);
 
 PHDRS
 {
-    kernel PT_LOAD AT(0xffffffffffe02000);
+  kernel PT_LOAD AT(0xffffffffffe02000);
 }
 
 SECTIONS
 {
-    . = 0xffffffffffe02000;
-    .text : {
-        KEEP(*(.text.boot)) *(.text .text.*)
-        *(.rodata .rodata.*)
-        *(.data .data.*)
-    } :kernel
+  . = 0xffffffffffe02000;
+  .text : {
+    KEEP(*(.text.boot)) *(.text .text.*)
+    *(.rodata .rodata.*)
+    *(.data .data.*)
+  } :kernel
 
-    .bss (NOLOAD) : {
-        . = ALIGN(16);
-        *(.bss .bss.*)
-        *(COMMON)
-    } :kernel
+  .bss (NOLOAD) : {
+    . = ALIGN(16);
+    *(.bss .bss.*)
+    *(COMMON)
+  } :kernel
 
-    /DISCARD/ : { *(.eh_frame) *(.comment) }
+  /DISCARD/ : { *(.eh_frame) *(.comment) }
 }

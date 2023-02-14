@@ -12,18 +12,18 @@ struct MEM_PSEG_HEADER;
 typedef struct MEM_PSEG_HEADER mem_pseg_header;
 struct MEM_PSEG_HEADER
 {
-    void *padr;
-    size_t size;
+  void *padr;
+  size_t size;
 } pack;
 
 struct MEM_PALLOCATION;
 typedef struct MEM_PALLOCATION mem_pallocation;
 struct MEM_PALLOCATION
 {
-    void *padr;
-    size_t header_off;
-    size_t size;
-    errno_t error;
+  void *padr;
+  size_t header_off;
+  size_t size;
+  errno_t error;
 };
 
 void mem_init();
@@ -31,11 +31,11 @@ void mem_init();
 /* mem_p* */
 
 mem_pallocation mem_ppalloc(
-    void *pheader,
-    size_t size,
-    size_t alignement,
-    bool cont,
-    void *below
+  void *pheader,
+  size_t size,
+  size_t alignement,
+  bool cont,
+  void *below
 );
 void mem_ppfree(void *pheader, mem_pallocation alloc);
 

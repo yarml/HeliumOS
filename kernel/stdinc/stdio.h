@@ -10,8 +10,8 @@ struct __stdio__file;
 typedef struct __stdio__file FILE;
 struct __stdio__file
 {
-    int (*write_chr)(FILE* f, char c);
-    int (*write_string)(FILE* f, char const* str);
+  int (*write_chr)(FILE* f, char c);
+  int (*write_string)(FILE* f, char const* str);
 };
 
 extern FILE* stdout;

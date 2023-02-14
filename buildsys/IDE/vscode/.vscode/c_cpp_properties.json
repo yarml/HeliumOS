@@ -1,23 +1,23 @@
 {
-    "configurations": [
-        {
-            "name": "HeliumOS",
-            "includePath": [
-                "${workspaceFolder}/kernel/src",
-                "${workspaceFolder}/kernel/include",
-                "${workspaceFolder}/kernel/stdinc",
-                "${workspaceFolder}/ext/src/dist",
-                "${workspaceFolder}/sysroots/build/include",
-                "${workspaceFolder}/sysroots/build/lib/gcc/x86_64-elf/11.2.0/include",
-                "${workspaceFolder}/sysroots/build/lib/gcc/x86_64-elf/11.2.0/include-fixed",
-                "${workspaceFolder}/sysroots/build/lib/gcc/x86_64-elf/11.2.0/plugin/include"
-            ],
-            "defines": ["__STDC_HOSTED__=0"],
-            "compilerPath": "${workspaceFolder}/sysroots/build/bin/x86_64-elf-gcc",
-            "cStandard": "c17",
-            "cppStandard": "c++20",
-            "intelliSenseMode": "linux-clang-x64"
-        }
-    ],
-    "version": 4
+  "configurations": [
+    {
+      "name": "HeliumOS",
+      "includePath": [
+        "${workspaceFolder}/kernel/src",
+        "${workspaceFolder}/kernel/include",
+        "${workspaceFolder}/kernel/stdinc",
+        "${workspaceFolder}/ext/src/dist",
+        "${workspaceFolder}/sysroots/build/include",
+        "${workspaceFolder}/sysroots/build/lib/gcc/x86_64-elf/11.2.0/include",
+        "${workspaceFolder}/sysroots/build/lib/gcc/x86_64-elf/11.2.0/include-fixed",
+        "${workspaceFolder}/sysroots/build/lib/gcc/x86_64-elf/11.2.0/plugin/include"
+      ],
+      "defines": ["__STDC_HOSTED__=0"],
+      "compilerPath": "${workspaceFolder}/sysroots/build/bin/x86_64-elf-gcc",
+      "cStandard": "c17",
+      "cppStandard": "c++20",
+      "intelliSenseMode": "linux-clang-x64"
+    }
+  ],
+  "version": 4
 }

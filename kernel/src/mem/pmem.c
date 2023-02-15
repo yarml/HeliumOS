@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <mutex.h>
 #include <stdio.h>
 #include <utils.h>
 #include <mem.h>
@@ -20,6 +21,8 @@
     bugs in the kernel may start appearing(which should be good i guess)
 */
 
+static mutex pmm_lock;
+
 mem_pallocation mem_ppalloc(
   void *pheader,
   size_t size,
@@ -28,6 +31,7 @@ mem_pallocation mem_ppalloc(
   void *below
 )
 {
+
   printf(
     "begin mem_ppaloc(%016p,%lu, %lu,%d,%016p)\n",
     pheader,
@@ -36,6 +40,8 @@ mem_pallocation mem_ppalloc(
     cont,
     below
   );
+
+  // We check the validity of the arguments first before acquiring the lock
 
   mem_pallocation alloc;
   alloc.header_off = 0;
@@ -56,6 +62,8 @@ mem_pallocation mem_ppalloc(
     alloc.error = ERR_MEM_ALN;
     return alloc;
   }
+
+  mutex_lock(&pmm_lock);
 
   size_t alignment_p = alignment / MEM_PS;
 
@@ -143,6 +151,7 @@ mem_pallocation mem_ppalloc(
             alloc.header_off = pmm_header_off;
             alloc.padr = h->padr + fpg_idx * MEM_PS;
             alloc.size = pg_count * MEM_PS;
+            mutex_ulock(&pmm_lock);
             printf(
               "end mem_ppalloc()={%016p,%016p,%05lu}\n",
               alloc.header_off,
@@ -184,6 +193,8 @@ mem_pallocation mem_ppalloc(
     }
     pmm_header_off += sizeof(mem_pseg_header) + bitmap_size;
   }
+
+  mutex_ulock(&pmm_lock);
   printf(
     "end mem_ppalloc()={%016p,%016p,%05lu}\n",
     alloc.header_off,
@@ -202,7 +213,7 @@ void mem_ppfree(void *pheader, mem_pallocation alloc)
     alloc.padr,
     alloc.size
   );
-
+  mutex_lock(&pmm_lock);
   uint64_t* bitmap = (uint64_t*) (alloc.header_off + 1);
   size_t fpg_idx =
     (size_t) (
@@ -223,5 +234,6 @@ void mem_ppfree(void *pheader, mem_pallocation alloc)
       cpg_idx += 64;
     }
   }
+  mutex_ulock(&pmm_lock);
   printf("end mem_ppfree()\n");
 }

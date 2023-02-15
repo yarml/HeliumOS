@@ -5,7 +5,6 @@
 #include <sys.h>
 
 void __init_stdio();
-
 int kmain();
 
 // Initialize C stdlib then call kmain()

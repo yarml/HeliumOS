@@ -36,11 +36,6 @@ extern size_t i_mmap_usable_len;
 // As set by bootboot
 extern mem_vpstruct_ptr *i_ppmlmax;
 
-// Virtual address of the VMM structure of MAX_ORDER(PML4)
-// After mem_init, this should be also the address of the beginning
-// of the VMM super structure
-extern mem_vpstruct_ptr *i_pmlmax;
-
 extern size_t i_order_ps[ORDER_COUNT];
 
 static mem_vpstruct_ptr i_default_vpstruct_ptr =

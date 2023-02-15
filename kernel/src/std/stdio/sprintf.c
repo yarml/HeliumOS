@@ -1,80 +1,14 @@
 #include <stdbool.h>
+#include <stdarg.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
-#include <stdio.h>
 #include <ctype.h>
+#include <stdio.h>
 #include <utils.h>
-
-#include <debug.h>
 
 #define PRINTF_BUF_SIZE (68) // This buffer is enough if we are printing
                              // anything other than a string
-
-FILE *stdout;
-FILE *stderr;
-
-static FILE __stdout;
-static FILE __stderr;
-
-void __init_stdio()
-{
-  stdout = &__stdout;
-  stderr = &__stderr;
-
-  __stdout = dbg_output_file();
-  __stderr = dbg_output_file();
-}
-
-int tpf(char const *template, ...)
-{
-  /* Implementation copied from printf() */
-  va_list va;
-  va_start(va, template);
-  int ret = vprintf(template, va);
-  va_end(va);
-  return ret;
-}
-
-
-int printf(char const *template, ...)
-{
-  // TODO: If this function changes, tpf() should also be updated to be
-  // similar
-  va_list va;
-  va_start(va, template);
-  int ret = vprintf(template, va);
-  va_end(va);
-  return ret;
-}
-
-int vprintf(char const *template, va_list va)
-{
-  return vfprintf(stdout, template, va);
-}
-
-
-int fprintf(FILE *stream, char const *template, ...)
-{
-  va_list va;
-  va_start(va, template);
-  int ret = vfprintf(stream, template, va);
-  va_end(va);
-  return ret;
-}
-
-int vfprintf(FILE *stream, char const *template, va_list va)
-{
-  va_list va2;
-  va_copy(va2, va);
-  size_t len = vsnprintf(0, 0, template, va2);
-  va_end(va2);
-
-  char buf[len + 1];
-
-  vsnprintf(buf, len + 1, template, va);
-  int ret = stream->write_string(stream, buf);
-  return ret ? ret : len;
-}
 
 int snprintf(char *s, size_t size, char const *template, ...)
 {
@@ -305,27 +239,4 @@ int vsnprintf(char *s, size_t size, char const *template, va_list va)
   if(s)
     *s = 0;
   return total_chars;
-}
-
-
-int fputc(int c, FILE *stream)
-{
-    if(stream->write_chr(stream, c))
-      return EOF;
-    return c;
-}
-
-int putchar(int c)
-{
-  return fputc(c, stdout);
-}
-
-int fputs(char const *s, FILE *stream)
-{
-  return stream->write_string(stream, s) ? EOF : strlen(s);
-}
-
-int puts(char const *s)
-{
-  return fputs(s, stdout);
 }

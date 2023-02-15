@@ -16,7 +16,7 @@ GCC_CONFIGURE_FLAGS := --enable-languages=c --without-headers
 
 GCC_PATCH_V := 1
 GCC_PATCHES_LINK := \
-	https://github.com/YavaCoco/helium-gcc-patches/releases/download/p$(GCC_PATCH_V)/$(GCC_VERSION)-$(GCC_TARGET).tar.gz
+	https://github.com/yarml/helium-gcc-patches/releases/download/p$(GCC_PATCH_V)/$(GCC_VERSION)-$(GCC_TARGET).tar.gz
 
 GCC_MAKEFILE := $(GCC_BUILD_DIR)/Makefile
 GCC_BIN := $(GCC_PREFIX)/bin/$(GCC_TARGET)-gcc

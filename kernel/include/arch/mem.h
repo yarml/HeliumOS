@@ -69,6 +69,15 @@ struct MEM_VPSTRUCT2
   uint64_t xd      :1 ;
 } pack;
 
+uint16_t mem_vpstruct_ptr_meta(mem_vpstruct_ptr *s);
+void mem_vpstruct_ptr_set_meta(mem_vpstruct_ptr *s, uint16_t meta);
+
+uint16_t mem_vpstruct_meta(mem_vpstruct *s);
+void mem_vpstruct_set_meta(mem_vpstruct *s, uint16_t meta);
+
+uint16_t mem_vpstruct2_meta(mem_vpstruct2 *s);
+void mem_vpstruct2_set_meta(mem_vpstruct2 *s, uint16_t meta);
+
 // Substruct address, s : mem_vpstruct_ptr*
 #define SS_PADR(s) (void*) (((s)->ss_padr << 12) & 0xFFFFFFFFFFFFF000)
 

@@ -5,8 +5,12 @@
 #include <stdint.h>
 
 /* a memory structure pointing to a lower memory structure  */
+/* can be a pml4e, pde, pdpte */
 struct MEM_VPSTRUCT_PTR;
 typedef struct MEM_VPSTRUCT_PTR mem_vpstruct_ptr;
+typedef struct MEM_VPSTRUCT_PTR mem_pml4e;
+typedef struct MEM_VPSTRUCT_PTR mem_pdpte_ref;
+typedef struct MEM_VPSTRUCT_PTR mem_pde_ref;
 struct MEM_VPSTRUCT_PTR
 {
   uint64_t present :1 ;
@@ -24,9 +28,11 @@ struct MEM_VPSTRUCT_PTR
   uint64_t xd      :1 ;
 } pack;
 
-/* pdpte, pdte with ps=1 */
+/* pdpte, pde with ps=1 */
 struct MEM_VPSTRUCT;
 typedef struct MEM_VPSTRUCT mem_vpstruct;
+typedef struct MEM_VPSTRUCT mem_pdpte_map;
+typedef struct MEM_VPSTRUCT mem_pde_map;
 struct MEM_VPSTRUCT
 {
   uint64_t present :1 ;
@@ -51,6 +57,7 @@ struct MEM_VPSTRUCT
 /* pte struct */
 struct MEM_VPSTRUCT2;
 typedef struct MEM_VPSTRUCT2 mem_vpstruct2;
+typedef struct MEM_VPSTRUCT2 mem_pte;
 struct MEM_VPSTRUCT2
 {
   uint64_t present :1 ;

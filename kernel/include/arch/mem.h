@@ -1,6 +1,7 @@
 #ifndef HELIUM_ARCH_MEM_H
 #define HELIUM_ARCH_MEM_H
 
+#include <attributes.h>
 #include <stdint.h>
 
 /* a memory structure pointing to a lower memory structure  */

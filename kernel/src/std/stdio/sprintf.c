@@ -147,6 +147,9 @@ int vsnprintf(char *s, size_t size, char const *template, va_list va)
         to_print = print_num(buf, 16, sign, pref, lmode, true , va);
         break;
       case 'p':
+        if(!min)
+          min = sizeof(uintptr_t) * 2;
+        pad0 = true;
         to_print = print_num(buf, 16, sign, pref, true , true , va);
         break;
       case 'z':

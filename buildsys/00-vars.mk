@@ -47,34 +47,34 @@ WC     := wc
 DISTRO := $(shell $(LSB_RELEASE) -i | $(CUT) -d ':' -f2 | $(TR) -d " \t")
 
 KERNEL_DIR := kernel/
-KERNEL_SRC_DIR := $(KERNEL_DIR)/src/
-KERNEL_INC_DIR := $(KERNEL_DIR)/include/
-STD_INC        := $(KERNEL_DIR)/stdinc/
-LINKER_SCRIPT  := $(KERNEL_DIR)/link.ld
+KERNEL_SRC_DIR := $(KERNEL_DIR)src/
+KERNEL_INC_DIR := $(KERNEL_DIR)include/
+STD_INC        := $(KERNEL_DIR)stdinc/
+LINKER_SCRIPT  := $(KERNEL_DIR)link.ld
 
-BOOTBOOT_CFG := $(KERNEL_DIR)/bootboot.config
-BOOTIMG_CFG  := $(KERNEL_DIR)/bootimg.json
+BOOTBOOT_CFG := $(KERNEL_DIR)bootboot.config
+BOOTIMG_CFG  := $(KERNEL_DIR)bootimg.json
 
-ROOT_DIR 	  := $(shell pwd -P)
+ROOT_DIR 	  := $(shell pwd -P)/
 
-EXT_DIR 	  := $(ROOT_DIR)/ext/
-EXT_SRC_DIR   := $(EXT_DIR)/src/
-EXT_BUILD_DIR := $(EXT_DIR)/build/
+EXT_DIR 	  := $(ROOT_DIR)ext/
+EXT_SRC_DIR   := $(EXT_DIR)src/
+EXT_BUILD_DIR := $(EXT_DIR)build/
 
-SYSROOTS 	   := $(ROOT_DIR)/sysroots/
-INITRD_SYSROOT := $(SYSROOTS)/initrd/
-BUILD_SYSROOT  := $(SYSROOTS)/build/
-HOST_SYSROOT   := $(SYSROOTS)/host/
+SYSROOTS 	   := $(ROOT_DIR)sysroots/
+INITRD_SYSROOT := $(SYSROOTS)initrd/
+BUILD_SYSROOT  := $(SYSROOTS)build/
+HOST_SYSROOT   := $(SYSROOTS)host/
 
-BUILD_DIR := $(ROOT_DIR)/build/
+BUILD_DIR := $(ROOT_DIR)build/
 
-OUT_DIR := $(BUILD_DIR)/out/
+OUT_DIR := $(BUILD_DIR)out/
 
 BUILDSYS := buildsys/
-SEDDIR   := $(BUILDSYS)/sedscripts/
-IDEDIR   := $(BUILDSYS)/IDE/
-PYDIR    := $(BUILDSYS)/pyscripts/
-SHDIR    := $(BUILDSYS)/shscripts/
+SEDDIR   := $(BUILDSYS)sedscripts/
+IDEDIR   := $(BUILDSYS)IDE/
+PYDIR    := $(BUILDSYS)pyscripts/
+SHDIR    := $(BUILDSYS)shscripts/
 
 CLEAN := build
 

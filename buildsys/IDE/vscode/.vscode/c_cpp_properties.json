@@ -3,7 +3,6 @@
     {
       "name": "HeliumOS",
       "includePath": [
-        "${workspaceFolder}/kernel/src",
         "${workspaceFolder}/kernel/include",
         "${workspaceFolder}/kernel/stdinc",
         "${workspaceFolder}/ext/src/dist",

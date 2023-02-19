@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 /* a memory structure pointing to a lower memory structure  */
-/* can be a pml4e, pde, pdpte */
+/* can be a pml4e, pde, pdpte, with ps = 0 */
 struct MEM_VPSTRUCT_PTR;
 typedef struct MEM_VPSTRUCT_PTR mem_vpstruct_ptr;
 typedef struct MEM_VPSTRUCT_PTR mem_pml4e;

@@ -10,6 +10,7 @@
 #include <asm/msr.h>
 
 #include "internal_mem.h"
+#include "vcache.h"
 
 // Physical memory
 void *i_pmm_header = 0;
@@ -82,13 +83,17 @@ void mem_init()
     pmm_header_off += BITMAP_SIZE(mmap_usable[i].size)
                    + sizeof(mem_pseg_header);
 
-    printf("header(%016p,%016p,%05lu)\n", h, h->padr, h->size / MEM_PS);
+    printf("header(header_adr=%016p,padr=%016p,size=%05lu)\n", h, h->padr, h->size / MEM_PS);
   }
-  printf("pmm header(%016p, %05lu)\n", i_pmm_header, pmm_header_off);
+  printf("pmm header(adr=%016p,offset=%05lu)\n", i_pmm_header, pmm_header_off);
 
   /* Initialize virtual memory manager */
   ctlr_cr3_npcid cr3 = as_rcr3();
   i_ppmlmax = CTLR_CR3_NPCID_PML4_PADR(cr3);
+  i_pmlmax = i_ppmlmax;
+
+  // testing
+  vcache_map(0);
 
   printf("end mem_init()\n");
 }

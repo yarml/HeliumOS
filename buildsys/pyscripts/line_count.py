@@ -21,7 +21,9 @@ def main():
 
   ext_size = dict()
 
-  for (dirpath, _, filenames) in chain.from_iterable(os.walk(path) for path in paths):
+  for (dirpath, _, filenames) in chain.from_iterable(
+    os.walk(path) for path in paths
+  ):
     for filename in filenames:
       files.append(f'{dirpath}/{filename}')
 

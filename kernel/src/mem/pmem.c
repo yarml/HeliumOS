@@ -72,16 +72,11 @@ mem_pallocation mem_ppalloc(
   {
     mem_pseg_header *h = pheader + pmm_header_off;
     size_t bitmap_size = BITMAP_SIZE(h->size);
-    printf("checking header %016p\n", h);
 
     if((!cont || h->size >= size)   /* big enough, without
                                        considering allocated pages */
     && (!below || h->padr < below)) /* lowest address low enough */
     {
-      printf(
-          "header meets minimum criteria\n"
-      );
-
       uint64_t* bitmap = (uint64_t*) (h + 1);
       size_t first_found_idx = bitmap_size / 8
         - as_nscasq(
@@ -107,7 +102,6 @@ mem_pallocation mem_ppalloc(
         )
         {
           size_t fpg_idx = pg_idx;
-          printf("found free page from %lu\n", fpg_idx);
 
           while( pg_idx * MEM_PS < h->size     /* still in segment */
             && (
@@ -123,7 +117,6 @@ mem_pallocation mem_ppalloc(
           )
             pg_idx += alignment_p;
 
-          printf("stopped at page %lu\n", pg_idx);
           if(!cont || (pg_idx - fpg_idx) * MEM_PS >= size) /* if size
                                                               is enough */
           {
@@ -153,14 +146,13 @@ mem_pallocation mem_ppalloc(
             alloc.size = pg_count * MEM_PS;
             mutex_ulock(&pmm_lock);
             printf(
-              "end mem_ppalloc()={%016p,%016p,%05lu}\n",
+              "end mem_ppalloc() -> SUCESS{%016p,%016p,%05lu}\n",
               alloc.header_off,
               alloc.padr,
               alloc.size
             );
             return alloc;
           }
-          printf("looking for another free page segment\n");
           // look for next clear bit
 
           // first check current u64 for another clear page
@@ -196,10 +188,7 @@ mem_pallocation mem_ppalloc(
 
   mutex_ulock(&pmm_lock);
   printf(
-    "end mem_ppalloc()={%016p,%016p,%05lu}\n",
-    alloc.header_off,
-    alloc.padr,
-    alloc.size
+    "end mem_ppalloc() -> ERR_MEM_NO_PHY_SPACE\n"
   );
   alloc.error = ERR_MEM_NO_PHY_SPACE;
   return alloc;

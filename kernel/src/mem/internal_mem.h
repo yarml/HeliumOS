@@ -37,11 +37,15 @@ extern size_t i_mmap_usable_len;
 
 // The physical address of the VMM structure of order MAX_ORDER(PML4)
 // As set by bootboot
-extern mem_vpstruct_ptr *i_ppmlmax;
+// It is also an array of 512 entries, obviously
+extern mem_pml4e *i_ppmlmax;
 // The virtual address of the VMM structure of order MAX_ORDER(PML4)
 // As set by vcache
-extern mem_vpstruct_ptr *i_pmlmax;
+// It is also an array of 512 entries, obviously
+extern mem_pml4e *i_pmlmax;
 
 extern size_t i_order_ps[ORDER_COUNT];
+
+void vcache_init();
 
 #endif

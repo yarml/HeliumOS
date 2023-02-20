@@ -11,8 +11,8 @@ typedef struct VCACHE_UNIT vcache_unit;
 struct VCACHE_UNIT
 {
   void *ptr;
-  mem_pte *target_pte;
-  mem_pde_ref *target_pde;
+  size_t pde_idx;
+  size_t pte_idx;
   errno_t error;
 };
 

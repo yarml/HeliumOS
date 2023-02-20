@@ -17,8 +17,8 @@ void *i_pmm_header = 0;
 size_t i_mmap_usable_len = 0;
 
 // Virtual memory
-mem_vpstruct_ptr *i_pmlmax = 0;
-mem_vpstruct_ptr *i_ppmlmax = 0;
+mem_pml4e *i_pmlmax = 0;
+mem_pml4e *i_ppmlmax = 0;
 
 size_t i_order_ps[ORDER_COUNT];
 
@@ -83,7 +83,10 @@ void mem_init()
     pmm_header_off += BITMAP_SIZE(mmap_usable[i].size)
                    + sizeof(mem_pseg_header);
 
-    printf("header(header_adr=%016p,padr=%016p,size=%05lu)\n", h, h->padr, h->size / MEM_PS);
+    printf(
+      "header(header_adr=%016p,padr=%016p,size=%05lu)\n",
+      h, h->padr, h->size / MEM_PS
+    );
   }
   printf("pmm header(adr=%016p,offset=%05lu)\n", i_pmm_header, pmm_header_off);
 
@@ -92,8 +95,13 @@ void mem_init()
   i_ppmlmax = CTLR_CR3_NPCID_PML4_PADR(cr3);
   i_pmlmax = i_ppmlmax;
 
+  vcache_init();
+
   // testing
+  tpf("begin test vcache_map()\n");
   vcache_map(0);
+  vcache_map(0);
+  tpf("end test vcache_map()\n");
 
   printf("end mem_init()\n");
 }

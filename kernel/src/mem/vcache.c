@@ -67,17 +67,13 @@ vcache_unit vcache_map(void *padr)
   mem_pte *target_pte = 0;
   size_t pte_idx = 0;
 
-  tpf("searching for a PDE that has free PTEs\n");
-
   for(size_t i = 0; i < PDE_COUNT; ++i)
   {
     if(!lazy_pages_count)
       lazy_pages_count = pde_lazy_pages(vcache_pde + i);
     free_pages_count = pde_free_pages(vcache_pde + i);
-    tpf("PDE[%lu] has %lu free pages\n", i, free_pages_count);
     if(free_pages_count)
     {
-      tpf("found a PDE at %lu that has %lu free PTEs\n", i, free_pages_count);
       target_pde = vcache_pde + i;
       pde_idx = i;
       break;
@@ -86,10 +82,8 @@ vcache_unit vcache_map(void *padr)
 
   if(!target_pde)
   {
-    tpf("No PDE with free pages found, flushing a PDE that has lazy pages\n");
     if(!lazy_pages_count)
     {
-      tpf("Not PDE has lazy pages, we ran out of VCache, red alert\n");
       // No free pages were found, and no lazy pages could be freed either...
       // Return an error
       vcache_unit err;
@@ -110,10 +104,6 @@ vcache_unit vcache_map(void *padr)
     {
       if((free_pages_count = pde_lazy_pages(vcache_pde + i)))
       {
-        tpf(
-          "PDE %lu has %lu lazy pages, freeing them all.\n",
-          i, free_pages_count
-        );
         size_t lazy_found_count = 0;
         // Iterate through all PTEs until we found all the lazy pages and
         // marked them as free
@@ -124,11 +114,6 @@ vcache_unit vcache_map(void *padr)
           // other ones, they are all used!
           if(lazy_found_count >= lazy_pages_count)
           {
-            tpf(
-              "We can stop at PTE %lu, because we "
-              "already freed all the lazy pages\n",
-              j
-            );
             break;
           }
 
@@ -149,7 +134,6 @@ vcache_unit vcache_map(void *padr)
           }
         }
         // Mark all the previously lazy pages as free now
-        tpf("Chaging the PTE's meta data\n");
         pde_set_free(target_pde, lazy_pages_count);
         pde_set_lazy(target_pde, 0);
 
@@ -161,15 +145,12 @@ vcache_unit vcache_map(void *padr)
     }
   }
 
-  tpf("Changing the PDE's meta to only %lu free pages\n", free_pages_count - 1);
-
   // Here we have a pde, we will decrement its `free` attribute
   pde_set_free(target_pde, free_pages_count - 1);
 
   // If we went through a flush, then target_pte is already set
   if(!target_pte)
   {
-    tpf("We didn't go through a flush, so the PTE still has to be found\n");
     target_pte = vcache_pte + pde_idx * 512;
     // Now we iterate through all PTEs in this PDE and find one that is
     // not present
@@ -177,17 +158,14 @@ vcache_unit vcache_map(void *padr)
     {
       if(!target_pte[i].present)
       {
-        tpf("PTE at index %lu is NOT present!\n", i);
         target_pte = target_pte + i;
         pte_idx = i;
         break;
       }
     }
     // Mark the page as NOT lazy
-    tpf("Change PTE's meta to mark it as not lazy\n");
     mem_vpstruct2_set_meta(target_pte, 0);
   }
-  tpf("Setup the PTE so that it is present\n");
   // Now that we have a PTE, we set it up
   memset(target_pte, 0, sizeof(*target_pte));
 
@@ -336,8 +314,6 @@ void vcache_init()
   vcache_pte = (mem_pte *) SS_PADR(vcache_pde)
              + ENTRY_IDX(0, VCACHE_PTR); // this is probaly +0
 
-  tpf("Mapping VCache structures using vcache\n");
-
   // vcache_pde and vcache_pte are set to their physical addresses
   // vcache_map will work until the flat mapping is removed
   // BUT, we can use it to map these pages!
@@ -370,14 +346,12 @@ void vcache_init()
   }
   vcache_pte = vpte;
 
-  tpf("Now mapping PD\n");
   vcache_unit pde_unit = vcache_map(vcache_pde);
   if(pde_unit.error)
     error_general("VCache init", "Could not map vcache PD");
   vcache_pde = pde_unit.ptr;
 
   // Last but not least, map i_ppmlmax into virtual memory
-  tpf("Mapping PMLMAX into virtual memory\n");
 
   vcache_unit pmlmax_unit = vcache_map(i_ppmlmax);
   if(pmlmax_unit.error)

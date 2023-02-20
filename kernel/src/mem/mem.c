@@ -97,11 +97,5 @@ void mem_init()
 
   vcache_init();
 
-  // testing
-  tpf("begin test vcache_map()\n");
-  vcache_map(0);
-  vcache_map(0);
-  tpf("end test vcache_map()\n");
-
   printf("end mem_init()\n");
 }

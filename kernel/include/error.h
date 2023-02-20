@@ -5,5 +5,6 @@ typedef int errno_t;
 
 void error_general(char *prefix, char *details);
 void error_out_of_memory(char *details);
+void error_inv_state(char *details);
 
 #endif

@@ -35,11 +35,6 @@ vcache_unit vcache_map(void *padr)
       mem_pte *pte = i_vcache_pte + pdei * 512 + ptei;
       if(pte->present && pte_age(pte) && pte->padr == (uintptr_t)padr >> 12)
       {
-        tpf(
-          "Found a cached page which points to the same padr "
-          "pde=%lu,pte=%lu, using it",
-          pdei, ptei
-        );
         pte_set_age(pte, 0);
         pde_set_lazy(pde, lazy_count - 1);
 
@@ -54,8 +49,6 @@ vcache_unit vcache_map(void *padr)
       }
     }
   }
-
-  tpf("No lazy page was found.\n");
 
   // Find a PDE which contains at least 1 free page
 
@@ -74,10 +67,8 @@ vcache_unit vcache_map(void *padr)
   for(size_t i = 0; i < PDE_COUNT; ++i)
   {
     if(!lazy_pages_count)
-    {
       lazy_pages_count = pde_lazy_pages(i_vcache_pde + i);
-      tpf("PDE[%lu] has %lu lazy pages\n", i, lazy_pages_count);
-    }
+
     free_pages_count = pde_free_pages(i_vcache_pde + i);
     if(free_pages_count)
     {
@@ -237,7 +228,6 @@ void vcache_umap(vcache_unit unit)
   // This should be the majority of the first cases
   if(lazy_count < 63)
   {
-    tpf("Easy situation with %lu lazy pages\n", lazy_count);
     // Increment the age of the other lazy pages
     for(size_t i = 0; i < 512; ++i)
     {
@@ -251,9 +241,6 @@ void vcache_umap(vcache_unit unit)
     printf("end vcache_umap() -> lazy pages not max\n");
     return;
   }
-
-  tpf("Not so easy situation :/\n");
-
   // If we already reached the maximum number of lazy pages
   // We need to free the oldest ones, also increasing the ages
   // of the ones that are still here
@@ -270,13 +257,8 @@ void vcache_umap(vcache_unit unit)
       oldest_pte = pde_pt + i;
       oldest_age = age;
     }
-    if(age)
-      tpf("Age of %lu\n", age);
     age_sum += age;
   }
-
-  tpf("Oldest is %lu\n", oldest_age);
-
   // We mark the page as free, not present
   pte_set_age(oldest_pte, 0);
   oldest_pte->present = 0;
@@ -287,10 +269,6 @@ void vcache_umap(vcache_unit unit)
 
   // Now compute the average age among lazy pages
   size_t av_age = age_sum / (lazy_count - 1);
-
-  tpf("Population is %lu\n", lazy_count - 1);
-
-  tpf("Average age is %lu\n", av_age);
 
   // number of lazy pages that will be marked free
   size_t removed_count = 0;

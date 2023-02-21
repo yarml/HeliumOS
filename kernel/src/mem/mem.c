@@ -97,11 +97,8 @@ void mem_init()
 
   vcache_init();
 
-  tpf("Testing vcache_umap\n");
-
   for(size_t i = 0; i < 63; ++i)
   {
-    tpf("Testing alloc/dealloc n%lu\n", i);
     vcache_unit u = vcache_map(0);
     if(u.error)
       error_inv_state("Could not complete test, allocation error!");
@@ -109,7 +106,6 @@ void mem_init()
     vcache_umap(u);
   }
 
-  tpf("Done with the 63 first alloc/dealloc\n");
   vcache_unit u = vcache_map(0);
     if(u.error)
       error_inv_state("Could not complete test, allocation error!");
@@ -133,8 +129,6 @@ void mem_init()
       error_inv_state("Could not complete test, allocation error!");
 
   vcache_umap(u);
-
-  tpf("End test\n");
 
   printf("end mem_init()\n");
 }

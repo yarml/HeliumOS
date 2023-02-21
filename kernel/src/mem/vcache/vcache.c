@@ -19,6 +19,44 @@ vcache_unit vcache_map(void *padr)
 {
   printf("begin vcache_map(padr=%p)\n", padr);
 
+  // First thing, look if there is a lazy page pointing to this
+  // exact physical address
+  for(size_t pdei = 0; pdei < PDE_COUNT; ++pdei)
+  {
+    mem_pde_ref *pde = i_vcache_pde + pdei;
+    size_t lazy_count = pde_lazy_pages(pde);
+
+    if(!lazy_count)
+      continue;
+
+
+    for(size_t ptei = 0; ptei < 512; ++ptei)
+    {
+      mem_pte *pte = i_vcache_pte + pdei * 512 + ptei;
+      if(pte->present && pte_age(pte) && pte->padr == (uintptr_t)padr >> 12)
+      {
+        tpf(
+          "Found a cached page which points to the same padr "
+          "pde=%lu,pte=%lu, using it",
+          pdei, ptei
+        );
+        pte_set_age(pte, 0);
+        pde_set_lazy(pde, lazy_count - 1);
+
+
+        vcache_unit u;
+        u.error = 0;
+        u.pde_idx = pdei;
+        u.pte_idx = ptei;
+        u.ptr = VCACHE_PTR + MEM_PS * (pdei * 512 + ptei);
+
+        return u;
+      }
+    }
+  }
+
+  tpf("No lazy page was found.\n");
+
   // Find a PDE which contains at least 1 free page
 
   mem_pde_ref *target_pde = 0;

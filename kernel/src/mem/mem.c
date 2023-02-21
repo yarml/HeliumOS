@@ -97,38 +97,5 @@ void mem_init()
 
   vcache_init();
 
-  for(size_t i = 0; i < 63; ++i)
-  {
-    vcache_unit u = vcache_map(0);
-    if(u.error)
-      error_inv_state("Could not complete test, allocation error!");
-
-    vcache_umap(u);
-  }
-
-  vcache_unit u = vcache_map(0);
-    if(u.error)
-      error_inv_state("Could not complete test, allocation error!");
-
-  vcache_umap(u);
-
-  u = vcache_map((void*)0x10000);
-    if(u.error)
-      error_inv_state("Could not complete test, allocation error!");
-
-  vcache_umap(u);
-
-  u = vcache_map(0);
-    if(u.error)
-      error_inv_state("Could not complete test, allocation error!");
-
-  vcache_umap(u);
-
-  u = vcache_map((void*)0x10000);
-    if(u.error)
-      error_inv_state("Could not complete test, allocation error!");
-
-  vcache_umap(u);
-
   printf("end mem_init()\n");
 }

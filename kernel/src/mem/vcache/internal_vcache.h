@@ -27,7 +27,7 @@ static uint16_t pde_free_pages(mem_pde_ref *pde)
 unused
 static uint16_t pde_lazy_pages(mem_pde_ref *pde)
 {
-  return mem_vpstruct_ptr_meta(pde) >> 10 & 0x7;
+  return mem_vpstruct_ptr_meta(pde) >> 10 & 0x3f;
 }
 
 unused
@@ -41,7 +41,7 @@ unused
 static void pde_set_lazy(mem_pde_ref *pde, uint16_t lazy)
 {
   uint16_t meta = mem_vpstruct_ptr_meta(pde);
-  mem_vpstruct_ptr_set_meta(pde, (meta & 0x03ff) | (lazy & 0x7f) << 10);
+  mem_vpstruct_ptr_set_meta(pde, (meta & 0x03ff) | (lazy & 0x3f) << 10);
 }
 
 unused

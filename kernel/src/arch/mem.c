@@ -23,7 +23,7 @@ void mem_vpstruct_set_meta(mem_vpstruct *s, uint16_t meta)
 
 uint16_t mem_vpstruct2_meta(mem_vpstruct2 *s)
 {
-  return s->free0 | s->free1 >> 3;
+  return s->free0 | s->free1 << 3;
 }
 void mem_vpstruct2_set_meta(mem_vpstruct2 *s, uint16_t meta)
 {

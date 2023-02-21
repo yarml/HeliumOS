@@ -36,7 +36,10 @@ vcache_unit vcache_map(void *padr)
   for(size_t i = 0; i < PDE_COUNT; ++i)
   {
     if(!lazy_pages_count)
+    {
       lazy_pages_count = pde_lazy_pages(i_vcache_pde + i);
+      tpf("PDE[%lu] has %lu lazy pages\n", i, lazy_pages_count);
+    }
     free_pages_count = pde_free_pages(i_vcache_pde + i);
     if(free_pages_count)
     {
@@ -177,21 +180,41 @@ void vcache_remap(vcache_unit unit, void *padr)
 
 void vcache_umap(vcache_unit unit)
 {
+  printf(
+    "begin vcache_umap({ptr=%p,pde=%lu,pte=%lu})\n",
+    unit.ptr, unit.pde_idx, unit.pte_idx
+  );
+
   // First, check how many lazy pages the PDE has
   // If it is less than 127(the maximum), then the process is
   // straighforward. Mark this page as lazy with age 1, then return
   mem_pde_ref *pde = i_vcache_pde + unit.pde_idx;
   mem_pte *pte = i_vcache_pte + unit.pde_idx *512 + unit.pte_idx;
 
+  // Pointer to the 512 PTEs pointed to by the PDE
+  mem_pte *pde_pt = i_vcache_pte + 512 * unit.pde_idx;
+
   size_t lazy_count = pde_lazy_pages(pde);
 
   // This should be the majority of the first cases
-  if(lazy_count < 127)
+  if(lazy_count < 63)
   {
+    tpf("Easy situation with %lu lazy pages\n", lazy_count);
+    // Increment the age of the other lazy pages
+    for(size_t i = 0; i < 512; ++i)
+    {
+      mem_pte * current_pte = pde_pt + i;
+      size_t age = pte_age(current_pte);
+      if(age && age < 1023)
+        pte_set_age(current_pte, age + i);
+    }
     pte_set_age(pte, 1);
     pde_set_lazy(pde, lazy_count+1);
+    printf("end vcache_umap() -> lazy pages not max\n");
     return;
   }
+
+  tpf("Not so easy situation :/\n");
 
   // If we already reached the maximum number of lazy pages
   // We need to free the oldest ones, also increasing the ages
@@ -199,9 +222,6 @@ void vcache_umap(vcache_unit unit)
   size_t age_sum = 0;
   size_t oldest_age = 0;
   mem_pte *oldest_pte = 0;
-
-  // Pointer to 512 PTEs
-  mem_pte *pde_pt = i_vcache_pte + 512 * unit.pde_idx;
 
   // We do a first run removing the oldest lazy PTE
   for(size_t i = 0; i < 512; ++i)
@@ -212,8 +232,12 @@ void vcache_umap(vcache_unit unit)
       oldest_pte = pde_pt + i;
       oldest_age = age;
     }
+    if(age)
+      tpf("Age of %lu\n", age);
     age_sum += age;
   }
+
+  tpf("Oldest is %lu\n", oldest_age);
 
   // We mark the page as free, not present
   pte_set_age(oldest_pte, 0);
@@ -225,6 +249,10 @@ void vcache_umap(vcache_unit unit)
 
   // Now compute the average age among lazy pages
   size_t av_age = age_sum / (lazy_count - 1);
+
+  tpf("Population is %lu\n", lazy_count - 1);
+
+  tpf("Average age is %lu\n", av_age);
 
   // number of lazy pages that will be marked free
   size_t removed_count = 0;
@@ -246,12 +274,12 @@ void vcache_umap(vcache_unit unit)
         current_pte->present = 0;
         pte_set_age(current_pte, 0);
         //Don't bother invlpg
-        break;
+        continue;;
       }
 
       // increment age if it's not maximum
       // in most situations, this condition is true
-      if(age != 2047)
+      if(age < 1023)
         pte_set_age(current_pte, age + 1);
     }
   }
@@ -263,4 +291,6 @@ void vcache_umap(vcache_unit unit)
   // We don't count the oldest pte that was removed, because
   // it was replaced by the target pte
   pde_set_lazy(pde, lazy_count - removed_count);
+
+  printf("end vcache_umap() -> freed %lu lazy pages\n", removed_count);
 }

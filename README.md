@@ -19,7 +19,7 @@ definitely the only platform that will be supported.
 # Getting the sources
 As HeliumOs is hosted in github you can clone the sources with `git` using:
 
-`git clone https://github.com/YavaCoco/HeliumOS.git`.
+`git clone https://github.com/yarml/HeliumOS.git`.
 
 Otherwise you can download the sources in a [zip file].
 

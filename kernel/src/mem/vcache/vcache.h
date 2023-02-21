@@ -4,7 +4,7 @@
 #include <error.h>
 #include <mem.h>
 
-#include "internal_mem.h"
+#include "../internal_mem.h"
 
 struct VCACHE_UNIT;
 typedef struct VCACHE_UNIT vcache_unit;
@@ -19,6 +19,7 @@ struct VCACHE_UNIT
 #define ERR_VCM_NPG_FOUND (-1)
 
 vcache_unit vcache_map(void *padr);
+void vcache_remap(vcache_unit unit, void *padr);
 void vcache_umap(vcache_unit unit);
 
 #define VCACHE_LEN (2048)
@@ -31,5 +32,13 @@ void vcache_umap(vcache_unit unit);
 #define PDPTE_IDX (ENTRY_IDX(2, VCACHE_PTR))
 
 #define PDE_COUNT (VCACHE_LEN / 512)
+
+// This pointer, after memory initialization, should point
+// to 4 consecutive PDEs that are used for VCache
+extern mem_pde_ref *i_vcache_pde;
+
+// Pointer to the first PTE used by VCache. This PTE should be
+// followed by another 2047 PTE
+extern mem_pte *i_vcache_pte;
 
 #endif

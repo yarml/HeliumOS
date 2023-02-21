@@ -10,7 +10,7 @@
 #include <asm/msr.h>
 
 #include "internal_mem.h"
-#include "vcache.h"
+#include "vcache/vcache.h"
 
 // Physical memory
 void *i_pmm_header = 0;

@@ -1,5 +1,5 @@
-#ifndef HELIUM_INT_VCACHE_H
-#define HELIUM_INT_VCACHE_H
+#ifndef HELIUM_VCACHE_H
+#define HELIUM_VCACHE_H
 
 #include <error.h>
 #include <mem.h>

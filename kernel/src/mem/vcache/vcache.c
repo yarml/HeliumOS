@@ -4,6 +4,7 @@
 
 #include <asm/invlpg.h>
 
+#include "internal_vcache.h"
 #include"vcache.h"
 
 // This pointer, after memory initialization, should point
@@ -13,40 +14,6 @@ mem_pde_ref *i_vcache_pde;
 // Pointer to the first PTE used by VCache. This PTE should be
 // followed by another 2047 PTE
 mem_pte *i_vcache_pte;
-
-/* Implementation reference:
-    - PDEs store two fields in their metadata:
-      - `lazy` 7 bits: Count of lazy PTEs
-      - `free` 9 bits: Count of free PTEs
-    - PTEs store one field in their metadata:
-      - `age` 11 bits: when 0, it means the page is free
-                       otherwise, it is an integer number
-                       that counts how many times that PTE
-                       has been lazy
- */
-
-static uint16_t pde_free_pages(mem_pde_ref *pde)
-{
-  uint16_t meta = mem_vpstruct_ptr_meta(pde);
-  return meta & 0x3ff;
-}
-
-static uint16_t pde_lazy_pages(mem_pde_ref *pde)
-{
-  return mem_vpstruct_ptr_meta(pde) >> 10 & 0x7;
-}
-
-static void pde_set_free(mem_pde_ref *pde, uint16_t free)
-{
-  uint16_t meta = mem_vpstruct_ptr_meta(pde);
-  mem_vpstruct_ptr_set_meta(pde, (meta & 0xfc00) | (free & 0x3ff));
-}
-
-static void pde_set_lazy(mem_pde_ref *pde, uint16_t lazy)
-{
-  uint16_t meta = mem_vpstruct_ptr_meta(pde);
-  mem_vpstruct_ptr_set_meta(pde, (meta & 0x03ff) | (lazy & 0x7f) << 10);
-}
 
 vcache_unit vcache_map(void *padr)
 {
@@ -125,7 +92,7 @@ vcache_unit vcache_map(void *padr)
             pte_idx = j;
 
             ++lazy_found_count;
-            mem_vpstruct2_set_meta(pte, 0);
+            pte_set_age(pte, 0);
             pte->present = 0;
 
             // Don't even bother invalidating the page, it will be invalidated
@@ -163,7 +130,7 @@ vcache_unit vcache_map(void *padr)
       }
     }
     // Mark the page as NOT lazy
-    mem_vpstruct2_set_meta(target_pte, 0);
+    pte_set_age(target_pte, 0);
   }
   // Now that we have a PTE, we set it up
   memset(target_pte, 0, sizeof(*target_pte));
@@ -210,5 +177,90 @@ void vcache_remap(vcache_unit unit, void *padr)
 
 void vcache_umap(vcache_unit unit)
 {
+  // First, check how many lazy pages the PDE has
+  // If it is less than 127(the maximum), then the process is
+  // straighforward. Mark this page as lazy with age 1, then return
+  mem_pde_ref *pde = i_vcache_pde + unit.pde_idx;
+  mem_pte *pte = i_vcache_pte + unit.pde_idx *512 + unit.pte_idx;
 
+  size_t lazy_count = pde_lazy_pages(pde);
+
+  // This should be the majority of the first cases
+  if(lazy_count < 127)
+  {
+    pte_set_age(pte, 1);
+    pde_set_lazy(pde, lazy_count+1);
+    return;
+  }
+
+  // If we already reached the maximum number of lazy pages
+  // We need to free the oldest ones, also increasing the ages
+  // of the ones that are still here
+  size_t age_sum = 0;
+  size_t oldest_age = 0;
+  mem_pte *oldest_pte = 0;
+
+  // Pointer to 512 PTEs
+  mem_pte *pde_pt = i_vcache_pte + 512 * unit.pde_idx;
+
+  // We do a first run removing the oldest lazy PTE
+  for(size_t i = 0; i < 512; ++i)
+  {
+    size_t age = pte_age(pde_pt + i);
+    if(age > oldest_age)
+    {
+      oldest_pte = pde_pt + i;
+      oldest_age = age;
+    }
+    age_sum += age;
+  }
+
+  // We mark the page as free, not present
+  pte_set_age(oldest_pte, 0);
+  oldest_pte->present = 0;
+  // Don't bother invlpg now
+
+  // Stop considering the oldest page in the sum
+  age_sum -= oldest_age;
+
+  // Now compute the average age among lazy pages
+  size_t av_age = age_sum / (lazy_count - 1);
+
+  // number of lazy pages that will be marked free
+  size_t removed_count = 0;
+
+  // Now iterate again, freeing all lazy pages who are older than the average
+  // and incrementing the ages of the ones that will stay
+  for(size_t i = 0; i < 512; ++i)
+  {
+    mem_pte *current_pte = pde_pt + i;
+    size_t age = pte_age(current_pte);
+
+    // Make sure this is a lazy page not used/free
+    if(age)
+    {
+      if(age >= av_age)
+      {
+        ++removed_count;
+        // free page
+        current_pte->present = 0;
+        pte_set_age(current_pte, 0);
+        //Don't bother invlpg
+        break;
+      }
+
+      // increment age if it's not maximum
+      // in most situations, this condition is true
+      if(age != 2047)
+        pte_set_age(current_pte, age + 1);
+    }
+  }
+
+  // Mark the target page as lazy
+  pte_set_age(pte, 1);
+
+  // Update the PDE with the number number of lazy pages
+  // We don't count the oldest pte that was removed, because
+  // it was replaced by the target pte
+  pde_set_lazy(pde, lazy_count - removed_count);
 }

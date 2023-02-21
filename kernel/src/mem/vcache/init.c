@@ -1,5 +1,7 @@
 #include <string.h>
+#include <stdio.h>
 
+#include "internal_vcache.h"
 #include "vcache.h"
 
 static void s_alloc_substruct(mem_vpstruct_ptr *vs)

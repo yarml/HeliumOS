@@ -40,14 +40,6 @@ mem_pallocation mem_ppalloc(
 void mem_ppfree(void *pheader, mem_pallocation alloc);
 
 /* mem_v* */
-errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags);
-errno_t mem_vumap(void *vadr, size_t size);
-
-// Kernel virtual space
-#define KVMSPACE ((void*)(0xFFFF800000000000)) // not to be mistaken with
-                                               // linux's kvm, this is
-                                               // Kernel Virtual Memory
-
 // ERR_MEM memory operations errors
 #define ERR_MEM_ALN          (-1) /* Alignment error */
 #define ERR_MEM_NO_PHY_SPACE (-2) /* No physical space */
@@ -56,6 +48,15 @@ errno_t mem_vumap(void *vadr, size_t size);
                                      address on systems that require it) */
 #define ERR_MEM_MANAGED      (-5) /* Memory area to be mapped is managed by
                                      another kernel system(eg; vcache) */
+#define ERR_MEM_NO_VC_SPACE  (-6) /* Couldn't allocate a VCache page */
+
+errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags);
+errno_t mem_vumap(void *vadr, size_t size);
+
+// Kernel virtual space
+#define KVMSPACE ((void*)(0xFFFF800000000000)) // not to be mistaken with
+                                               // linux's kvm, this is
+                                               // Kernel Virtual Memory
 
 // MAPF memory mapping flags
 #define MAPF_R   (1<<0) /* Read */
@@ -69,14 +70,4 @@ errno_t mem_vumap(void *vadr, size_t size);
 
 #define MAPF_G   (1<<6) /* Global page (pages above KVMSPACE
                            are always global) */
-
-#define MAPF_SETUP (1 << 31) /* Special flag used by mem_init to indicate
-                                that identity paging at 0:16G can be assumed */
-#define MAPF_VCSETUP (1 << 30) /* Special flag used by vcache_init to tell
-                                  vmap to not set the present flags */
-
-// FIXME: I think that if physical memory addresses go above 16G,
-// which is what bootboot identity maps, then mem_init will fail
-// A fix that I thought about now is calling mem_palloc with a below constraint
-
 #endif

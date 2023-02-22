@@ -20,11 +20,12 @@ struct VCACHE_UNIT
 
 vcache_unit vcache_map(void *padr);
 void vcache_remap(vcache_unit unit, void *padr);
-void vcache_umap(vcache_unit unit);
+void vcache_umap(vcache_unit unit, void *id);
 
-#define VCACHE_LEN (2048)
 
 #define VCACHE_PTR (KVMSPACE)
+#define VCACHE_LEN (2048)
+#define VCACHE_SIZE (VCACHE_LEN * MEM_PS)
 
 // Index of the PML4E used by the vcache(only one)
 #define PML4E_IDX (ENTRY_IDX(3, VCACHE_PTR))
@@ -32,6 +33,7 @@ void vcache_umap(vcache_unit unit);
 #define PDPTE_IDX (ENTRY_IDX(2, VCACHE_PTR))
 
 #define PDE_COUNT (VCACHE_LEN / 512)
+
 
 // This pointer, after memory initialization, should point
 // to 4 consecutive PDEs that are used for VCache

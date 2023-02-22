@@ -194,6 +194,10 @@ void vcache_remap(vcache_unit unit, void *padr)
 {
   mem_pte *pte = i_vcache_pte + unit.pde_idx * 512 + unit.pte_idx;
 
+  // If this PTE already points to padr, skip the function
+  if(pte->present && pte->padr == (uintptr_t) padr >> 12)
+    return;
+
   // Reconfigure the PTE from scratch
   memset(pte, 0, sizeof(*pte));
 
@@ -207,7 +211,7 @@ void vcache_remap(vcache_unit unit, void *padr)
   as_invlpg((uint64_t) ptr);
 }
 
-void vcache_umap(vcache_unit unit)
+void vcache_umap(vcache_unit unit, void *id)
 {
   printf(
     "begin vcache_umap({ptr=%p,pde=%lu,pte=%lu})\n",
@@ -236,6 +240,8 @@ void vcache_umap(vcache_unit unit)
       if(age && age < 1023)
         pte_set_age(current_pte, age + i);
     }
+    if((uintptr_t) id != UINTPTR_MAX)
+      pte->padr = (uintptr_t) id >> 12;
     pte_set_age(pte, 1);
     pde_set_lazy(pde, lazy_count+1);
     printf("end vcache_umap() -> lazy pages not max\n");
@@ -299,6 +305,9 @@ void vcache_umap(vcache_unit unit)
         pte_set_age(current_pte, age + 1);
     }
   }
+
+  if((uintptr_t) id != UINTPTR_MAX)
+    pte->padr = (uintptr_t) id >> 12;
 
   // Mark the target page as lazy
   pte_set_age(pte, 1);

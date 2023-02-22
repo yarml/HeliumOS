@@ -98,21 +98,5 @@ void mem_init()
   // Initialize VCache
   vcache_init();
 
-  printf("test mem_vmap()\n");
-
-  mem_vmap(
-    KVMSPACE + (uint64_t) 0x8000000000,
-    (void *) 0x4000,
-    0x1000,
-    0
-  );
-
-  mem_vmap(
-    KVMSPACE + (uint64_t) 0x8000000000 + 0x2000,
-    (void *) 0x4000,
-    0x1000,
-    0
-  );
-
   printf("end mem_init()\n");
 }

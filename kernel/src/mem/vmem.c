@@ -134,6 +134,10 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
         target_entry->present = 1;
       }
 
+      // Increment substruct counter for this struct
+      uint16_t current_subcount = mem_vpstruct_ptr_meta(target_entry);
+      mem_vpstruct_ptr_set_meta(target_entry, current_subcount + 1);
+
       // So here, we are sure that the current VStruct entry is present
       // We map it's substructure into the coresponding VCache
       // If it is already mapped, vcache_remap will handle it and skip
@@ -200,7 +204,17 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
   printf("end mem_vmap() -> SUCCESS");
   return 0;
 }
+
 errno_t mem_vumap(void *vadr, size_t size)
 {
+  // Trashy temporary implementation, that only marks the page as not present
+  // This trashy temporary implementation does not bother freeing the physical
+  // space used by virtual memory structures when it's currently unneeded
+  // Me lazy rn, I just want it to work
+  // FIXME: Hey, when you're not lazy anymore, properly implement this!!!
+
+  // Actually, why even bother marking the page as unpresent at this point
+  // Just return 0 who cares rn, i wanna work on malloc now
+
   return 0;
 }

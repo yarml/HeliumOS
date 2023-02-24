@@ -54,9 +54,11 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags);
 errno_t mem_vumap(void *vadr, size_t size);
 
 // Kernel virtual space
-#define KVMSPACE ((void*)(0xFFFF800000000000)) // not to be mistaken with
-                                               // linux's kvm, this is
-                                               // Kernel Virtual Memory
+#define KVMSPACE ((void *)(0xFFFF800000000000)) // not to be mistaken with
+                                                // linux's kvm, this is
+                                                // Kernel Virtual Memory
+
+#define KHEAP    ((void *)(0xFFFF808000000000)) // Kernel heap
 
 // MAPF memory mapping flags
 #define MAPF_R   (1<<0) /* Read */

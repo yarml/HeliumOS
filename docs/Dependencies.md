@@ -1,15 +1,16 @@
-Before being able to build and emulate HeliumOs, some dependencies need to be
+Before being able to build and emulate HeliumOS, some dependencies need to be
 met.
 
 # General dependencies
 - Basic unix tools(cp, mkdir, ls yata yata yata)
-- Make (Not sure if anything other than GNUMake will work)
+- Make (Not sure if anything other than GNU Make will work)
 
 # Automatic dependencies installation
 All the dependencies can be installed with a `sudo make dep`.
 
 This is currently supported on:
 * Arch Linux, and its derivatives
+* Manjaro (uses `pamac` instead of `pacman`)
 
 # Dependencies for building binutils and gcc
 - bison
@@ -39,7 +40,7 @@ This is currently supported on:
 - socat
 
 # Additional dependencies
-Some features offered by the build system require additional features
+Some features offered by the build system require additional packages
 - python3
 
 Keep in mind that package names differ from distributions, so you might need to

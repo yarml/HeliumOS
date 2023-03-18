@@ -29,10 +29,15 @@ Otherwise you can download the sources in a [zip file].
   * `*.mk` a number of make files that, together, form the build system.
   * `sedscripts/` contains some sed scripts that are used by some targets of
  the build system.
+  * `pyscripts/` contains some Python scripts that do statistics on source code
+  * `shscripts` contains shell scripts used by the buildsystem
+  * `IDE` contains pre-made configurations for some IDEs
 
 * ## [kernel/]
-  * `src/`,`include/`,`stdinc/` contains the source code for HeliumOs.
-  * `*` configurations for the linker, bootboot and mkbootimg.
+  * `src/`,`include/`,`stdinc/` contains the source code for HeliumOS.
+  * `link.ld` configurations for the linker.
+  * `bootimg.json` configurations for mkbootimg.
+  * `bootboot.config` Bootboot configuration.
 
 * ## [sysroots/]
   * `build/` (Build system generated) The prefix where the toolchain to build
@@ -47,7 +52,7 @@ Otherwise you can download the sources in a [zip file].
 
 * ## ext/ (Build system generated)
   * `src/` contains source code for gcc, binutils, bootboot and mkbootimg.
-  * `build` conatins configured build folder for gcc and binutils.
+  * `build` conatins configured build folders for gcc and binutils.
 
 * ## build/ (Build system generated)
   * `*` temporary files used by the build system.
@@ -58,7 +63,7 @@ to automate all the steps necessary for the build.
 
 Building HeliumOs is as simple as following 2 steps:
 * Installing dependencies, either by executing `sudo make dep`, or if your
-distrubution is not supported(that is anything other than Arch),
+distrubution is not supported(that is anything other than Arch & Manjaro),
 then check [dependencies].
 * Making the boot image with `make bootimg`(This will download the source of
 and compile binutils, gcc, bootboot and mkbootimg before building the kernel,
@@ -71,6 +76,11 @@ it in your system with `sudo make install`
 # Documentation
 Current documentation for HeliumOs can be found in [docs/].
 
+Below is a list of some key documentations:
+* [Code Style]
+* [Memory management]
+* [Mathematical proof for formulas used in the OS]
+
 <!-- Raw links  -->
 [buildsys/]: buildsys/
 [kernel/]: kernel/
@@ -80,6 +90,9 @@ Current documentation for HeliumOs can be found in [docs/].
 
 <!-- Named links  -->
 [dependencies]: docs/Dependencies.md
+[Code Style]: docs/Code-Style.md
+[Memory management]: docs/Memory.md
+[Mathematical proof for formulas used in the OS]: docs/Math.md
 
 <!-- External links  -->
 [make]: https://en.wikipedia.org/wiki/Make_(software)

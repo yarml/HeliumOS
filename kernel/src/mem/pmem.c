@@ -23,6 +23,19 @@
 
 static mutex pmm_lock;
 
+static void mem_print_pheader()
+{
+  // for(size_t i = 0; i < 2088; ++i)
+  // {
+  //   if(i && !(i % 16))
+  //     printf("\n");
+  //   if(((int) ((char *) i_pmm_header)[i] & 0xFF) <16)
+  //     printf("0");
+  //   printf("%02x ", (int) ((char *) i_pmm_header)[i] & 0xFF);
+  // }
+  // printf("\n");
+}
+
 mem_pallocation mem_ppalloc(
   void *pheader,
   size_t size,
@@ -31,6 +44,8 @@ mem_pallocation mem_ppalloc(
   void *below
 )
 {
+  if(pheader == PALLOC_STD_HEADER)
+    pheader = i_pmm_header;
 
   printf(
     "begin mem_ppaloc(%016p,%lu, %lu,%d,%016p)\n",
@@ -40,6 +55,8 @@ mem_pallocation mem_ppalloc(
     cont,
     below
   );
+
+  mem_print_pheader();
 
   // We check the validity of the arguments first before acquiring the lock
 
@@ -71,6 +88,9 @@ mem_pallocation mem_ppalloc(
   for(size_t i = 0; i < i_mmap_usable_len; ++i)
   {
     mem_pseg_header *h = pheader + pmm_header_off;
+    if(h->magic != MEM_PSEG_MAGIC)
+      error_inv_state("Corrupted physical memory header");
+
     size_t bitmap_size = BITMAP_SIZE(h->size);
 
     if((!cont || h->size >= size)   /* big enough, without

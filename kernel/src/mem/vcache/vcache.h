@@ -20,6 +20,8 @@ struct VCACHE_UNIT
 
 vcache_unit vcache_map(void *padr);
 void vcache_remap(vcache_unit unit, void *padr);
+
+#define VCACHE_NO_ID ((void *) UINTPTR_MAX)
 void vcache_umap(vcache_unit unit, void *id);
 
 

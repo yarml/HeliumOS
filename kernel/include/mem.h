@@ -8,10 +8,13 @@
 
 #include <arch/mem.h>
 
+#define MEM_PSEG_MAGIC (0xA55AA55AA55AA55A)
+
 struct MEM_PSEG_HEADER;
 typedef struct MEM_PSEG_HEADER mem_pseg_header;
 struct MEM_PSEG_HEADER
 {
+  size_t magic;
   void *padr;
   size_t size;
 } pack;
@@ -30,6 +33,7 @@ void mem_init();
 
 /* mem_p* */
 
+#define PALLOC_STD_HEADER ((void *) UINTPTR_MAX)
 mem_pallocation mem_ppalloc(
   void *pheader,
   size_t size,
@@ -58,6 +62,7 @@ errno_t mem_vumap(void *vadr, size_t size);
                                                 // linux's kvm, this is
                                                 // Kernel Virtual Memory
 
+// KHEAP is 512 Gib in size, 1 PML4 page
 #define KHEAP    ((void *)(0xFFFF808000000000)) // Kernel heap
 
 // MAPF memory mapping flags

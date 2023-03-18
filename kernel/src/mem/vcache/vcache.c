@@ -240,7 +240,7 @@ void vcache_umap(vcache_unit unit, void *id)
       if(age && age < 1023)
         pte_set_age(current_pte, age + i);
     }
-    if((uintptr_t) id != UINTPTR_MAX)
+    if(id != VCACHE_NO_ID)
       pte->padr = (uintptr_t) id >> 12;
     pte_set_age(pte, 1);
     pde_set_lazy(pde, lazy_count+1);
@@ -306,7 +306,7 @@ void vcache_umap(vcache_unit unit, void *id)
     }
   }
 
-  if((uintptr_t) id != UINTPTR_MAX)
+  if(id != VCACHE_NO_ID)
     pte->padr = (uintptr_t) id >> 12;
 
   // Mark the target page as lazy

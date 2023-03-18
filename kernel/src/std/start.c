@@ -5,6 +5,7 @@
 #include <sys.h>
 
 void __init_stdio();
+void __init_stdlib();
 int kmain();
 
 // Initialize C stdlib then call kmain()
@@ -22,8 +23,12 @@ void _start()
   __init_stdio();
   printf("Initialized stdio\n");
 
+
   printf("Initializing memory structures\n");
   mem_init();
+
+  printf("Initializing stdlib\n");
+  __init_stdlib();
 
   printf("Calling main function\n");
   kmain();

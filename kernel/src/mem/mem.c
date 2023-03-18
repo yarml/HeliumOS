@@ -48,6 +48,7 @@ void mem_init()
   {
     if(MMapEnt_IsFree(mmap + i - 1) && MMapEnt_Size(mmap + i - 1) >= MEM_PS)
     {
+      mmap_usable[i_mmap_usable_len].magic = MEM_PSEG_MAGIC;
       mmap_usable[i_mmap_usable_len].padr =
         (void*) ALIGN_UP(MMapEnt_Ptr(mmap + i - 1), MEM_PS);
       mmap_usable[i_mmap_usable_len++].size =
@@ -88,7 +89,10 @@ void mem_init()
       h, h->padr, h->size / MEM_PS
     );
   }
-  printf("pmm header(adr=%016p,offset=%05lu)\n", i_pmm_header, pmm_header_off);
+  printf(
+    "pmm header(adr=%016p,offset=%05lu, size=%05lu)\n",
+    i_pmm_header, pmm_header_off, pmm_header_total_size
+  );
 
   /* Initialize virtual memory manager */
   ctlr_cr3_npcid cr3 = as_rcr3();
@@ -100,3 +104,4 @@ void mem_init()
 
   printf("end mem_init()\n");
 }
+

@@ -130,8 +130,7 @@ mem_pallocation mem_ppalloc(
             // A more efficient way to set bits than
             // the older implementation
             size_t lpg_idx = pg_idx;
-
-            if(fpg_idx - lpg_idx < 64) // only one u64 to change
+            if(lpg_idx - fpg_idx < 64) // only one u64 to change
             {
               bitmap[fpg_idx / 64] |=
                 BITRANGE(fpg_idx % 64, lpg_idx % 64);
@@ -141,6 +140,7 @@ mem_pallocation mem_ppalloc(
               bitmap[fpg_idx / 64] |=
                 BITRANGE(64 - fpg_idx % 64, 63);
               bitmap[lpg_idx / 64] |= BITRANGE(0, lpg_idx % 64);
+
               // Set lpg_idx to not count the last few pages that have
               // only a hald word in the bitmap
               lpg_idx = ALIGN_DN(lpg_idx, 64);
@@ -156,10 +156,18 @@ mem_pallocation mem_ppalloc(
             alloc.size = pg_count * MEM_PS;
             mutex_ulock(&pmm_lock);
             printf(
-              "end mem_ppalloc() -> SUCESS{%016p,%016p,%05lu}\n",
+              "end mem_ppalloc() -> SUCESS{"
+              "header_off=%016p,"
+              "padr=%016p,"
+              "size=%05lu,"
+              "fpg_idx=%05lu,"
+              "lpg_idx=%05lu"
+              "}\n",
               alloc.header_off,
               alloc.padr,
-              alloc.size
+              alloc.size,
+              fpg_idx,
+              lpg_idx
             );
             return alloc;
           }

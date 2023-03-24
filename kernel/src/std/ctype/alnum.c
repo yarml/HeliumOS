@@ -1,13 +1,25 @@
 int isalnum(int c)
 {
-  return ('0' <= c && c <= '9')
-      || ('A' <= c && c <= 'Z')
-      || ('a' <= c && c <= 'z');
+  switch(c)
+  {
+    case 'A' ... 'Z':
+    case 'a' ... 'z':
+    case '0' ... '9':
+      return 1;
+    default:
+      return 0;
+  }
 }
 
 int isnalnum(int c)
 {
-  return (c < '0' || '9' < c)
-      && (c < 'A' || 'Z' < c)
-      && (c < 'a' || 'z' < c);
+  switch(c)
+  {
+    case 'A' ... 'Z':
+    case 'a' ... 'z':
+    case '0' ... '9':
+      return 0;
+    default:
+      return 1;
+  }
 }

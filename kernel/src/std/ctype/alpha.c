@@ -1,33 +1,69 @@
 int isupper(int c)
 {
-  return 'A' <= c && c <= 'Z';
+  switch(c)
+  {
+    case 'A' ... 'Z':
+      return 1;
+    default:
+      return 0;
+  }
 }
 
 int isnupper(int c)
 {
-  return c < 'A' || 'Z' < c;
+  switch(c)
+  {
+    case 'A' ... 'Z':
+      return 0;
+    default:
+      return 1;
+  }
 }
 
 
 int islower(int c)
 {
-  return 'a' <= c && c <= 'z';
+  switch(c)
+  {
+    case 'a' ... 'z':
+      return 1;
+    default:
+      return 0;
+  }
 }
 
 int isnlower(int c)
 {
-  return c < 'a' || 'z' < c;
+  switch(c)
+  {
+    case 'a' ... 'z':
+      return 0;
+    default:
+      return 1;
+  }
 }
 
 
 int isalpha(int c)
 {
-  return ('A' <= c && c <= 'Z')
-      || ('a' <= c && c <= 'z');
+  switch(c)
+  {
+    case 'A' ... 'Z':
+    case 'a' ... 'z':
+      return 1;
+    default:
+      return 0;
+  }
 }
 
 int isnalpha(int c)
 {
-  return (c < 'A' || 'Z' < c)
-      && (c < 'a' || 'z' < c);
+  switch(c)
+  {
+    case 'A' ... 'Z':
+    case 'a' ... 'z':
+      return 0;
+    default:
+      return 1;
+  }
 }

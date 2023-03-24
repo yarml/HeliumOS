@@ -1,11 +1,23 @@
 int isdigit(int c)
 {
-  return '0' <= c && c <= '9';
+  switch(c)
+  {
+    case '0' ... '9':
+      return 1;
+    default:
+      return 0;
+  }
 }
 
 int isndigit(int c)
 {
-  return c < '0' || '9' < c;
+  switch(c)
+  {
+    case '0' ... '9':
+      return 0;
+    default:
+      return 1;
+  }
 }
 
 int isbdigit(int c, int base)

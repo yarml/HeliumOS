@@ -39,9 +39,6 @@ void vcache_init()
   mem_pml4e *target_pml4e = i_pmlmax + ENTRY_IDX(3, VCACHE_PTR);
   mem_pdpte_ref *target_pdpt = 0;
 
-  // TODO: if you see this function, we repeat a section of code 3 times
-  // when im in the mood to do stuff correctly I will fix this
-
   // Chances are, this condition is always true
   if(!target_pml4e->present)
     s_alloc_substruct(target_pml4e);

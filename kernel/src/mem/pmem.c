@@ -23,19 +23,6 @@
 
 static mutex pmm_lock;
 
-static void mem_print_pheader()
-{
-  // for(size_t i = 0; i < 2088; ++i)
-  // {
-  //   if(i && !(i % 16))
-  //     printf("\n");
-  //   if(((int) ((char *) i_pmm_header)[i] & 0xFF) <16)
-  //     printf("0");
-  //   printf("%02x ", (int) ((char *) i_pmm_header)[i] & 0xFF);
-  // }
-  // printf("\n");
-}
-
 mem_pallocation mem_ppalloc(
   void *pheader,
   size_t size,
@@ -55,8 +42,6 @@ mem_pallocation mem_ppalloc(
     cont,
     below
   );
-
-  mem_print_pheader();
 
   // We check the validity of the arguments first before acquiring the lock
 
@@ -88,6 +73,7 @@ mem_pallocation mem_ppalloc(
   for(size_t i = 0; i < i_mmap_usable_len; ++i)
   {
     mem_pseg_header *h = pheader + pmm_header_off;
+
     if(h->magic != MEM_PSEG_MAGIC)
       error_inv_state("Corrupted physical memory header");
 
@@ -137,13 +123,14 @@ mem_pallocation mem_ppalloc(
           )
             pg_idx += alignment_p;
 
-          if(!cont || (pg_idx - fpg_idx) * MEM_PS >= size) /* if size
+          size_t pg_count = pg_idx - fpg_idx + 1;
+          if(!cont || pg_count * MEM_PS >= size) /* if size
                                                               is enough */
           {
             // A more efficient way to set bits than
             // the older implementation
-            size_t pg_count = ALIGN_UP(size, MEM_PS) / MEM_PS;
-            size_t lpg_idx = fpg_idx + pg_count - 1;
+            size_t lpg_idx = pg_idx;
+
             if(fpg_idx - lpg_idx < 64) // only one u64 to change
             {
               bitmap[fpg_idx / 64] |=
@@ -154,8 +141,11 @@ mem_pallocation mem_ppalloc(
               bitmap[fpg_idx / 64] |=
                 BITRANGE(64 - fpg_idx % 64, 63);
               bitmap[lpg_idx / 64] |= BITRANGE(0, lpg_idx % 64);
+              // Set lpg_idx to not count the last few pages that have
+              // only a hald word in the bitmap
+              lpg_idx = ALIGN_DN(lpg_idx, 64);
               size_t cpg_idx = ALIGN_UP(fpg_idx, 64);
-              while(cpg_idx < lpg_idx + 64)
+              while(cpg_idx < lpg_idx)
               {
                 bitmap[cpg_idx / 64] = UINT64_MAX;
                 cpg_idx += 64;

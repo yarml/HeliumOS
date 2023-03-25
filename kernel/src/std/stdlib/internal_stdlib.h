@@ -35,6 +35,10 @@ struct UNIT_HEADER
   size_t size; // Size, of bytes that this unit controls, not counting the bytes
                // the header itself takes
 
+  size_t flags;
+
+  block_header *block;
+
   unit_header *fnext;
   unit_header *fprev;
 
@@ -42,10 +46,13 @@ struct UNIT_HEADER
   unit_header *prev;
 };
 
+#define UNITF_FREE (1<<1)
+
 // Returns a pointer to the first unit header in of the block
 #define BLOCK_FUNIT(b) ((unit_header *) ((b) + 1))
 
-#define UNIT_DATA(u) ((void *) ((u) + 1))
+#define UNIT_PTR(u) ((void *) ((u) + 1))
+#define PTR_UNIT(p) ((unit_header *) (p) - 1)
 
 #define UNIT_SPLIT_DELTA (sizeof(unit_header) + 16)
 
@@ -56,5 +63,8 @@ struct UNIT_HEADER
 block_header *i_stdlib_alloc_block(size_t size);
 
 extern block_header *i_stdlib_heap_header;
+
+// Debug
+void i_stdlib_malloc_print_state();
 
 #endif

@@ -255,6 +255,8 @@ block_header *i_stdlib_alloc_block(size_t size)
   memset(funit, 0, sizeof(*funit));
   funit->magic = UNIT_MAGIC;
   funit->size = size - sizeof(block_header) - sizeof(unit_header);
+  funit->block = header;
+  funit->flags = UNITF_FREE;
 
   header->ffunit = funit;
   header->largest_free = funit;

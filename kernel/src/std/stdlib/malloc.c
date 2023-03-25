@@ -23,7 +23,11 @@ void *malloc(size_t size)
   // unit is inserted just after it, then it is removed, the unit is effectively
   // stripped down to the requested size
 
-  // First thing first, round size to be a multiple of 16
+  // First thing first, return 0 if they asked for nothing
+  if(!size)
+    return 0;
+
+  // Second thing second, round size to be a multiple of 16
   size = ALIGN_UP(size, 16);
 
   block_header *current_block = i_stdlib_heap_header;
@@ -102,11 +106,11 @@ void *malloc(size_t size)
     target_block = i_stdlib_heap_header;
   }
 
+  // Original size of target unit, before any potential splitting
+  size_t tu_org_size = target_unit->size;
+
   // Here target_unit is guarenteed to point to a unit that is at least
   // of the requested size
-
-  // If unit is exactly of size, or not larger than size+UNIT_SPLIT_DELTA
-  // Then we just remove the unit from the free linked list and move one
 
   // If unit can be split, split it, make target_unit exactly the requested size
   // while inserting after it a new unit
@@ -117,6 +121,8 @@ void *malloc(size_t size)
 
     new_unit->magic = UNIT_MAGIC;
     new_unit->size = target_unit->size - size - sizeof(unit_header);
+    new_unit->block = target_block;
+    new_unit->flags = UNITF_FREE;
 
     // Insert new_unit into the free linked list & all linked list
     new_unit->next = target_unit->next;
@@ -132,10 +138,53 @@ void *malloc(size_t size)
       new_unit->next->prev = new_unit;
     if(new_unit->fnext)
       new_unit->fnext->fprev = new_unit;
+
+    target_unit->size = size;
+  }
+
+
+  // Check if unit is of largest size, then we need to update block data
+  if(target_unit == target_block->largest_free)
+  {
+
+    unit_header *current_unit = target_block->ffunit;
+    unit_header *new_largest = 0;
+    size_t new_largest_size = 0;
+
+    while(current_unit)
+    {
+      unit_header *cu = current_unit;
+      current_unit = current_unit->fnext;
+
+      if(cu == target_unit)
+        continue;
+
+      // If we find another free unit that has the same size, then
+      // we don't need to check other units, that means there were more
+      // than one unit of thelargest size
+      if(cu->size == tu_org_size)
+      {
+        new_largest = cu;
+        new_largest_size = cu->size;
+        break;
+      }
+
+      if(cu->size > new_largest_size)
+      {
+        new_largest = cu;
+        new_largest_size = cu->size;
+      }
+    }
+
+    // Update block data about largest unit
+    target_block->largest_free = new_largest;
+    target_block->largest_free_size = new_largest_size;
   }
 
   // Here, we are guarenteed that target_unit is EXACTLY the requested size
   // or if bigger, then not bigger enough to be split
+  target_unit->flags &= ~UNITF_FREE;
+
   if(target_unit->fnext)
     target_unit->fnext->fprev = target_unit->fprev;
 
@@ -146,5 +195,5 @@ void *malloc(size_t size)
   else
     target_block->ffunit = target_unit->fnext;
 
-  return UNIT_DATA(target_unit);
+  return UNIT_PTR(target_unit);
 }

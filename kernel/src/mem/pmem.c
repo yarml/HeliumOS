@@ -125,7 +125,7 @@ mem_pallocation mem_ppalloc(
 
           size_t pg_count = pg_idx - fpg_idx + 1;
           if(!cont || pg_count * MEM_PS >= size) /* if size
-                                                              is enough */
+                                                    is enough */
           {
             // A more efficient way to set bits than
             // the older implementation
@@ -133,18 +133,18 @@ mem_pallocation mem_ppalloc(
             if(lpg_idx - fpg_idx < 64) // only one u64 to change
             {
               bitmap[fpg_idx / 64] |=
-                BITRANGE(fpg_idx % 64, lpg_idx % 64);
+                BITRANGE(fpg_idx % 64, lpg_idx % 64 + 1);
             }
             else // multiple u64s to set
             {
               bitmap[fpg_idx / 64] |=
-                BITRANGE(64 - fpg_idx % 64, 63);
-              bitmap[lpg_idx / 64] |= BITRANGE(0, lpg_idx % 64);
-
+                BITRANGE(fpg_idx % 64, 64);
+              bitmap[lpg_idx / 64] |= BITRANGE(0, lpg_idx % 64 + 1);
               // Set lpg_idx to not count the last few pages that have
               // only a hald word in the bitmap
               lpg_idx = ALIGN_DN(lpg_idx, 64);
               size_t cpg_idx = ALIGN_UP(fpg_idx, 64);
+
               while(cpg_idx < lpg_idx)
               {
                 bitmap[cpg_idx / 64] = UINT64_MAX;
@@ -231,10 +231,10 @@ void mem_ppfree(void *pheader, mem_pallocation alloc)
   size_t pg_count = ALIGN_UP(alloc.size, MEM_PS) / MEM_PS;
   size_t lpg_idx = fpg_idx + pg_count - 1;
   if(fpg_idx - lpg_idx < 64) { // only one u64 to change
-    bitmap[fpg_idx / 64] &= ~BITRANGE(fpg_idx % 64, lpg_idx % 64);
+    bitmap[fpg_idx / 64] &= ~BITRANGE(fpg_idx % 64, lpg_idx % 64 + 1);
   } else { // multiple u64s to set
-    bitmap[fpg_idx / 64] &= ~BITRANGE(64 - fpg_idx % 64, 63);
-    bitmap[lpg_idx / 64] &= ~BITRANGE(0, lpg_idx % 64);
+    bitmap[fpg_idx / 64] &= ~BITRANGE(64 - fpg_idx % 64, 64);
+    bitmap[lpg_idx / 64] &= ~BITRANGE(0, lpg_idx % 64 + 1);
     size_t cpg_idx = ALIGN_UP(fpg_idx, 64);
     while(cpg_idx < lpg_idx + 64) {
       bitmap[cpg_idx / 64] = 0;

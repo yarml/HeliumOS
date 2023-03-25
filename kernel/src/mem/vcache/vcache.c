@@ -192,11 +192,21 @@ vcache_unit vcache_map(void *padr)
 
 void vcache_remap(vcache_unit unit, void *padr)
 {
+  // Function stdout tracing disabled for vcache_remap because
+  // it is called multiple times, especially during setup
+  // printf(
+  //   "begin vcache_remap(unit={ptr=%p,pde=%lu,pte=%lu}, padr=%p)\n",
+  //   unit.ptr, unit.pde_idx, unit.pte_idx, padr
+  // );
+
   mem_pte *pte = i_vcache_pte + unit.pde_idx * 512 + unit.pte_idx;
 
   // If this PTE already points to padr, skip the function
   if(pte->present && pte->padr == (uintptr_t) padr >> 12)
+  {
+    // printf("end vcache_remap() -> SKIP\n");
     return;
+  }
 
   // Reconfigure the PTE from scratch
   memset(pte, 0, sizeof(*pte));
@@ -209,13 +219,15 @@ void vcache_remap(vcache_unit unit, void *padr)
   void *ptr = VCACHE_PTR + MEM_PS * (unit.pde_idx * 512 + unit.pte_idx);
 
   as_invlpg((uint64_t) ptr);
+
+  // printf("end vcache_remap() -> SUCCESS\n");
 }
 
 void vcache_umap(vcache_unit unit, void *id)
 {
   printf(
-    "begin vcache_umap({ptr=%p,pde=%lu,pte=%lu})\n",
-    unit.ptr, unit.pde_idx, unit.pte_idx
+    "begin vcache_umap(unit={ptr=%p,pde=%lu,pte=%lu}, id=%p)\n",
+    unit.ptr, unit.pde_idx, unit.pte_idx, id
   );
 
   // First, check how many lazy pages the PDE has

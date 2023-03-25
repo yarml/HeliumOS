@@ -235,7 +235,7 @@ block_header *i_stdlib_alloc_block(size_t size)
     if(alloc.error)
       error_out_of_memory(
         "Could not allocate physical memory while "
-        "trying ti allocate kernel heap space!"
+        "trying to allocate kernel heap space!"
       );
 
     // Map the newly allocated physical pages to their place in the heap

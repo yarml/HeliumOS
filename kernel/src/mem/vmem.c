@@ -201,7 +201,8 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
   // Reload mappings using rlcr3 if we didnt do so using invlpg
   if(!use_invlpg)
     as_rlcr3();
-  printf("end mem_vmap() -> SUCCESS\n");
+  printf("end mem_vmap() -> SUCCESS{vadr=%p,padr=%p,size=%lu,flags=%032b}\n",
+    vadr, padr, size, flags);
   return 0;
 }
 

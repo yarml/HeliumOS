@@ -1,5 +1,6 @@
 #include <string.h>
 #include <utils.h>
+#include <stdio.h>
 #include <mem.h>
 
 #include "../internal_stdlib.h"
@@ -184,6 +185,7 @@ static void *find_consecutive_pages(size_t page_count, vcache_unit cache[3])
 
 block_header *i_stdlib_alloc_block(size_t size)
 {
+  printf("begin i_stdlib_alloc_block(size=%lu)\n", size);
   // Used to cache PDPTs, PDs, & PTs as we traverse the Vstructure of the heap
   vcache_unit ab_units[3];
 
@@ -247,6 +249,18 @@ block_header *i_stdlib_alloc_block(size_t size)
   memset(header, 0, sizeof(*header));
   header->magic = BLOCK_MAGIC;
   header->block_size = size;
+
+  // Setup the first unit
+  unit_header *funit = (unit_header *) (header + 1);
+  memset(funit, 0, sizeof(*funit));
+  funit->magic = UNIT_MAGIC;
+  funit->size = size - sizeof(block_header) - sizeof(unit_header);
+
+  header->ffunit = funit;
+  header->largest_free = funit;
+  header->largest_free_size = funit->size;
+
+  printf("end i_stdlib_alloc_block() -> SUCCESS{header=%p}\n", header);
 
   return header;
   // Done :)

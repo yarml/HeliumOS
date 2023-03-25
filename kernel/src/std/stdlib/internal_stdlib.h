@@ -12,7 +12,6 @@ typedef struct UNIT_HEADER unit_header;
 #define BLOCK_MAGIC (0x08EA9A770CB70C20)
 #define UNIT_MAGIC  (0x08EA9A770C541770)
 
-
 #define INITIAL_HEAP_SIZE (8 * 1024*1024)
 
 struct BLOCK_HEADER
@@ -21,9 +20,9 @@ struct BLOCK_HEADER
 
   size_t block_size; // Block size, header counted
 
-  unit_header *funit;
-  unit_header *largest_unit;
-  size_t largest_unit_size;
+  unit_header *ffunit; // First free unit
+  unit_header *largest_free;
+  size_t largest_free_size;
 
   block_header *next;
   block_header *prev;
@@ -42,6 +41,13 @@ struct UNIT_HEADER
   unit_header *next;
   unit_header *prev;
 };
+
+// Returns a pointer to the first unit header in of the block
+#define BLOCK_FUNIT(b) ((unit_header *) ((b) + 1))
+
+#define UNIT_DATA(u) ((void *) ((u) + 1))
+
+#define UNIT_SPLIT_DELTA (sizeof(unit_header) + 16)
 
 // Allocates a number of pages from Kernel heap and assigns them to the block
 // returned

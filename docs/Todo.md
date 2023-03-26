@@ -1,21 +1,26 @@
 # Index
 - [Index](#index)
 - [Features](#features)
+  - [Roadmap](#roadmap)
+  - [Back burner](#back-burner)
 - [Do no forget](#do-no-forget)
 - [Optimizations](#optimizations)
-- [Cosmetics](#cosmetics)
-- [Todo for the far far future](#todo-for-the-far-far-future)
 
 # Features
+## Roadmap
 * [X] Physical memory management
-* [ ] Virtual memory management
-* [ ] Docker based build system
-* [ ] Kernel heap
-* [ ] Interrupt handling
-* [ ] Load kernel modules
+* [X] Virtual memory management
+* [X] Kernel heap
+* [ ] Interrupts
+* [ ] Multiprocessing
+* [ ] Kernel modules
 * [ ] IO
-* [ ] Handle system calls
-* [ ] User space process execution
+* [ ] System calls
+* [ ] User space processes
+
+## Back burner
+* [ ] Docker based build system
+* [ ] HeliumBootboot
 
 # Do no forget
 * Make page invalidation inter processor proof(When multi processing is
@@ -23,11 +28,3 @@
 
 # Optimizations
 * Reuse memory taken by bootboot.
-
-# Cosmetics
-* Turn all for loops into while loops.
-
-# Todo for the far far future
-* Implement HeliumBootboot, instead of relying on the reference implementation.
-The implementation can be minimal to Helium's needs at first, that is boot
-from UEFI.

@@ -1,3 +1,42 @@
+# Overview
+One of the most fundamental jobs of the operating system is managing memory.
+In x86, memory management has multiple layers. To manage memory, an operating
+system needs to manage each one of those layers. This documentation contains
+information on how HeliumOS deals with memory. The implementation is very messy,
+and if it wasn't because I am already sick of this topic, I would have rewritten
+everything, again.
+
+# Index
+- [Overview](#overview)
+- [Index](#index)
+- [Physical memory manager](#physical-memory-manager)
+  - [Features](#features)
+  - [Concepts](#concepts)
+    - [Memory segment](#memory-segment)
+    - [Memory region](#memory-region)
+    - [PMM header](#pmm-header)
+    - [Segment header](#segment-header)
+  - [Algorithms](#algorithms)
+    - [Initialization](#initialization)
+    - [Allocation](#allocation)
+    - [Deallocation](#deallocation)
+  - [Interface](#interface)
+- [Virtual memory manager](#virtual-memory-manager)
+  - [Virtual memory layout](#virtual-memory-layout)
+    - [Kernel space layout](#kernel-space-layout)
+    - [User space layout](#user-space-layout)
+  - [Concepts](#concepts-1)
+    - [VCache](#vcache)
+      - [Purpose](#purpose)
+      - [Features](#features-1)
+      - [Interface](#interface-1)
+    - [Virtual memory mapper](#virtual-memory-mapper)
+      - [Features](#features-2)
+      - [Interface](#interface-2)
+- [Kernel Heap](#kernel-heap)
+  - [Features](#features-3)
+  - [Interface](#interface-3)
+
 # Physical memory manager
 ## Features
 * Allocate regions from physical address space, with a size hint
@@ -57,7 +96,7 @@ structure.
 
 ## Interface
 * struct mem_pallocation { header_off, padr, size }
-* func mem_ppaloc(pheader, size, continuous : bool, below : ptr) :
+* func mem_ppaloc(pheader, size, continuous : bool, below : ptr) ->
   mem_pallocation
 * func mem_ppfree(pheader, alloc : mem_pallocation) : void
 * func mem_init() : void
@@ -66,45 +105,89 @@ structure.
 * file [pmem.c]
 * file [internal_mem.h]
 
-# Virtual memory manager (WIP)
-## Features
+# Virtual memory manager
+## Virtual memory layout
+In general, the memory layout HeliumOS uses is as follows:
+
+| Start        | End          | Size         | Description         |
+| ------------ | ------------ | ------------ | ------------------- |
+| 0            | 128T         | 128T         | User space memory   |
+| 128T         | 15E1023P896T | 15E1023P768T | invalid addresses   |
+| 15E1023P896T | 16E          | 128T         | Kernel space memory |
+
+### Kernel space layout
+| Start | End  | Size      | Description       |
+| ----- | -----| --------- | ----------------- |
+| 0     | 8M   | 8M        | Vcache memory     |
+| 8M    | 512G | 511G1016M | Undefined         |
+| 512G  | 1T   | 512G      | Kernel Heap       |
+| 1T    | 112T | 111T      | Undefined         |
+| 112T  | 128T | 16T       | Bootboot reserved |
+
+*Addresses are offseted, the real addresses can be calculated by adding
+15E1023P896T to the addresses in the table*
+
+### User space layout
+Undefined as of yet.
+
+## Concepts
+The virtual memory manager comes with 2 subsystems, the VCache, and the global
+virtual memory mapper.
+
+### VCache
+#### Purpose
+When implementing the global virtual memory mapper, I found myself already
+needing a way to map memory into virtual space. I needed the virtual memory
+mapper to implement one. The solution I chose was to make the VCache system,
+which is a mini virtual memory mapper, and it gets around the problem of needing
+a virtual memory mapper itself by having limited size and predetermined virtual
+memory structure addresses already mapped at initialization.
+
+#### Features
+* Provide 4K pages quickly
+* Remember pages that were just deallocated to use them again
+
+#### Interface
+The interface of VCache is only visible to the memory management subsystem, not
+the rest of the kernel nor user space.
+* struct vcache_unit { ptr, pde, pte }
+* func vcache_map(padr) -> vcache_unit
+* func vcache_remap(unit, padr)
+* func vcache_umap(unit, id)
+
+### Virtual memory mapper
+#### Features
 * Map a region from virtual address space to a region from physical address
   space
 * Unmap a region from virtual address space
 * Set permissions on a maping
 * Support 4K, 2M and 1G page sizes
 
-## Concepts
-### VMM header
-Not implemented yet.
+#### Interface
+* func mem_vmap(vadr, padr, size, flags)
+* func mem_vumap(vadr, size)
+* flag MAPF_R
+* flag MAPF_W
+* flag MAPF_X
+* flag MAPF_U
+* flag MAPF_P2M
+* flag MAPF_P1G
+* flag MAPF_G
 
-## Implementation
-Not implemented yet.
+# Kernel Heap
+On top of the physical and virtual memory manager, HeliumOS also implements
+kernel space heap. This API is not exposed to the user space programs which
+must implement their heaps on their own.
+
+## Features
+* mimic libc's malloc, calloc, realloc, reallocarray, & free
 
 ## Interface
-Not implemented yet.
-
-## WIP
-The layout of the virtual address space is as follows(Values wrap at the limit
-of 64 bit signed integers):
-- [0;128T) (128T): User space memory; Undefined as of yet
-- [128T;-128T) (16MT): Non canonical addresses; Non existent as we use 48bit
-  addresses
-- [-128T;0) (128T): Kernel space: Details follow
-
-Kernel space structure(We take 0 the relative origin to be the absolute -128T
-address):
-- [0;16T) (16T): VMM domain; Details follow
-- [16T;32T) (16T): Kernel heap
-- [32T;112T) (80T): Reserved; May(will) be used in future versions
-- [112; 128T) (16T): Bootboot reserved(we don't touch that)
-
-VMM domain structure(We take 0 the relative origin to the absolute -128T
-address):
-- [0;2M) (2M): VCache pages
-- [2M;15T) (15T-2M): Reserved
-- [15T;16T) (1T): Virtual bookeeping super structure (only the last 513G2M4K is
-  used)
+* func malloc(size)
+* func calloc(n, msize)
+* func realloc(ptr, size)
+* func reallocarray(ptr, n, msize)
+* func free(ptr)
 
 [mem.h]: ../kernel/include/mem.h
 [mem.c]: ../kernel/src/mem/mem.c

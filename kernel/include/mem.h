@@ -75,6 +75,5 @@ errno_t mem_vumap(void *vadr, size_t size);
 #define MAPF_P2M (1<<4) /* Map using 2 Mib page entries */
 #define MAPF_P1G (1<<5) /* Map using 1 Gib page entries */
 
-#define MAPF_G   (1<<6) /* Global page (pages above KVMSPACE
-                           are always global) */
+#define MAPF_G   (1<<6) /* Global page */
 #endif

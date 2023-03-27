@@ -119,11 +119,6 @@ void *realloc(void *ptr, size_t size)
   // delta > UNIT_SPLIT_DELTA guarenteed
   size_t delta = size - target_unit->size;
 
-  // This makes it so that when we eat from the next unit, the unit headers
-  // are never overlapping
-  if(delta < UNIT_SPLIT_DELTA)
-    delta = UNIT_SPLIT_DELTA;
-
   // Check for case IIIc first, as it is the simplest
   if(
     !target_unit->next ||
@@ -202,26 +197,35 @@ void *realloc(void *ptr, size_t size)
 
   // Here, it is case IIIb, we grow the target unit into the one just after it
 
+  // This makes it so that when we eat from the next unit, the unit headers
+  // are never overlapping
+
   unit_header *next = target_unit->next;
+
+  // Save a copy of the old header in stack, because if delta is small
+  // enough, the new next header can be overlapping the old header
+  unit_header snext = *next;
 
   unit_header *new_next = (void *) next + delta;
   memset(new_next, 0, sizeof(*new_next));
 
   new_next->magic = UNIT_MAGIC;
-  new_next->block = next->block;
-  new_next->size = next->size - delta - sizeof(unit_header);
+  new_next->block = snext.block;
+  new_next->size = snext.size - delta - sizeof(unit_header);
   new_next->flags = UNITF_FREE;
 
-  next->magic = 0;
+  // Remove the magic if it is not in the overlapping area
+  if(delta > offsetof(unit_header, magic) + sizeof(next->magic))
+    next->magic = 0;
 
   target_unit->size += delta;
 
-  new_next->next = next->next;
+  new_next->next = snext.next;
   new_next->prev = target_unit;
   target_unit->next = new_next;
 
-  new_next->fnext = next->fnext;
-  new_next->fprev = next->fprev;
+  new_next->fnext = snext.next;
+  new_next->fprev = snext.fprev;
 
   if(new_next->next)
     new_next->next->prev = new_next;

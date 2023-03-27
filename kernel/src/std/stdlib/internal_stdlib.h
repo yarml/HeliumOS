@@ -54,7 +54,9 @@ struct UNIT_HEADER
 #define UNIT_PTR(u) ((void *) ((u) + 1))
 #define PTR_UNIT(p) ((unit_header *) (p) - 1)
 
-#define UNIT_SPLIT_DELTA (sizeof(unit_header) + 16)
+#define UNIT_SPLIT_DELTA (2*sizeof(unit_header)) // Whatever value put here
+                                                 // It should be at least
+                                                 // 2*sizeof(unit_header)
 
 // Allocates a number of pages from Kernel heap and assigns them to the block
 // returned

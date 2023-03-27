@@ -61,7 +61,8 @@ errno_t mem_vumap(void *vadr, size_t size);
 #define KVMSPACE ((void *)(0xFFFF800000000000)) // not to be mistaken with
                                                 // linux's kvm, this is
                                                 // Kernel Virtual Memory
-
+#define PHEADER_VPTR ((void *) (0xFFFF804000000000)) // Virtual address of
+                                                     // physical memory header
 // KHEAP is 512 Gib in size, 1 PML4 page
 #define KHEAP    ((void *)(0xFFFF808000000000)) // Kernel heap
 

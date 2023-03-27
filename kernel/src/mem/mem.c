@@ -14,6 +14,7 @@
 
 // Physical memory
 void *i_pmm_header = 0;
+void *i_ppmm_header = 0;
 size_t i_mmap_usable_len = 0;
 
 // Virtual memory
@@ -102,6 +103,15 @@ void mem_init()
   // Initialize VCache
   vcache_init();
 
+  // Next we map the physical memory manager header into virtual space
+  mem_vmap(PHEADER_VPTR, i_pmm_header, pmm_header_total_size, MAPF_R | MAPF_W);
+  // Save the physical address in case it is needed
+  i_ppmm_header = i_pmm_header;
+  i_pmm_header = PHEADER_VPTR;
+
+  // Finally, we remove identity mapping setup by bootboot
+  memset(i_pmlmax, 0, 256 * sizeof(mem_pml4e));
+  as_rlcr3();
+
   printf("end mem_init()\n");
 }
-

@@ -1,4 +1,5 @@
 #include <string.h>
+#include <utils.h>
 #include <stdio.h>
 #include <mem.h>
 
@@ -48,6 +49,9 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
     printf("end mem_vmap() -> ERR_MEM_ALN\n");
     return ERR_MEM_ALN;
   }
+
+  // Align size with page size
+  size = ALIGN_UP(size, i_order_ps[target_order]);
 
   // number of bytes mapped so far
   size_t mapped = 0;
@@ -201,8 +205,10 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
   // Reload mappings using rlcr3 if we didnt do so using invlpg
   if(!use_invlpg)
     as_rlcr3();
-  printf("end mem_vmap() -> SUCCESS{vadr=%p,padr=%p,size=%lu,flags=%032b}\n",
-    vadr, padr, size, flags);
+  printf(
+    "end mem_vmap() -> SUCCESS{vadr=%p,padr=%p,size=%lu,flags=%032b}\n",
+    vadr, padr, size, flags
+  );
   return 0;
 }
 

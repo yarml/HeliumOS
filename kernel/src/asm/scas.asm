@@ -8,6 +8,8 @@ global as_nscasw
 global as_nscasd
 global as_nscasq
 
+section .text
+
 as_scasb:
   cld
   mov rax, rsi

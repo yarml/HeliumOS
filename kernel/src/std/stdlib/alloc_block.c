@@ -3,7 +3,8 @@
 #include <stdio.h>
 #include <mem.h>
 
-#include "../internal_stdlib.h"
+#include "internal_stdlib.h"
+
 #include "../src/mem/internal_mem.h"
 #include "../src/mem/vcache/vcache.h"
 
@@ -241,7 +242,7 @@ block_header *i_stdlib_alloc_block(size_t size)
       );
 
     // Map the newly allocated physical pages to their place in the heap
-    mem_vmap(vptr + allocated, alloc.padr, alloc.size, 0);
+    mem_vmap(vptr + allocated, alloc.padr, alloc.size, MAPF_W | MAPF_R);
     allocated += alloc.size;
   }
 
@@ -263,7 +264,6 @@ block_header *i_stdlib_alloc_block(size_t size)
   header->largest_free_size = funit->size;
 
   printf("end i_stdlib_alloc_block() -> SUCCESS{header=%p}\n", header);
-
   return header;
   // Done :)
 }

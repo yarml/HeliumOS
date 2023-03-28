@@ -1,6 +1,8 @@
 global as_rcr3
 global as_rlcr3
 
+section .text
+
 as_rcr3:
   mov rax, cr3
   ret

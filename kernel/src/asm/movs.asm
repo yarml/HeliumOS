@@ -8,6 +8,8 @@ global as_rmovsd
 global as_rmovsw
 global as_rmovsb
 
+section .text
+
 ; The only parameters we will need to move are rdx to rcx for the count,
 ; otherwise, rdi and rsi are what they should be
 as_movsq:

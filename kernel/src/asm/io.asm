@@ -1,6 +1,8 @@
 global as_outb
 global as_outsb
 
+section .text
+
 as_outb:
   mov rdx, rdi
   mov rax, rsi

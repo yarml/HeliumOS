@@ -3,6 +3,8 @@ global as_stosw
 global as_stosd
 global as_stosq
 
+section .text
+
 as_stosb:
   cld
   mov rax, rsi

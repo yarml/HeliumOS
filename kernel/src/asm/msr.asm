@@ -1,6 +1,8 @@
 global as_smsr
 global as_lmsr
 
+section .text
+
 as_smsr:
   mov ecx, edi
   rdmsr

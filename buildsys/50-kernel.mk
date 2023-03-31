@@ -24,6 +24,11 @@ $(OUT_DIR)%.c.o: %.c
 	$(MKDIR) -p $(dir $@)
 	$(HOST_CC) $(CFLAGS)  $(INC_FLAGS) -o $@ -c $^
 
+# Some special files need special flags, we handle them separatly
+$(OUT_DIR)%.int.c.o: %.int.c
+	$(MKDIR) -p $(dir $@)
+	$(HOST_CC) $(CFLAGS) -mgeneral-regs-only $(INC_FLAGS) -o $@ -c $^
+
 $(OUT_DIR)%.asm.o: %.asm
 	$(MKDIR) -p $(dir $@)
 	$(HOST_AS) $(ASFLAGS) $(INC_FLAGS) -o $@ $^

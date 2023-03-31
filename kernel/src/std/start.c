@@ -1,3 +1,4 @@
+#include <interrupts.h>
 #include <boot_info.h>
 #include <cpuid.h>
 #include <stdio.h>
@@ -17,22 +18,34 @@ void _start()
     uint32_t a, b, c, d;
     __cpuid(1, a, b, c, d);
     if(b >> 24 != bootboot.bspid)
-      stop();
+    {
+      halt();
+      // If we ever leave this halt, then stdio was prooooobably intialized
+      printf("[Core %d] Unhalted... Stopping.\n", b >> 24);
+
+    }
   }
+
+  // Disable interrupts for now
+  int_disable();
+
   // We can't printf("Initializing stdio") :P
   __init_stdio();
-  printf("Initialized stdio\n");
+  printf("Initialized stdio.\n");
 
 
-  printf("Initializing memory structures\n");
+  printf("Initializing memory structures.\n");
   mem_init();
 
-  printf("Initializing stdlib\n");
+  printf("Initializing stdlib.\n");
   __init_stdlib();
 
-  printf("Calling main function\n");
+  printf("Initializing interrupts.\n");
+  int_init(); // This will also enable interrupts
+
+  printf("Calling main function.\n");
   kmain();
 
-  printf("halt()\n");
-  halt();
+  printf("stop()\n");
+  stop();
 }

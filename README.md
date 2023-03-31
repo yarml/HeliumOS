@@ -1,5 +1,5 @@
-# HeliumOs
-What is HeliumOs you may ask, it is a hobby operating system designed from
+# HeliumOS
+What is HeliumOS you may ask, it is a hobby operating system designed from
 the ground up(not even based on unix), that is mostly just a learning
 experience, but with some hopes that it will become
 someday like your average usable operating system.
@@ -9,7 +9,7 @@ knowledge about other plateforms to be able to port it, so for now that's
 definitely the only platform that will be supported.
 
 # Index
-- [HeliumOs](#heliumos)
+- [HeliumOS](#heliumos)
 - [Index](#index)
 - [Getting the sources](#getting-the-sources)
 - [Source directory structure](#source-directory-structure)
@@ -19,7 +19,7 @@ definitely the only platform that will be supported.
 - [Resources](#resources)
 
 # Getting the sources
-As HeliumOs is hosted in github you can clone the sources with `git` using:
+As HeliumOS is hosted in github you can clone the sources with `git` using:
 
 `git clone https://github.com/yarml/HeliumOS.git`.
 
@@ -43,14 +43,14 @@ Otherwise you can download the sources in a [zip file].
 
 * ## [sysroots/]
   * `build/` (Build system generated) The prefix where the toolchain to build
-    HeliumOs will be installed if built using the build system.
+    HeliumOS will be installed if built using the build system.
   * `host/` This folder represents the disk which will be passed to the
   virtual macine.
   * `initrd/` This folder represents the file tree for the initrd
   loaded with bootboot.
 
 * ## [docs/]
-  * `*` Documentation for HeliumOs.
+  * `*` Documentation for HeliumOS.
 
 * ## ext/ (Build system generated)
   * `src/` contains source code for gcc, binutils, bootboot and mkbootimg.
@@ -63,7 +63,7 @@ Otherwise you can download the sources in a [zip file].
 The sources come with a build system written in [make](Check [buildsys/])
 to automate all the steps necessary for the build.
 
-Building HeliumOs is as simple as following 2 steps:
+Building HeliumOS is as simple as following 2 steps:
 * Installing dependencies, either by executing `sudo make dep`, or if your
 distrubution is not supported(that is anything other than Arch & Manjaro),
 then check [dependencies].
@@ -76,7 +76,7 @@ it in your system with `sudo make install`
 (You may want to check [buildsys/70-install.mk] before running this one)
 
 # Documentation
-Current documentation for HeliumOs can be found in [docs/].
+Current documentation for HeliumOS can be found in [docs/].
 
 Below is a list of some key documentations:
 * [Code Style]

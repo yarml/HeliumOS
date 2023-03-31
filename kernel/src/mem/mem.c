@@ -7,6 +7,7 @@
 
 #include <asm/scas.h>
 #include <asm/ctlr.h>
+#include <asm/gdt.h>
 #include <asm/msr.h>
 
 #include "internal_mem.h"
@@ -23,9 +24,22 @@ mem_pml4e *i_ppmlmax = 0;
 
 size_t i_order_ps[ORDER_COUNT];
 
+static gdt_entry kernel_gdt[3]; // 3 GDT entries, one for the NULL entry
+                         // one for code segment
+                         // one for data segment
+
 void mem_init()
 {
   printf("begin mem_init()\n");
+
+  /* Initializing memory is a long process, it should go this way
+      - Setup our own gdt, do not rely on Bootboot's
+      - Transform Bootboot's memory map into Helium's Memory map
+      - Find a place in physical memory for the PMM bitmap
+      - Initialize the VCache
+      - Map the PMM bitmap into virtual space
+      - Remove identitity mapping at [0;16G)
+  */
 
   /* precalculate order page sizes */
   // TODO: figure a way to do it at compile time
@@ -33,6 +47,29 @@ void mem_init()
   {
     i_order_ps[i] = ORDER_PS(i);
   }
+
+  // Setup gdt
+  memset(kernel_gdt, 0, sizeof(kernel_gdt));
+
+  // GDT 1 is kernel code segment
+  kernel_gdt[1].nsys = 1;
+  kernel_gdt[1].exec = 1;
+  kernel_gdt[1].dpl = 0;
+  kernel_gdt[1].lmode = 1;
+  kernel_gdt[1].present = 1;
+
+  // GDT 2 is kernel data segment
+  kernel_gdt[2].nsys = 1;
+  kernel_gdt[2].write = 1;
+  kernel_gdt[2].dpl = 0;
+  kernel_gdt[2].present = 1;
+
+  gdt gdtr;
+
+  gdtr.limit = sizeof(kernel_gdt) - 1;
+  gdtr.base = kernel_gdt;
+
+  as_lgdt(&gdtr, 0x10, 0x08);
 
   size_t mmap_len = (bootboot.size - sizeof(BOOTBOOT)) / sizeof(MMapEnt) + 1;
 
@@ -110,6 +147,8 @@ void mem_init()
   i_pmm_header = PHEADER_VPTR;
 
   // Finally, we remove identity mapping setup by bootboot
+  // TODO: we could reclaim the memory that the structures
+  // used to identity map took.
   memset(i_pmlmax, 0, 256 * sizeof(mem_pml4e));
   as_rlcr3();
 

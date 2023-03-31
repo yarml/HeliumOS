@@ -4,6 +4,37 @@
 #include <attributes.h>
 #include <stdint.h>
 
+// Segmentation structures
+typedef struct GDT gdt;
+typedef struct GDT_ENTRY gdt_entry;
+
+struct GDT
+{
+  uint16_t limit;
+  gdt_entry *base;
+} pack;
+
+struct GDT_ENTRY
+{
+  uint64_t limit0     :16;
+  uint64_t base0      :24;
+  uint64_t accessed   :1;
+  uint64_t write      :1;
+  uint64_t direction  :1;
+  uint64_t exec       :1;
+  uint64_t nsys       :1;
+  uint64_t dpl        :2;
+  uint64_t present    :1;
+  uint64_t limit1     :4;
+  uint64_t res0       :1;
+  uint64_t lmode      :1;
+  uint64_t size       :1;
+  uint64_t granularity:1;
+  uint64_t base1      :8;
+} pack;
+
+// Paging structures
+
 /* a memory structure pointing to a lower memory structure  */
 /* can be a pml4e, pde, pdpte, with ps = 0 */
 struct MEM_VPSTRUCT_PTR;

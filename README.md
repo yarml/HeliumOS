@@ -15,6 +15,8 @@ definitely the only platform that will be supported.
 - [Source directory structure](#source-directory-structure)
 - [Build system](#build-system)
 - [Documentation](#documentation)
+- [3rd Party tools](#3rd-party-tools)
+- [Resources](#resources)
 
 # Getting the sources
 As HeliumOs is hosted in github you can clone the sources with `git` using:
@@ -81,6 +83,30 @@ Below is a list of some key documentations:
 * [Memory management]
 * [Mathematical proof for formulas used in the OS]
 
+# 3rd Party tools
+While the code for HeliumOS is completely original, transforming this source
+code into binaries that can boot on bare metal is a task which is handled by a
+number of 3rd party tools developped indepedently from HeliumOS:
+
+* [Bootboot]: Boot HeliumOS from UEFI environment.
+* [Gnu Compiler Collections]: Compile C source code.
+* [Nasm]: Assemble assembly source code.
+* [Gnu Make]: Execute build commands.
+* [Gnu efi]: Used by bootboot.
+* [mkbootimg]: Make bootiable images from the initrd and kernel binary.
+* [Qemu]: Emulate an x86-64 PC.
+* [Edk2]: Provide binaries for UEFI for Qemu.
+
+# Resources
+This project is only possible because of th following resources:
+
+* [OSDev Wiki]. Compresses the information found in the below manuals to be more
+  intelligible, although sometimes innacurate.
+* [Intel® 64 and IA-32 Architectures Software Developer’s Manuals]. Especially
+  the 3rd volume.
+* [AMD64 Architecture Programmer's Manual]. Especially the 2nd volume.
+* [Bootboot Protocol Specification]. Describing how Bootboot works.
+
 <!-- Raw links  -->
 [buildsys/]: buildsys/
 [kernel/]: kernel/
@@ -97,3 +123,15 @@ Below is a list of some key documentations:
 <!-- External links  -->
 [make]: https://en.wikipedia.org/wiki/Make_(software)
 [zip file]: https://github.com/YavaCoco/HeliumOS/archive/refs/heads/master.zip
+[OSDev Wiki]: https://wiki.osdev.org/Expanded_Main_Page
+[Intel® 64 and IA-32 Architectures Software Developer’s Manuals]: https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html
+[AMD64 Architecture Programmer's Manual]: https://www.amd.com/en/support/tech-docs/amd64-architecture-programmers-manual-volumes-1-5
+[Bootboot Protocol Specification]: https://gitlab.com/bztsrc/bootboot/-/raw/master/bootboot_spec_1st_ed.pdf
+[Bootboot]: https://gitlab.com/bztsrc/bootboot
+[Gnu Compiler Collections]: https://gcc.gnu.org/
+[Nasm]: https://www.nasm.us/
+[Gnu Make]: https://www.gnu.org/software/make/
+[Gnu efi]: https://sourceforge.net/projects/gnu-efi/
+[mkbootimg]: https://gitlab.com/bztsrc/bootboot/-/tree/master/mkbootimg
+[Qemu]: https://www.qemu.org/
+[Edk2]: https://github.com/tianocore/edk2

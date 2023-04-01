@@ -1,12 +1,10 @@
 # HeliumOS
-What is HeliumOS you may ask, it is a hobby operating system designed from
-the ground up(not even based on unix), that is mostly just a learning
-experience, but with some hopes that it will become
-someday like your average usable operating system.
+HeliumOS, a hobby operating system I am working on to keep myself from
+overthinking life. The long term goal of the OS is to have a mixture of
+all the nice features of other operating systems.
 
-Curently, the only platform I am targeting is x86_64, and I have little to no
-knowledge about other plateforms to be able to port it, so for now that's
-definitely the only platform that will be supported.
+Currently, the only supported platform is x86-64 UEFI, and I have little
+to no knowledge about other platforms, so they may never be supported.
 
 # Index
 - [HeliumOS](#heliumos)
@@ -98,14 +96,14 @@ number of 3rd party tools developped indepedently from HeliumOS:
 * [Edk2]: Provide binaries for UEFI for Qemu.
 
 # Resources
-This project is only possible because of th following resources:
+This project is only possible because of the following resources:
 
-* [OSDev Wiki]. Compresses the information found in the below manuals to be more
+* [OSDev Wiki]: Compresses the information found in the below manuals to be more
   intelligible, although sometimes innacurate.
-* [Intel® 64 and IA-32 Architectures Software Developer’s Manuals]. Especially
+* [Intel® 64 and IA-32 Architectures Software Developer’s Manuals]: Especially
   the 3rd volume.
-* [AMD64 Architecture Programmer's Manual]. Especially the 2nd volume.
-* [Bootboot Protocol Specification]. Describing how Bootboot works.
+* [AMD64 Architecture Programmer's Manual]: Especially the 2nd volume.
+* [Bootboot Protocol Specification]: Describing how Bootboot works.
 
 <!-- Raw links  -->
 [buildsys/]: buildsys/

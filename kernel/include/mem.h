@@ -10,6 +10,9 @@
 
 #define MEM_PSEG_MAGIC (0xA55AA55AA55AA55A)
 
+#define MEM_KERNEL_CODE_DESC (0x08)
+#define MEM_KERNEL_DATA_DESC (0x10)
+
 struct MEM_PSEG_HEADER;
 typedef struct MEM_PSEG_HEADER mem_pseg_header;
 struct MEM_PSEG_HEADER

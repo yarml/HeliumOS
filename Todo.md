@@ -12,12 +12,15 @@
 * [X] Physical memory management
 * [X] Virtual memory management
 * [X] Kernel heap
-* [ ] Interrupts
-* [ ] Multiprocessing
+* [X] Interrupts
+* [ ] TAR filesystem
 * [ ] Kernel modules
-* [ ] IO
+* [ ] Basic device drivers (Keyboard, Mouse, etc)
+* [ ] Power Management
+* [ ] Filesystems
 * [ ] System calls
 * [ ] User space processes
+* [ ] Multiprocessing
 
 ## Back burner
 * [ ] Docker based build system

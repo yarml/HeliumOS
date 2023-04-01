@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <error.h>
+#include <mem.h>
 #include <sys.h>
 
 #include <asm/idt.h>
@@ -26,13 +27,13 @@ struct IDT_ENTRY_INFO
 static idt_entry_info kernel_idt_image[256] = {
   [0] = {
     .handler = exception_div,
-    .seg_sel = 0x08,
+    .seg_sel = MEM_KERNEL_CODE_DESC,
     .dpl = 0,
     .type = IDT_TYPE_INT
   },
   [14] = {
     .handler = exception_page_fault,
-    .seg_sel = 0x08,
+    .seg_sel = MEM_KERNEL_CODE_DESC,
     .dpl = 0,
     .type = IDT_TYPE_INT
   }

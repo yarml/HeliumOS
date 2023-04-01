@@ -69,7 +69,7 @@ void mem_init()
   gdtr.limit = sizeof(kernel_gdt) - 1;
   gdtr.base = kernel_gdt;
 
-  as_lgdt(&gdtr, 0x10, 0x08);
+  as_lgdt(&gdtr, MEM_KERNEL_DATA_DESC, MEM_KERNEL_CODE_DESC);
 
   size_t mmap_len = (bootboot.size - sizeof(BOOTBOOT)) / sizeof(MMapEnt) + 1;
 

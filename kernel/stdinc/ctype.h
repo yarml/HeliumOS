@@ -85,5 +85,7 @@ int isalnum(int c);
  */
 int isnalnum(int c);
 
+int isprint(int c);
+int isspace(int c);
 
 #endif

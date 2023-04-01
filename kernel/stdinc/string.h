@@ -25,6 +25,8 @@ size_t strlen(char const* s);
 **/
 char* strchr(char const* s, int c);
 
+int strcmp(char const *s1, char const *s2);
+
 char* strcat(char* to, char const* from);
 char* strcpy(char* to, char const* from);
 

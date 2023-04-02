@@ -8,9 +8,8 @@ int memcmp(void const *b1, void const *b2, size_t size)
 
   // TODO: I am too lazy to think about this now, but I am sur there
   // exist some REP instruction to do this faster
-  while (size && *(unsigned char *)b1 == *(unsigned char *)b2)
+  while(--size && *(unsigned char *)b1 == *(unsigned char *)b2)
   {
-    --size;
     ++b1;
     ++b2;
   }

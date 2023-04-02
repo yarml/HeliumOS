@@ -222,7 +222,7 @@ int vsnprintf(char *s, size_t size, char const *template, va_list va)
     min -= tplen;
 
     // print leading spaces/0s
-    while(min > 1)
+    while(min >= 1)
     {
       ++total_chars;
       if(total_chars < size && s)

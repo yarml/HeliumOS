@@ -26,6 +26,8 @@ int vfprintf(FILE* stream, char const* template, va_list va);
 int snprintf(char* s, size_t size, char const* template, ...);
 int vsnprintf(char* s, size_t size, char const* template, va_list va);
 
+int prtrace_begin(char const *fname, char const *args, ...);
+int prtrace_end(char const *fname, char const *status, char const *result, ...);
 
 int fputc(int c, FILE* stream);
 int putchar(int c);

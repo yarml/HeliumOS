@@ -31,20 +31,15 @@ mem_pallocation mem_ppalloc(
   void *below
 )
 {
+  prtrace_begin(
+    "mem_ppalloc",
+    "pheader=%p, size=%lu, alignment=%lu, cont=%d, below=%p",
+    pheader, size, alignment, cont, below
+  );
   if(pheader == PALLOC_STD_HEADER)
     pheader = i_pmm_header;
 
-  printf(
-    "begin mem_ppaloc(%016p,%lu, %lu,%d,%016p)\n",
-    pheader,
-    size,
-    alignment,
-    cont,
-    below
-  );
-
   // We check the validity of the arguments first before acquiring the lock
-
   mem_pallocation alloc;
   alloc.header_off = 0;
   alloc.padr = 0;
@@ -162,14 +157,9 @@ mem_pallocation mem_ppalloc(
             alloc.padr = h->padr + fpg_idx * MEM_PS;
             alloc.size = pg_count * MEM_PS;
             mutex_ulock(&pmm_lock);
-            printf(
-              "end mem_ppalloc() -> SUCESS{"
-              "header_off=%016p,"
-              "padr=%016p,"
-              "size=%05lu,"
-              "fpg_idx=%05lu,"
-              "lpg_idx=%05lu"
-              "}\n",
+            prtrace_end(
+              "mem_ppalloc", "SUCCESS",
+              "header_off=%p, padr=%p, size=%lu, fpg_idx=%lu, lpg_idx=%lu",
               alloc.header_off,
               alloc.padr,
               alloc.size,
@@ -212,21 +202,22 @@ mem_pallocation mem_ppalloc(
   }
 
   mutex_ulock(&pmm_lock);
-  printf(
-    "end mem_ppalloc() -> ERR_MEM_NO_PHY_SPACE\n"
-  );
+  prtrace_end("mem_ppalloc", "ERR_MEM_NO_PHY_SPACE", 0);
   alloc.error = ERR_MEM_NO_PHY_SPACE;
   return alloc;
 }
 
 void mem_ppfree(void *pheader, mem_pallocation alloc)
 {
-  printf(
-    "begin mem_ppfree(%016p,%016p,%05lu)\n",
+  prtrace_begin(
+    "mem_ppfree",
+    "pheader=%p, alloc={header_off=%p, padr=%p, size=%lu}",
+    pheader,
     alloc.header_off,
     alloc.padr,
     alloc.size
   );
+
   mutex_lock(&pmm_lock);
   uint64_t* bitmap = (uint64_t*) (alloc.header_off + 1);
   size_t fpg_idx =
@@ -249,5 +240,6 @@ void mem_ppfree(void *pheader, mem_pallocation alloc)
     }
   }
   mutex_ulock(&pmm_lock);
-  printf("end mem_ppfree()\n");
+
+  prtrace_end("mem_ppfree", 0, 0);
 }

@@ -12,8 +12,9 @@
 
 errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
 {
-  printf(
-    "begin mem_vmap(vadr=%p,padr=%p,size=%lu,flags=%032b)\n",
+  prtrace_begin(
+    "mem_vmap",
+    "vadr=%p,padr=%p,size=%lu,flags=%032b",
     vadr, padr, size, flags
   );
 
@@ -26,14 +27,14 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
     && (uintptr_t) (vadr + size - 1) >> 47 != 0x1FFFF
     && (uintptr_t) (vadr + size - 1) >> 47 != 0x00000
   ) {
-    printf("end mem_vmap() -> ERR_MEM_INV_VADR\n");
+    prtrace_end("mem_vmap", "ERR_MEM_INV_VADR", 0);
     return ERR_MEM_INV_VADR;
   }
 
   // check that address isn't managed by another kernel system
   if(VCACHE_PTR <= vadr && vadr < (VCACHE_PTR + VCACHE_SIZE))
   {
-    printf("end mem_vmap() -> ERR_MEM_MANAGED\n");
+    prtrace_end("mem_vmap", "ERR_MEM_MANAGED", 0);
     return ERR_MEM_MANAGED;
   }
 
@@ -46,7 +47,7 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
   if(  (uintptr_t) vadr % i_order_ps[target_order]
     || (uintptr_t) padr % i_order_ps[target_order]
   ) {
-    printf("end mem_vmap() -> ERR_MEM_ALN\n");
+    prtrace_end("mem_vmap", "ERR_MEM_ALN", 0);
     return ERR_MEM_ALN;
   }
 
@@ -76,7 +77,7 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
   {
     if(!vmap_unit[1].error)
       vcache_umap(vmap_unit[1], 0);
-    printf("end mem_vmap() -> ERR_MEM_NO_VC_SPACE\n");
+    prtrace_end("mem_vmap", "ERR_MEM_NO_VC_SPACE", 0);
     return ERR_MEM_NO_VC_SPACE;
   }
 
@@ -84,7 +85,7 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
   {
     if(!vmap_unit[0].error)
       vcache_umap(vmap_unit[0], 0);
-    printf("en mem_vmap -> ERR_NO_VC_SPACE\n");
+    prtrace_end("mem_vmap", "ERR_MEM_NO_VC_SPACE", 0);
     return ERR_MEM_NO_VC_SPACE;
   }
 
@@ -109,7 +110,7 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
 
         if(alloc.error)
         {
-          printf("end mem_vmap() -> ERR_MEM_NO_PHY_SPACE\n");
+          prtrace_end("mem_vmap", "ERR_MEM_NO_PHY_SPACE", 0);
           return ERR_MEM_NO_PHY_SPACE;
         }
 
@@ -205,9 +206,10 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
   // Reload mappings using rlcr3 if we didnt do so using invlpg
   if(!use_invlpg)
     as_rlcr3();
-  printf(
-    "end mem_vmap() -> SUCCESS{vadr=%p,padr=%p,size=%lu,flags=%032b}\n",
-    vadr, padr, size, flags
+
+  prtrace_end(
+    "mem_vmap", "SUCCESS",
+    "vadr=%p,padr=%p,size=%lu,flags=%032b", vadr, padr, size, flags
   );
   return 0;
 }

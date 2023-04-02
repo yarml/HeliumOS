@@ -186,7 +186,7 @@ static void *find_consecutive_pages(size_t page_count, vcache_unit cache[3])
 
 block_header *i_stdlib_alloc_block(size_t size)
 {
-  printf("begin i_stdlib_alloc_block(size=%lu)\n", size);
+  prtrace_begin("i_stdlib_alloc_block", "size=%lu", size);
   // Used to cache PDPTs, PDs, & PTs as we traverse the Vstructure of the heap
   vcache_unit ab_units[3];
 
@@ -263,7 +263,7 @@ block_header *i_stdlib_alloc_block(size_t size)
   header->largest_free = funit;
   header->largest_free_size = funit->size;
 
-  printf("end i_stdlib_alloc_block() -> SUCCESS{header=%p}\n", header);
+  prtrace_end("i_stdlib_alloc_block", "SUCCESS", "header=%p", header);
   return header;
   // Done :)
 }

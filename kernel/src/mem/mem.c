@@ -30,8 +30,7 @@ static gdt_entry kernel_gdt[3]; // 3 GDT entries, one for the NULL entry
 
 void mem_init()
 {
-  printf("begin mem_init()\n");
-
+  prtrace_begin("mem_init", 0);
   /* Initializing memory is a long process, it should go this way
       - Setup our own gdt, do not rely on Bootboot's
       - Transform Bootboot's memory map into Helium's Memory map
@@ -152,5 +151,5 @@ void mem_init()
   memset(i_pmlmax, 0, 256 * sizeof(mem_pml4e));
   as_rlcr3();
 
-  printf("end mem_init()\n");
+  prtrace_end("mem_init", 0, 0);
 }

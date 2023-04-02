@@ -34,7 +34,7 @@ static void s_alloc_substruct(mem_vpstruct_ptr *vs)
 
 void vcache_init()
 {
-  printf("begin vcache_init()\n");
+  prtrace_begin("vcache_init", 0);
 
   mem_pml4e *target_pml4e = i_pmlmax + ENTRY_IDX(3, VCACHE_PTR);
   mem_pdpte_ref *target_pdpt = 0;
@@ -114,5 +114,8 @@ void vcache_init()
     error_general("VCache init", "Could not map PMLMAX");
   i_pmlmax = pmlmax_unit.ptr;
 
-  printf("end vcache_init(pde=%p,pte=%p)\n", i_vcache_pde, i_vcache_pte);
+  prtrace_end(
+    "vcache_init", "SUCCESS",
+    "pde=%p,pte=%p", i_vcache_pde, i_vcache_pte
+  );
 }

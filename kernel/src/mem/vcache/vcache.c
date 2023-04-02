@@ -17,7 +17,7 @@ mem_pte *i_vcache_pte;
 
 vcache_unit vcache_map(void *padr)
 {
-  printf("begin vcache_map(padr=%p)\n", padr);
+  prtrace_begin("vcache_map", "padr=%p", padr);
 
   // First thing, look if there is a lazy page pointing to this
   // exact physical address
@@ -90,7 +90,7 @@ vcache_unit vcache_map(void *padr)
       err.pde_idx = 0;
       err.error = ERR_VCM_NPG_FOUND;
 
-      printf("end vcache_map() -> ERR_VCM_NPG_FOUND\n");
+      prtrace_end("vcache_map", "ERR_VCM_NPG_FOUND", 0);
       return err;
     }
     // Here, we should free lazy pages, then set target_pde again
@@ -183,9 +183,9 @@ vcache_unit vcache_map(void *padr)
   unit.ptr = ptr;
   unit.error = 0;
 
-  printf(
-    "end vcache_map() -> SUCCESS(ptr=%p,pde=%lu,pte=%lu)\n",
-    ptr, pde_idx, pte_idx
+  prtrace_end(
+    "vcache_map", "SUCCESS",
+    "ptr=%p,pde=%lu,pte=%lu", ptr, pde_idx, pte_idx
   );
   return unit;
 }
@@ -225,8 +225,9 @@ void vcache_remap(vcache_unit unit, void *padr)
 
 void vcache_umap(vcache_unit unit, void *id)
 {
-  printf(
-    "begin vcache_umap(unit={ptr=%p,pde=%lu,pte=%lu}, id=%p)\n",
+  prtrace_begin(
+    "vcache_umap",
+    "unit={ptr=%p,pde=%lu,pte=%lu}, id=%p",
     unit.ptr, unit.pde_idx, unit.pte_idx, id
   );
 
@@ -256,7 +257,7 @@ void vcache_umap(vcache_unit unit, void *id)
       pte->padr = (uintptr_t) id >> 12;
     pte_set_age(pte, 1);
     pde_set_lazy(pde, lazy_count+1);
-    printf("end vcache_umap() -> lazy pages not max\n");
+    prtrace_end("vcache_umap", "LAZY_PAGES_NOT_MAX", 0);
     return;
   }
   // If we already reached the maximum number of lazy pages
@@ -329,5 +330,5 @@ void vcache_umap(vcache_unit unit, void *id)
   // it was replaced by the target pte
   pde_set_lazy(pde, lazy_count - removed_count);
 
-  printf("end vcache_umap() -> freed %lu lazy pages\n", removed_count);
+  prtrace_end("vcache_umap", "SUCCESS", "free_count=%lu", removed_count);
 }

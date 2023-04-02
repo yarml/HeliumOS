@@ -11,11 +11,46 @@ int tpf(char const *template, ...)
   return ret;
 }
 
+int prtrace_begin(char const *fname, char const *args, ...)
+{
+  va_list va;
+  va_start(va, args);
+
+  int r = 0;
+#ifdef PRINT_FUNC_TRACE
+  r += printf("begin %s(", fname);
+  if(args)
+    r += vprintf(args, va);
+  r += printf(")\n");
+#endif
+  va_end(va);
+  return r;
+}
+
+int prtrace_end(char const *fname, char const *status, char const *result, ...)
+{
+  va_list va;
+  va_start(va, result);
+
+  int r = 0;
+#ifdef PRINT_FUNC_TRACE
+  r += printf("end %s()", fname);
+  if(status)
+    printf(" -> %s", status);
+  if(result)
+  {
+    printf("{");
+    vprintf(result, va);
+    printf("}");
+  }
+  printf("\n");
+#endif
+  va_end(va);
+  return r;
+}
 
 int printf(char const *template, ...)
 {
-  // TODO: If this function changes, tpf() should also be updated to be
-  // similar
   va_list va;
   va_start(va, template);
   int ret = vprintf(template, va);

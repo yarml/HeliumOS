@@ -29,12 +29,15 @@ void *realloc(void *ptr, size_t size)
   // Align size to 16 bytes
   size = ALIGN_UP(size, 16);
 
-  // Case 0: size is 0, this is a free not realloc
+  // Case -1: size is 0, this is a free not realloc
   if(!size)
   {
     free(ptr);
     return 0;
   }
+  // Case 0: ptr is NULL, this is an alloc, not realloc
+  if(!ptr)
+    return malloc(size);
 
   unit_header *target_unit = PTR_UNIT(ptr);
 

@@ -13,11 +13,11 @@
 * [X] Virtual memory management
 * [X] Kernel heap
 * [X] Interrupts
-* [ ] TAR filesystem
+* [ ] Filesystems
+* [ ] initrd filesystem
 * [ ] Kernel modules
 * [ ] Basic device drivers (Keyboard, Mouse, etc)
 * [ ] Power Management
-* [ ] Filesystems
 * [ ] System calls
 * [ ] User space processes
 * [ ] Multiprocessing

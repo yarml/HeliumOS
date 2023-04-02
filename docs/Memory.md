@@ -116,14 +116,15 @@ In general, the memory layout HeliumOS uses is as follows:
 | 15E1023P896T | 16E          | 128T         | Kernel space memory |
 
 ### Kernel space layout
-| Start | End  | Size      | Description            |
-| ----- | -----| --------- | ---------------------- |
-| 0     | 8M   | 8M        | Vcache memory          |
-| 8M    | 256G | 255G1016M | Undefined              |
-| 256G  | 512G | 256G      | Physical memory header |
-| 512G  | 1T   | 512G      | Kernel Heap            |
-| 1T    | 112T | 111T      | Undefined              |
-| 112T  | 128T | 16T       | Bootboot reserved      |
+| Start  | End    | Size      | Description            |
+| ------ | ------ | --------- | ---------------------- |
+| 0      | 8M     | 8M        | Vcache memory          |
+| 8M     | 256G   | 255G1016M | Undefined              |
+| 256G   | 512G   | 256G      | Physical memory header |
+| 512G   | 1T     | 512G      | Kernel Heap            |
+| 1T     | 1T512G | 512G      | initrd                 |
+| 1T512G | 112T   | 110T512G  | Undefined              |
+| 112T   | 128T   | 16T       | Bootboot reserved      |
 
 *Addresses are offseted, the real addresses can be calculated by adding
 15E1023P896T to the addresses in the table*

@@ -57,9 +57,9 @@ void free(void *ptr)
   if(target_unit->next && target_unit->fnext == target_unit->next)
   {
     target_unit->size += sizeof(unit_header) + target_unit->next->size;
+    target_unit->next->magic = 0; // Just in case
     target_unit->next = target_unit->next->next;
     target_unit->fnext = target_unit->fnext->fnext;
-    target_unit->next->magic = 0; // Just in case
   }
 
   // Merge with previous unit if it is free

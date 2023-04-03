@@ -8,7 +8,7 @@ void *malloc(size_t size)
 {
   // malloc(). Malloc would work by searching for a block whose largest
   // free unit is at least the size of the requested bytes
-  // Once we find a block, we find try to find a unit that is the exact same
+  // Once we find a block, we try to find a unit that is the exact same
   // size as the request, otherwise, the unit whose size is the first larger one
   // If no blocks were found, we allocate a new one, add it to the block linked
   // list, then use that new block with a first unit that is exactly the

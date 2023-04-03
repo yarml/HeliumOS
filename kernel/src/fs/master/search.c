@@ -6,6 +6,22 @@
 
 #include "internal_fs.h"
 
+filesys *fs_from_name(char *name)
+{
+  filesys_llnode *cfsn = i_fs_head;
+
+  while(cfsn)
+  {
+    if(!strcmp(cfsn->fs.name, name))
+      break;
+    cfsn = cfsn->next;
+  }
+
+  if(!cfsn)
+    return 0;
+  return &cfsn->fs;
+}
+
 fsnode *fs_resolve(char *fsname, char *names, size_t depth)
 {
   filesys *fs;

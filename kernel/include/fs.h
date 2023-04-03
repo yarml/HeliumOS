@@ -124,6 +124,7 @@ struct FSNODE
 
   fsnode *parent; // can be NULL for a directory
   fsnode *nsib; // next sibling
+  fsnode *psib; // prev sibling
 
   // Each filesystem is free to use this pointer as they wish
   // I imagine it can store info to where the data can be read/written to
@@ -162,6 +163,7 @@ struct FSNODE
 };
 
 filesys *fs_mount(char *name);
+filesys *fs_from_name(char *name);
 void fs_umount(filesys *fs);
 
 // name functions
@@ -174,7 +176,13 @@ void fs_pathtok(char *path, char *fsname, char **nodes, size_t *len);
 // TODO: when processes are implemented, al fs functions should also
 // get a pointer to the process making the request
 fsnode *fs_search(char *path);
-
 fsnode *fs_dirof(char *path);
+
+void fs_rm(fsnode *node);
+
+fsnode *fs_mknode(fsnode *parent, char *name);
+fsnode *fs_mkdir(fsnode *parent, char *name);
+fsnode *fs_mkfile(fsnode *parent, char *name);
+fsnode *fs_mklink(fsnode *parent, char *name, fsnode *target);
 
 #endif

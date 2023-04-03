@@ -10,9 +10,11 @@ to no knowledge about other platforms, so they may never be supported.
 - [HeliumOS](#heliumos)
 - [Index](#index)
 - [Getting the sources](#getting-the-sources)
-- [Source directory structure](#source-directory-structure)
 - [Build system](#build-system)
+- [Progress](#progress)
 - [Documentation](#documentation)
+- [Contributions](#contributions)
+- [Source directory structure](#source-directory-structure)
 - [3rd Party tools](#3rd-party-tools)
 - [Resources](#resources)
 
@@ -23,6 +25,52 @@ As HeliumOS is hosted in github you can clone the sources with `git` using:
 
 Otherwise you can download the sources in a [zip file].
 
+# Build system
+The sources come with a build system written in [make](Check [buildsys/])
+to automate all the steps necessary for the build.
+
+Building HeliumOS is as simple as following 2 steps:
+* Installing dependencies, either by executing `sudo make dep`, or if your
+distrubution is not supported(that is anything other than Arch & Manjaro),
+then check [dependencies].
+* Making the boot image with `make bootimg`(This will download the source of
+and compile binutils, gcc, bootboot and mkbootimg before building the kernel,
+which can take a good half hour(or even more depending on your system))
+
+You can then run the boot image from a vm using `make run-qemu`, or install
+it in your system with `sudo make install`
+(You should want to check [buildsys/70-install.mk] before running this one)
+
+# Progress
+The following list of features may change order any time depending on
+what I want to work on.
+
+* [X] Physical memory management
+* [X] Virtual memory management
+* [X] Kernel heap
+* [X] Interrupts
+* [ ] Filesystems
+* [ ] initrd filesystem
+* [ ] Kernel modules
+* [ ] Basic device drivers (Keyboard, Mouse, etc)
+* [ ] Power Management
+* [ ] System calls
+* [ ] User space processes
+* [ ] Multiprocessing
+* [ ] Disk
+
+# Documentation
+Current documentation for HeliumOS can be found in [docs/].
+
+Below is a list of some key documentations:
+* [Code Style]
+* [Memory management]
+
+# Contributions
+If by any chance you are interested in the project you are free to fork, modify
+and make a pull request to merge. Be it bug fixing, or new features, everything
+is welcome (But nobody will anyway, I feel like I'm talking to myself, this
+is embarassing, I'm so lonely 🫤. Also it's my birthday 🥳).
 
 # Source directory structure
 * ## [buildsys/]
@@ -56,30 +104,6 @@ Otherwise you can download the sources in a [zip file].
 
 * ## build/ (Build system generated)
   * `*` temporary files used by the build system.
-
-# Build system
-The sources come with a build system written in [make](Check [buildsys/])
-to automate all the steps necessary for the build.
-
-Building HeliumOS is as simple as following 2 steps:
-* Installing dependencies, either by executing `sudo make dep`, or if your
-distrubution is not supported(that is anything other than Arch & Manjaro),
-then check [dependencies].
-* Making the boot image with `make bootimg`(This will download the source of
-and compile binutils, gcc, bootboot and mkbootimg before building the kernel,
-which can take a good half hour(or even more depending on your system))
-
-You can then run the boot image from a vm using `make run-qemu`, or install
-it in your system with `sudo make install`
-(You may want to check [buildsys/70-install.mk] before running this one)
-
-# Documentation
-Current documentation for HeliumOS can be found in [docs/].
-
-Below is a list of some key documentations:
-* [Code Style]
-* [Memory management]
-* [Mathematical proof for formulas used in the OS]
 
 # 3rd Party tools
 While the code for HeliumOS is completely original, transforming this source
@@ -116,7 +140,6 @@ This project is only possible because of the following resources:
 [dependencies]: docs/Dependencies.md
 [Code Style]: docs/Code-Style.md
 [Memory management]: docs/Memory.md
-[Mathematical proof for formulas used in the OS]: docs/Math.md
 
 <!-- External links  -->
 [make]: https://en.wikipedia.org/wiki/Make_(software)

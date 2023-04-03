@@ -124,8 +124,7 @@ This project is only possible because of the following resources:
 
 * [OSDev Wiki]: Compresses the information found in the below manuals to be more
   intelligible, although sometimes innacurate.
-* [Intel® 64 and IA-32 Architectures Software Developer’s Manuals]: Especially
-  the 3rd volume.
+* [Intel® 64 and IA-32 Architectures Software Developer’s Manuals]: Especially the 3rd volume.
 * [AMD64 Architecture Programmer's Manual]: Especially the 2nd volume.
 * [Bootboot Protocol Specification]: Describing how Bootboot works.
 

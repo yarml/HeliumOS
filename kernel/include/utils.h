@@ -1,6 +1,8 @@
 #ifndef HELIUM_UTILS_H
 #define HELIUM_UTILS_H
 
+#include <stddef.h>
+
 /**
  * \brief Returns the \a n th bit of \a b
  * \param b
@@ -33,5 +35,7 @@
 #define UNITS_COUNT (7)
 
 extern char g_units_sign[UNITS_COUNT];
+
+void hexdump(void *mem, size_t size);
 
 #endif

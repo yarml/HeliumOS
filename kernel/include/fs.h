@@ -72,30 +72,6 @@ struct FS_IMPL
 {
   // Release any data in fs->ext
   void (*fs_release)(filesys *fs);
-
-  // Called when a node is created
-  void (*fsnode_attach)(fsnode *parent, fsnode *child, void *ext);
-  // Called when a node is removed
-  void (*fsnode_detach)(fsnode *parent, fsnode *child);
-
-  void (*fsnode_link)(fsnode *target, fsnode *link);
-
-  // Reads data from a file into the buffer, cannot read more than
-  // specified size, returns actually read bytes
-  size_t (*fsfile_read)(fsnode *file, size_t offset, size_t size, void *buf);
-  // Writes data from the buffer into the file, cannot write more than
-  // specified size, returns actually written bytes
-  size_t (*fsfile_write)(fsnode *file, size_t offset, size_t size, void *buf);
-  // Appends data frim buffer into the end of file, cannot append more than
-  // specified size, returns actually appended bytes
-  size_t (*fsfile_append)(fsnode *file, size_t size, void *buf);
-  size_t (*fsfile_tellsize)(fsnode *file);
-
-  // Returns the next subnodes of the directory
-  // If prev is NULL, return the first subnode
-  // If prev is last subnode, returns NULL
-  fsnode *(*fsdir_list_next)(fsnode *dir, fsnode *prev);
-  size_t (*fsdir_tellsize)(fsnode *dir);
 };
 
 // Structure that defines a filesystem
@@ -156,8 +132,9 @@ struct FSNODE
       // The node this node is a link to
       fsnode *target;
 
-      // The next node that is also a link to `target`
+      // The next & prev node that is also a link to `target`
       fsnode *nlink;
+      fsnode *plink;
     } link;
   };
 };

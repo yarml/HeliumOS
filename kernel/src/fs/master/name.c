@@ -70,6 +70,57 @@ int fs_valid_node_name(char *name)
   return 1;
 }
 
+int fs_valid_path(char *path)
+{
+  char lpath[strlen(path)+1];
+  strcpy(lpath, path);
+
+  size_t head = 0;
+  while(isspace(lpath[head]))
+    ++head;
+
+  size_t fsname_begin = head;
+  while(lpath[head] && lpath[head] != ':' && !isspace(lpath[head]))
+    ++head;
+
+  char s = lpath[head];
+  lpath[head] = 0;
+  if(!fs_valid_sys_name(lpath+fsname_begin))
+    return 0;
+  lpath[head] = s;
+
+  while(isspace(lpath[head]))
+    ++head;
+
+  if(lpath[head] != ':' || lpath[head+1] != '/' || lpath[head+2] != '/')
+    return 0;
+  head += 3;
+
+  while(lpath[head])
+  {
+    while(isspace(lpath[head]) || lpath[head] == '/')
+      ++head;
+    if(!lpath[head])
+      return 1;
+    size_t name_begin = head;
+    while(lpath[head] && lpath[head] != '/')
+      ++head;
+    size_t next_slash = head;
+    // Backtrack to the previous non space
+    while(isspace(lpath[head-1]))
+      --head;
+
+    s = lpath[head];
+    lpath[head] = 0;
+    if(!fs_valid_node_name(lpath+name_begin))
+      return 0;
+    lpath[head] = s;
+    head = next_slash;
+  }
+
+  return 1;
+}
+
 // Warning; Functions assumes opath is at least as big as path
 // Also assumes path is valid even if non-canonical
 void fs_makecanonical(char *path, char *opath)

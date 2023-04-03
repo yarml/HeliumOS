@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdio.h>
 #include <fs.h>
 
 int fs_valid_sys_name(char *name)
@@ -197,6 +198,23 @@ void fs_makecanonical(char *path, char *opath)
   opath[ohead] = 0;
 }
 
+void fs_nodename(char *path, char *name)
+{
+  char *names = 0;
+  size_t n = 0;
+  char fsname[FS_NAMELEN];
+  fs_pathtok(path, fsname, &names, &n);
+
+  if(!n)
+  {
+    name[0] = 0;
+    return;
+  }
+
+  size_t nname_off = (n - 1) * FSNODE_NAMELEN;
+  strcpy(name, names+nname_off);
+}
+
 // Assumes path is valid
 // *nodes needs to be free()d later
 void fs_pathtok(char *path, char *fsname, char **nodes, size_t *len)
@@ -224,6 +242,7 @@ void fs_pathtok(char *path, char *fsname, char **nodes, size_t *len)
     fsname[head] = canon_path[head];
     ++head;
   }
+  fsname[head] = 0;
 
   head += 3;
 
@@ -249,4 +268,41 @@ void fs_pathtok(char *path, char *fsname, char **nodes, size_t *len)
     ++ohead;
     ++head;
   }
+}
+
+static void fsnode_print_rscv(fsnode *node, size_t level)
+{
+  if(!node)
+    return;
+
+  for(size_t i = 0; i < level; ++i)
+    printf(" ");
+
+  printf("%s", node->name);
+
+  switch(node->type)
+  {
+    case FSNODE_DIR:
+      printf("/\n");
+      fsnode_print_rscv(node->dir.fchild, level+1);
+      break;
+    case FSNODE_LINK:
+      printf(" ->");
+      if(node->link.target)
+        printf("%s\n", node->link.target->name);
+      else
+        printf("-\n");
+      break;
+    case FSNODE_FILE:
+      printf("\n");
+      break;
+  }
+
+  fsnode_print_rscv(node->nsib, level);
+}
+
+void fs_print(filesys *fs)
+{
+  printf("%s://\n", fs->name);
+  fsnode_print_rscv(fs->root->dir.fchild, 1);
 }

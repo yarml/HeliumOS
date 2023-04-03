@@ -63,4 +63,6 @@ fsnode *fs_mklink(fsnode *parent, char *name, fsnode *target)
       target->flink->link.plink = link;
     target->flink = link;
   }
+
+  return link;
 }

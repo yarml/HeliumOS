@@ -15,7 +15,4 @@ struct FILESYS_LLNODE
 
 extern filesys_llnode *i_fs_head;
 
-int i_fs_valid_sys_name(char *name);
-int i_fs_valid_node_name(char *name);
-
 #endif

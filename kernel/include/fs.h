@@ -149,6 +149,7 @@ int fs_valid_node_name(char *name);
 int fs_valid_path(char *path);
 void fs_makecanonical(char *path, char *opath);
 void fs_pathtok(char *path, char *fsname, char **nodes, size_t *len);
+void fs_nodename(char *path, char *name);
 
 // TODO: when processes are implemented, al fs functions should also
 // get a pointer to the process making the request
@@ -161,5 +162,7 @@ fsnode *fs_mknode(fsnode *parent, char *name);
 fsnode *fs_mkdir(fsnode *parent, char *name);
 fsnode *fs_mkfile(fsnode *parent, char *name);
 fsnode *fs_mklink(fsnode *parent, char *name, fsnode *target);
+
+void fs_print(filesys *fs);
 
 #endif

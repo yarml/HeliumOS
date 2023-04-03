@@ -96,7 +96,7 @@ fsnode *fs_search(char *path)
 
 fsnode *fs_dirof(char *path)
 {
-    char fsname[FS_NAMELEN];
+  char fsname[FS_NAMELEN];
   char *names = 0;
   size_t depth = 0;
 

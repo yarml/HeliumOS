@@ -120,7 +120,7 @@ This project is only possible because of the following resources:
 
 <!-- External links  -->
 [make]: https://en.wikipedia.org/wiki/Make_(software)
-[zip file]: https://github.com/YavaCoco/HeliumOS/archive/refs/heads/master.zip
+[zip file]: https://github.com/yarml/HeliumOS/archive/refs/heads/master.zip
 [OSDev Wiki]: https://wiki.osdev.org/Expanded_Main_Page
 [Intel® 64 and IA-32 Architectures Software Developer’s Manuals]: https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html
 [AMD64 Architecture Programmer's Manual]: https://www.amd.com/en/support/tech-docs/amd64-architecture-programmers-manual-volumes-1-5

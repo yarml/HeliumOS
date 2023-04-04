@@ -72,6 +72,9 @@ struct FS_IMPL
 {
   // Release any data in fs->ext
   void (*fs_release)(filesys *fs);
+
+  // Read `size` bytes of data from file, returns number of bytes read
+  size_t (*fs_file_read)(fsnode *file, size_t off, char *buf, size_t size);
 };
 
 // Structure that defines a filesystem

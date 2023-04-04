@@ -38,11 +38,52 @@ char *tar_entry_type(tar_header *header)
   }
 }
 
+// Implementation functions
+static size_t tar_file_read(fsnode *f, size_t off, char *buf, size_t size)
+{
+  tpf("Reading %lu bytes from tar file\n", size);
+  tar_header *header = f->ext;
+  void *content = header + 1;
+
+  size_t fsize = tar_file_size(header);
+
+  if(off > fsize)
+    return 0;
+
+  size_t acsize; // actual size
+
+  if(fsize - off < size)
+    acsize = fsize - off;
+  else
+    acsize = size;
+
+  tpf("Actual size is %lu\n", acsize);
+
+  memcpy(buf, content, acsize);
+  return acsize;
+}
+static size_t tar_file_tellsize(fsnode *file)
+{
+  tar_header *header = file->ext;
+
+  return tar_file_size(header);
+}
+
 filesys *tar_mkimfs(char *fsname, void *membuf, size_t size)
 {
+  fsimpl tar_impl;
+  memset(&tar_impl, 0, sizeof(tar_impl));
+
+  tar_impl.fs_file_read = tar_file_read;
+  tar_impl.fs_file_tellsize = tar_file_tellsize;
+
   filesys *fs = fs_mount(fsname);
   if(!fs)
     return 0;
+
+  fs->file_cap = FSCAP_USED | FSCAP_FREAD | FSCAP_FTELLSIZE;
+
+  fs->impl = tar_impl;
 
   size_t fsname_len = strlen(fsname);
 
@@ -100,19 +141,23 @@ filesys *tar_mkimfs(char *fsname, void *membuf, size_t size)
     char node_name[FSNODE_NAMELEN];
     fs_nodename(path, node_name);
 
+    fsnode *cf;
+
     switch(ch->type)
     {
       case TAR_ENTRY_TYPE_FILE:
-        fs_mkfile(dir, node_name);
+        cf = fs_mkfile(dir, node_name);
         break;
       case TAR_ENTRY_TYPE_DIR:
-        fs_mkdir(dir, node_name);
+        cf = fs_mkdir(dir, node_name);
         break;
       case TAR_ENTRY_TYPE_HLINK:
       case TAR_ENTRY_TYPE_SLINK:
         /* Not implemented */
         break;
     }
+
+    cf->ext = ch;
   }
   return fs;
 }

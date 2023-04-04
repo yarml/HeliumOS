@@ -6,11 +6,6 @@
 
 filesys_llnode *i_fs_head;
 
-void fs_init()
-{
-  i_fs_head = 0;
-}
-
 filesys *fs_mount(char *name)
 {
   if(!fs_valid_sys_name(name))

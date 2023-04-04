@@ -143,4 +143,6 @@ size_t fs_tellsize(fsnode *file);
 
 void fs_print(filesys *fs);
 
+void fs_init();
+
 #endif

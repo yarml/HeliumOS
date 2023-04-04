@@ -41,7 +41,6 @@ char *tar_entry_type(tar_header *header)
 // Implementation functions
 static size_t tar_file_read(fsnode *f, size_t off, char *buf, size_t size)
 {
-  tpf("Reading %lu bytes from tar file\n", size);
   tar_header *header = f->ext;
   void *content = header + 1;
 
@@ -56,8 +55,6 @@ static size_t tar_file_read(fsnode *f, size_t off, char *buf, size_t size)
     acsize = fsize - off;
   else
     acsize = size;
-
-  tpf("Actual size is %lu\n", acsize);
 
   memcpy(buf, content, acsize);
   return acsize;

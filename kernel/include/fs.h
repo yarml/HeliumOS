@@ -8,8 +8,13 @@
 
 typedef enum FSNODE_TYPE fsnode_type;
 
-typedef struct DIRCAP dircap;
-typedef struct FILECAP filecap;
+typedef uint64_t dircap;
+typedef uint64_t filecap;
+
+#define FSCAP_USED      (1<<0)
+
+#define FSCAP_FREAD     (1<<1)
+#define FSCAP_FTELLSIZE (1<<2)
 
 typedef struct FS_IMPL fsimpl;
 
@@ -27,43 +32,6 @@ enum FSNODE_TYPE
   FSNODE_LINK
 };
 
-// Operations that can be done on a directory
-struct DIRCAP
-{
-  // In filesys, if set, then all fsnodes override caps are ignored
-  // even if they have used set to 1.
-  // If the filesys' used is set to 0, then the caps in the filesys are just
-  // the default, but each fsnode can override them by setting their cap's
-  // used to 1.
-  uint64_t used:1;
-
-  uint64_t mknode:1; // Can make new subnodes
-  uint64_t rmnode:1; // Can remove subnodes
-  uint64_t list:1; // Can list subnodes
-  uint64_t tellsize:1; // Can tell the size of th dir
-  uint64_t link:1; // Can have link subnodes
-};
-
-// Operations that can be done on a file
-struct FILECAP
-{
-  // In filesys, if set, then all fsnodes override caps are ignored
-  // even if they have used set to 1.
-  // If the filesys' used is set to 0, then the caps in the filesys are just
-  // the default, but each fsnode can override them by setting their cap's
-  // used to 1.
-  uint64_t used:1;
-
-  uint64_t read:1; // Can read data from file
-  uint64_t write:1; // Can write data to anywhere in the file
-  uint64_t append:1; // Can push new data at end of file
-
-  uint64_t rmself:1; // File can be removed, overrides dircap
-  uint64_t tellsize:1; // Can tell size of file
-
-  size_t max_size; // Max size of a file, 0 for no max
-};
-
 // If a file system cannot write/append to all files, and cannot mknode
 // and rmnode from all dirs, then it is called immutable
 
@@ -75,6 +43,8 @@ struct FS_IMPL
 
   // Read `size` bytes of data from file, returns number of bytes read
   size_t (*fs_file_read)(fsnode *file, size_t off, char *buf, size_t size);
+
+  size_t (*fs_file_tellsize)(fsnode *file);
 };
 
 // Structure that defines a filesystem
@@ -165,6 +135,11 @@ fsnode *fs_mknode(fsnode *parent, char *name);
 fsnode *fs_mkdir(fsnode *parent, char *name);
 fsnode *fs_mkfile(fsnode *parent, char *name);
 fsnode *fs_mklink(fsnode *parent, char *name, fsnode *target);
+
+int fs_check_fcap(fsnode *node, int cap);
+
+size_t fs_read(fsnode *file, size_t off, char *buf, size_t size);
+size_t fs_tellsize(fsnode *file);
 
 void fs_print(filesys *fs);
 

@@ -15,7 +15,8 @@ typedef uint64_t filecap;
 
 #define FSCAP_FREAD     (1<<1)
 #define FSCAP_FWRITE    (1<<2)
-#define FSCAP_FTELLSIZE (1<<3)
+#define FSCAP_FAPPEND   (1<<3)
+#define FSCAP_FTELLSIZE (1<<4)
 
 #define FSCAP_DLIST     (1<<1)
 #define FSCAP_DTELLSIZE (1<<2)

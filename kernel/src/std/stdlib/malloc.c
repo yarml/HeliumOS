@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 #include <utils.h>
 
 #include "internal_stdlib.h"
@@ -94,7 +95,10 @@ void *malloc(size_t size)
     new_block = i_stdlib_alloc_block(alloc_size);
 
     if(!new_block)
+    {
+      errno = ENOMEM;
       return 0;
+    }
 
     // We need to insert this new block into the linked list of blocks
     // We just insert it at the start

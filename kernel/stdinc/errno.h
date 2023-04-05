@@ -5,4 +5,6 @@
 
 int *__get_errno();
 
+#define ENOMEM (1)
+
 #endif

@@ -49,8 +49,8 @@ what I want to work on.
 * [X] Virtual memory management
 * [X] Kernel heap
 * [X] Interrupts
-* [ ] Filesystems
-* [ ] initrd filesystem
+* [X] Filesystems
+* [X] initrd filesystem
 * [ ] Kernel modules
 * [ ] Basic device drivers (Keyboard, Mouse, etc)
 * [ ] Power Management

@@ -6,7 +6,7 @@
 int dbg_write_chr(char c)
 {
   as_outb(DEBUG_CONSOLE, c);
-  return 0;
+  return c;
 }
 
 int dbg_write_string(char const *str)

@@ -1,11 +1,12 @@
 #include <string.h>
 #include <stdio.h>
+#include <debug.h>
 
 int fputc(int c, FILE *stream)
 {
-    if(stream->write_chr(stream, c))
-      return EOF;
-    return c;
+  if(!stream)
+    return dbg_write_chr(c);
+  return c;
 }
 
 int putchar(int c)
@@ -15,7 +16,9 @@ int putchar(int c)
 
 int fputs(char const *s, FILE *stream)
 {
-  return stream->write_string(stream, s) ? EOF : strlen(s);
+  if(!stream)
+    return dbg_write_string(s);
+  return 0; // TODO: Not implemented
 }
 
 int puts(char const *s)

@@ -132,8 +132,11 @@ void fs_nodename(char *path, char *name);
 
 // TODO: when processes are implemented, al fs functions should also
 // get a pointer to the process making the request
+fsnode *fs_open(char *fsname, char *names, size_t depth);
 fsnode *fs_search(char *path);
 fsnode *fs_dirof(char *path);
+
+void fs_close(fsnode *node);
 
 void fs_rm(fsnode *node);
 

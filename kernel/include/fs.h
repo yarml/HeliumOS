@@ -75,6 +75,12 @@ struct FSNODE
   fsnode *nsib; // next sibling
   fsnode *psib; // prev sibling
 
+  // How many times the file has been open
+  // This is used for files in large filesystems that
+  // can cache their nodes into disk or something
+  // when refcount is not zero, the node should not be cached
+  size_t refcount;
+
   // Each filesystem is free to use this pointer as they wish
   // I imagine it can store info to where the data can be read/written to
   // info about cache if there is any etc etc

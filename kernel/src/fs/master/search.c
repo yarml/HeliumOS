@@ -22,7 +22,7 @@ filesys *fs_from_name(char *name)
   return &cfsn->fs;
 }
 
-fsnode *fs_resolve(char *fsname, char *names, size_t depth)
+fsnode *fs_open(char *fsname, char *names, size_t depth)
 {
   filesys *fs;
   fsnode *target;
@@ -76,6 +76,8 @@ fsnode *fs_resolve(char *fsname, char *names, size_t depth)
       target = target->link.target;
   }
 
+  ++target->refcount;
+
   return target;
 }
 
@@ -87,7 +89,7 @@ fsnode *fs_search(char *path)
 
   fs_pathtok(path, fsname, &names, &depth);
 
-  fsnode *target = fs_resolve(fsname, names, depth);
+  fsnode *target = fs_open(fsname, names, depth);
 
   free(names);
 
@@ -109,7 +111,7 @@ fsnode *fs_dirof(char *path)
     return 0;
   }
 
-  fsnode *target = fs_resolve(fsname, names, depth-1);
+  fsnode *target = fs_open(fsname, names, depth-1);
 
   free(names);
 

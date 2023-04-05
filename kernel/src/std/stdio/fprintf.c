@@ -1,4 +1,5 @@
 #include <stdarg.h>
+#include <debug.h>
 #include <stdio.h>
 
 int tpf(char const *template, ...)
@@ -83,6 +84,17 @@ int vfprintf(FILE *stream, char const *template, va_list va)
   char buf[len + 1];
 
   vsnprintf(buf, len + 1, template, va);
-  int ret = stream->write_string(stream, buf);
+
+  int ret;
+
+  if(stream)
+  {
+    // Not implemented
+  }
+  else
+    // If stream is NULL; This is undefined behavior in libc, but in Helium
+    // we will assume we want to print to debug console for emulators
+    ret = dbg_write_string(buf);
+
   return ret ? ret : len;
 }

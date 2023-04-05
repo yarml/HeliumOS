@@ -3,15 +3,17 @@
 
 #include <stddef.h>
 #include <stdarg.h>
+#include <fs.h>
 
 #define EOF (int)(-1)
 
-struct __stdio__file;
-typedef struct __stdio__file FILE;
-struct __stdio__file
+typedef struct STDIO_FILE FILE;
+struct STDIO_FILE
 {
-  int (*write_chr)(FILE* f, char c);
-  int (*write_string)(FILE* f, char const* str);
+  fsnode *fnode;
+
+  size_t rcur;
+  size_t wcur;
 };
 
 extern FILE* stdout;
@@ -41,5 +43,15 @@ int puts(char const* s);
 /* Temporary printf, used when in the middle of implementing
    a feature to debug out internal information */
 int tpf(char const* template, ...);
+
+// File functions
+FILE *fopen(char *path, char *mode);
+int fclose(FILE *stream);
+
+FILE *__get_stdout();
+FILE *__get_stderr();
+
+#define stdout (__get_stdout())
+#define stderr (__get_stderr())
 
 #endif

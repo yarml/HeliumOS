@@ -14,11 +14,12 @@ typedef uint64_t filecap;
 #define FSCAP_USED      (1<<0)
 
 #define FSCAP_FREAD     (1<<1)
-#define FSCAP_FTELLSIZE (1<<2)
+#define FSCAP_FWRITE    (1<<2)
+#define FSCAP_FTELLSIZE (1<<3)
 
-#define FSCAP_DLIST (1<<1)
+#define FSCAP_DLIST     (1<<1)
 #define FSCAP_DTELLSIZE (1<<2)
-#define FSCAP_DCREAT (1<<3)
+#define FSCAP_DCREAT    (1<<3)
 
 typedef struct FS_IMPL fsimpl;
 

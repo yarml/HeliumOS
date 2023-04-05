@@ -35,11 +35,6 @@ void _start()
   // Disable interrupts for now
   int_disable();
 
-  // We can't printf("Initializing stdio") :P
-  __init_stdio();
-  printf("Initialized stdio.\n");
-
-
   printf("Initializing memory structures.\n");
   mem_init();
 

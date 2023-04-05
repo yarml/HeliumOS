@@ -11,10 +11,11 @@ int dbg_write_chr(char c)
 
 int dbg_write_string(char const *str)
 {
+  size_t str_len = strlen(str);
   as_outsb(
     DEBUG_CONSOLE,
     (uint8_t *) str,
-    strlen(str)
+    str_len
   );
-  return 0;
+  return str_len;
 }

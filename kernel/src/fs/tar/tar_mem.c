@@ -79,6 +79,9 @@ filesys *tar_mkimfs(char *fsname, void *membuf, size_t size)
     return 0;
 
   fs->file_cap = FSCAP_USED | FSCAP_FREAD | FSCAP_FTELLSIZE;
+  // Set fake dir capabilities to be able to build the immutable
+  // tree, then remove these capabilities later
+  fs->dir_cap = FSCAP_USED | FSCAP_DCREAT;
 
   fs->impl = tar_impl;
 
@@ -136,7 +139,7 @@ filesys *tar_mkimfs(char *fsname, void *membuf, size_t size)
     fsnode *dir = fs_dirof(path);
 
     char node_name[FSNODE_NAMELEN];
-    fs_nodename(path, node_name);
+    fs_basename(path, node_name);
 
     fsnode *cf;
 
@@ -156,5 +159,9 @@ filesys *tar_mkimfs(char *fsname, void *membuf, size_t size)
 
     cf->ext = ch;
   }
+
+  // Set dir_cap to its real value
+  fs->dir_cap = FSCAP_USED;
+
   return fs;
 }

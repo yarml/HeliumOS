@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 #include <stdio.h>
 #include <fs.h>
 
@@ -18,7 +19,10 @@ filesys *fs_from_name(char *name)
   }
 
   if(!cfsn)
+  {
+    errno = ENOFS;
     return 0;
+  }
   return &cfsn->fs;
 }
 
@@ -39,7 +43,10 @@ fsnode *fs_open(char *fsname, char *names, size_t depth)
 
   // File system not found
   if(!cfsn)
+  {
+    errno = ENOFS;
     return 0;
+  }
 
   fs = &cfsn->fs;
   target = fs->root;
@@ -50,7 +57,10 @@ fsnode *fs_open(char *fsname, char *names, size_t depth)
 
     // target cannot be file if we still have a name to resolve
     if(target->type != FSNODE_DIR)
+    {
+      errno = ENOTDIR;
       return 0;
+    }
 
     // target is a dir, search its subnodes for the current name to resolve
     size_t nameoff = i * FSNODE_NAMELEN;
@@ -66,7 +76,10 @@ fsnode *fs_open(char *fsname, char *names, size_t depth)
 
     // No subnode of target had the name to resolve
     if(!starget)
+    {
+      errno = ENOENT;
       return 0;
+    }
 
     // Move to the next
     target = starget;
@@ -108,6 +121,7 @@ fsnode *fs_dirof(char *path)
   if(!depth)
   {
     free(names);
+    errno = EINVAL;
     return 0;
   }
 

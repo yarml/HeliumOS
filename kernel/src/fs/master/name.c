@@ -198,7 +198,7 @@ void fs_makecanonical(char *path, char *opath)
   opath[ohead] = 0;
 }
 
-void fs_nodename(char *path, char *name)
+void fs_basename(char *path, char *name)
 {
   char *names = 0;
   size_t n = 0;
@@ -208,6 +208,7 @@ void fs_nodename(char *path, char *name)
   if(!n)
   {
     name[0] = 0;
+    // errno is set by fs_pathtok
     return;
   }
 
@@ -250,6 +251,7 @@ void fs_pathtok(char *path, char *fsname, char **nodes, size_t *len)
   if(!nbuf)
   {
     *len = 0;
+    // errno set by calloc
     return;
   }
 

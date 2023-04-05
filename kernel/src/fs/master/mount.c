@@ -1,5 +1,6 @@
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 #include <fs.h>
 
 #include "internal_fs.h"
@@ -9,21 +10,23 @@ filesys_llnode *i_fs_head;
 filesys *fs_mount(char *name)
 {
   if(!fs_valid_sys_name(name))
+  {
+    errno = EINVAL;
     return 0;
+  }
 
   filesys_llnode *newnode = calloc(1, sizeof(filesys_llnode));
-  if(!newnode)
+  if(!newnode) // errno set by calloc
     return 0;
 
   filesys *newfs = &newnode->fs;
-  if(!newfs)
-    return 0;
 
   // Allocate root node
   // Not using fs_mkdir because it can complain about empty name
   fsnode *root = calloc(1, sizeof(fsnode));
   if(!root)
   {
+    // free() does not pollute errno as set by calloc
     free(newnode);
     return 0;
   }

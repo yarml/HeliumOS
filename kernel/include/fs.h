@@ -16,6 +16,10 @@ typedef uint64_t filecap;
 #define FSCAP_FREAD     (1<<1)
 #define FSCAP_FTELLSIZE (1<<2)
 
+#define FSCAP_DLIST (1<<1)
+#define FSCAP_DTELLSIZE (1<<2)
+#define FSCAP_DCREAT (1<<3)
+
 typedef struct FS_IMPL fsimpl;
 
 typedef struct FILESYS filesys;
@@ -128,7 +132,7 @@ int fs_valid_node_name(char *name);
 int fs_valid_path(char *path);
 void fs_makecanonical(char *path, char *opath);
 void fs_pathtok(char *path, char *fsname, char **nodes, size_t *len);
-void fs_nodename(char *path, char *name);
+void fs_basename(char *path, char *name);
 
 // TODO: when processes are implemented, al fs functions should also
 // get a pointer to the process making the request
@@ -146,6 +150,7 @@ fsnode *fs_mkfile(fsnode *parent, char *name);
 fsnode *fs_mklink(fsnode *parent, char *name, fsnode *target);
 
 int fs_check_fcap(fsnode *node, int cap);
+int fs_check_dcap(fsnode *dir, int cap);
 
 size_t fs_read(fsnode *file, size_t off, char *buf, size_t size);
 size_t fs_tellsize(fsnode *file);

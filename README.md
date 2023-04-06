@@ -14,6 +14,7 @@ to no knowledge about other platforms, so they may never be supported.
 - [Progress](#progress)
 - [Documentation](#documentation)
 - [Contributions](#contributions)
+- [Contact](#contact)
 - [Source directory structure](#source-directory-structure)
 - [3rd Party tools](#3rd-party-tools)
 - [Resources](#resources)
@@ -64,14 +65,21 @@ what I want to work on.
 Current documentation for HeliumOS can be found in [docs/].
 
 Below is a list of some key documentations:
-* [Code Style]
-* [Memory management]
+* [Code Style] (Boring)
+* [Memory management] (I hate memory management)
+* [Filesystem] (My personal favorite)
 
 # Contributions
-If by any chance you are interested in the project you are free to fork, modify
-and make a pull request to merge. Be it bug fixing, or new features, everything
-is welcome (But nobody will anyway, I feel like I'm talking to myself, this
-is embarassing, I'm so lonely 🫤. Also it's my birthday 🥳).
+If by any chance you are interested in this project, you are free to study,
+fork, modify, and open a pull request. Any type of work is welcome, be it
+bug fixes(there exist many!), new features, or documentation.
+
+# Contact
+You can contact me in case you want more details about the project, or just
+wanna chat about anything.
+
+- Discord: yarm#1814
+- Email: youssefharmal@gmail.com
 
 # Source directory structure
 * ## [buildsys/]
@@ -140,6 +148,7 @@ This project is only possible because of the following resources:
 [dependencies]: docs/Dependencies.md
 [Code Style]: docs/Code-Style.md
 [Memory management]: docs/Memory.md
+[Filesystem]: docs/Filesystem.md
 
 <!-- External links  -->
 [make]: https://en.wikipedia.org/wiki/Make_(software)

@@ -12,8 +12,9 @@ struct STDIO_FILE
 {
   fsnode *fnode;
 
-  size_t rcur;
-  size_t wcur;
+  int mode;
+
+  size_t cur; // cursor
 };
 
 extern FILE* stdout;

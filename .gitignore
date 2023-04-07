@@ -1,6 +1,7 @@
 /ext
 /sysroots/build
 /sysroots/initrd/sys/helium
+/sysroots/initrd/sys/ksym
 /build
 /.vscode/
 /tests

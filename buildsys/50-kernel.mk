@@ -5,7 +5,7 @@ SRCS := $(shell $(FIND) $(KERNEL_SRC_DIR) -name "*.c" -o -name "*.asm")
 OBJS := $(patsubst %,$(OUT_DIR)%.o,$(SRCS))
 KERNEL_BIN := $(INITRD_SYSROOT)sys/helium
 
-KERNEL_SYM := $(OUT_DIR)kernel.sym
+KERNEL_SYM := $(INITRD_SYSROOT)sys/ksym
 
 ASFLAGS := -felf64
 CFLAGS := -mno-red-zone -Wall -fpic -ffreestanding -fno-stack-protector \

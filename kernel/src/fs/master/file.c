@@ -59,7 +59,7 @@ size_t fs_skip(fsnode *file, size_t size)
 }
 
 // FSCAP_FWRITE
-size_t fs_write(fsnode *file, size_t off, char *buf, size_t size)
+size_t fs_write(fsnode *file, size_t off, char const *buf, size_t size)
 {
     if(!file->fs->impl.fs_file_write || !fs_check_fcap(file, FSCAP_FWRITE))
   {
@@ -71,7 +71,7 @@ size_t fs_write(fsnode *file, size_t off, char *buf, size_t size)
 }
 
 // FSCAP_FAPPEND
-size_t fs_append(fsnode *file, char *buf, size_t size)
+size_t fs_append(fsnode *file, char const *buf, size_t size)
 {
   if(!file->fs->impl.fs_file_append || !fs_check_fcap(file, FSCAP_FAPPEND))
   {

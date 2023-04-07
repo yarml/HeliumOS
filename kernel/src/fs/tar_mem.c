@@ -6,7 +6,7 @@
 
 #include <fs/tar.h>
 
-#include "../master/internal_fs.h"
+#include "master/internal_fs.h"
 
 void tar_header_print(tar_header *header)
 {

@@ -55,9 +55,9 @@ struct FS_IMPL
 
   size_t (*fs_file_skip)(fsnode *file, size_t size); // Default impl
 
-  size_t (*fs_file_write)(fsnode *file, size_t off, char *buf, size_t size);
+  size_t (*fs_file_write)(fsnode *file, size_t off, char const *buf, size_t size);
 
-  size_t (*fs_file_append)(fsnode *file, char *buf, size_t size);
+  size_t (*fs_file_append)(fsnode *file, char const *buf, size_t size);
 
   size_t (*fs_file_tellsize)(fsnode *file);
 };
@@ -171,10 +171,10 @@ size_t fs_pull(fsnode *file, char *buf, size_t size);
 size_t fs_skip(fsnode *file, size_t size);
 
 // FSCAP_FWRITE
-size_t fs_write(fsnode *file, size_t off, char *buf, size_t size);
+size_t fs_write(fsnode *file, size_t off, char const *buf, size_t size);
 
 // FSCAP_FAPPEND
-size_t fs_append(fsnode *file, char *buf, size_t size);
+size_t fs_append(fsnode *file, char const *buf, size_t size);
 
 // FSCAP_FTELLSIZE
 size_t fs_tellsize(fsnode *file);

@@ -4,7 +4,7 @@
 #include "internal_stdio.h"
 
 size_t fwrite(
-  void *ptr,
+  void const *ptr,
   size_t size,
   size_t nmemb,
   FILE *stream
@@ -25,12 +25,12 @@ size_t fwrite(
 }
 
 size_t fappend(
-  void *ptr,
+  void const *ptr,
   size_t size,
   size_t nmemb,
   FILE *stream
 ) {
-  if(stream->mode & MODE_W)
+  if(stream->mode & MODE_A)
   {
     size_t written = fs_append(stream->fnode, ptr, size*nmemb);
 

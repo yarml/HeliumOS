@@ -52,7 +52,7 @@ what I want to work on.
 * [X] Interrupts
 * [X] Filesystems
 * [X] initrd filesystem
-* [ ] libc FILE
+* [X] libc FILE
 * [ ] Kernel modules
 * [ ] Basic device drivers (Keyboard, Mouse, etc)
 * [ ] Power Management

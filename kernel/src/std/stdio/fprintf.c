@@ -1,6 +1,9 @@
 #include <stdarg.h>
 #include <debug.h>
+#include <errno.h>
 #include <stdio.h>
+
+#include "internal_stdio.h"
 
 int tpf(char const *template, ...)
 {
@@ -76,6 +79,12 @@ int fprintf(FILE *stream, char const *template, ...)
 
 int vfprintf(FILE *stream, char const *template, va_list va)
 {
+  if(stream && !(stream->mode & MODE_W) && !(stream->mode & MODE_A))
+  {
+    errno = EOPNOTSUPP;
+    return 0;
+  }
+
   va_list va2;
   va_copy(va2, va);
   size_t len = vsnprintf(0, 0, template, va2);
@@ -89,7 +98,10 @@ int vfprintf(FILE *stream, char const *template, va_list va)
 
   if(stream)
   {
-    // Not implemented
+    if(stream->mode & MODE_W)
+      fwrite(buf, sizeof(char), len+1, stream);
+    else
+      fappend(buf, sizeof(char), len+1, stream);
   }
   else
     // If stream is NULL; This is undefined behavior in libc, but in Helium

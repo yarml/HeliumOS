@@ -78,7 +78,7 @@ size_t fpull(
 );
 
 size_t fwrite(
-  void *ptr,
+  void const *ptr,
   size_t size,
   size_t nmemb,
   FILE *stream
@@ -86,7 +86,7 @@ size_t fwrite(
 
 // Non standard
 size_t fappend(
-  void *ptr,
+  void const *ptr,
   size_t size,
   size_t nmemb,
   FILE *stream

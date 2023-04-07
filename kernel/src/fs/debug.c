@@ -3,7 +3,9 @@
 #include <debug.h>
 #include <fs.h>
 
-static size_t debug_file_append(fsnode *file, char *buf, size_t size)
+void __init_stdio();
+
+static size_t debug_file_append(fsnode *file, char const *buf, size_t size)
 {
   char lbuf[size+1];
   memcpy(lbuf, buf, size);
@@ -38,4 +40,6 @@ void debug_initfs()
   fstdout->file.cap = FSCAP_USED | FSCAP_FAPPEND;
 
   fs->dir_cap = FSCAP_USED;
+
+  __init_stdio();
 }

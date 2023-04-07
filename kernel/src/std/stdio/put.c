@@ -9,6 +9,19 @@ int fputc(int c, FILE *stream)
 {
   if(!stream)
     return dbg_write_chr(c);
+
+  char b = c;
+
+  if(stream->mode & MODE_W)
+    return fwrite(&b, sizeof(char), 1, stream);
+  else if(stream->mode & MODE_A)
+    return fappend(&b, sizeof(char), 1, stream);
+  else
+  {
+    errno = EOPNOTSUPP;
+    return 0;
+  }
+
   return c;
 }
 

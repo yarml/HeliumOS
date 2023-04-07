@@ -77,6 +77,21 @@ size_t fpull(
   FILE *stream
 );
 
+size_t fwrite(
+  void *ptr,
+  size_t size,
+  size_t nmemb,
+  FILE *stream
+);
+
+// Non standard
+size_t fappend(
+  void *ptr,
+  size_t size,
+  size_t nmemb,
+  FILE *stream
+);
+
 FILE *__get_stdout();
 FILE *__get_stderr();
 

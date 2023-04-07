@@ -5,6 +5,8 @@ SRCS := $(shell $(FIND) $(KERNEL_SRC_DIR) -name "*.c" -o -name "*.asm")
 OBJS := $(patsubst %,$(OUT_DIR)%.o,$(SRCS))
 KERNEL_BIN := $(INITRD_SYSROOT)sys/helium
 
+KERNEL_SYM := $(OUT_DIR)kernel.sym
+
 ASFLAGS := -felf64
 CFLAGS := -mno-red-zone -Wall -fpic -ffreestanding -fno-stack-protector \
 		  -nostdlib -Werror
@@ -39,8 +41,10 @@ $(KERNEL_BIN): $(HOST_CC) $(MKBOOTIMG_BIN) $(LINKER_SCRIPT) $(OBJS)
 	$(MKDIR) -p $(dir $@)
 	$(MKDIR) -p $(OUT_DIR)
 	$(HOST_CC) $(CFLAGS) $(OBJS) -o $(OUT_DIR)kernel.elf -T $(LINKER_SCRIPT)
-	$(HOST_OBJCOPY) --only-keep-debug $(OUT_DIR)kernel.elf $(OUT_DIR)kernel.sym
+	ls -lash build/out
+	$(HOST_OBJCOPY) --only-keep-debug $(OUT_DIR)kernel.elf $(OUT_DIR)kernel.dbg
 	$(HOST_OBJCOPY) --strip-debug $(OUT_DIR)kernel.elf
+	$(HOST_OBJCOPY) --extract-symbol $(OUT_DIR)kernel.elf $(KERNEL_SYM)
 	$(HOST_STRIP) $(STRIPFLAGS) $(OUT_DIR)kernel.elf  -o $@
 	$(MKBOOTIMG_BIN) check $@
 

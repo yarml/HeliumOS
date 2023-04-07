@@ -1,2 +1,2 @@
-symbol-file build/out/kernel.sym
+symbol-file build/out/kernel.dbg
 target remote localhost:1234

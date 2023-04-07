@@ -13,7 +13,7 @@ all communication is done between the kernel and user space applications.
 - [Filesystem Types](#filesystem-types)
 - [Standard Filesystems](#standard-filesystems)
   - [Initrd `initrd://`](#initrd-initrd)
-  - [Debug `debug://`](#debug-debug)
+  - [Debug `dbg://`](#debug-dbg)
   - [Temporary `tmp://`](#temporary-tmp)
 - [Helium Filesystem Interface](#helium-filesystem-interface)
   - [`fs_open`](#fs_open)
@@ -82,10 +82,10 @@ It is a `tar` file built from the directory [sysroots/initrd] (So if you add
 a file `a/test.txt` to that directory, you can see it in HeliumOS as
 `initrd://a/test.txt`).
 
-## Debug `debug://`
-`debug://` is a filesystem which contains some files that reading from/writing
-to performs some debugging operation. Most notably, the files `debug://stdout`
-and `debug://stderr` write to the debug port (0xE9).
+## Debug `dbg://`
+`dbg://` is a filesystem which contains some files that reading from/writing
+to performs some debugging operation. Most notably, the files `dbg://stdout`
+and `dbg://stderr` write to the debug port (0xE9).
 
 ## Temporary `tmp://`
 `tmp://` is analog to Unix's `/tmp`, by default it stores files in memory, but

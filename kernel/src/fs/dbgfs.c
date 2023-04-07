@@ -20,10 +20,10 @@ void debug_initfs()
 
   impl.fs_file_append = debug_file_append;
 
-  filesys *fs = fs_mount("debug");
+  filesys *fs = fs_mount("dbg");
   if(!fs)
   {
-    printf("Could not mount 'debug://'\n");
+    printf("Could not mount 'dbg://'\n");
     return;
   }
 

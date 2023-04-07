@@ -5,8 +5,8 @@ static FILE *s_stderr = 0;
 
 void __init_stdio()
 {
-  s_stdout = fopen("debug://stdout", "a");
-  s_stderr = fopen("debug://stderr", "a");
+  s_stdout = fopen("dbg://stdout", "a");
+  s_stderr = fopen("dbg://stderr", "a");
 }
 
 FILE *__get_stdout()

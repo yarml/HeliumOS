@@ -8,44 +8,33 @@
 
 FILE *fopen(char *path, char *mode)
 {
-  // Parse file mode
-  size_t mode_len = strlen(mode);
-  if(!mode_len || mode_len > 2)
-  {
-    errno = EINVAL;
-    return 0;
-  }
-
   int imode = 0;
-  switch(mode[0])
-  {
-    case 'r':
-      imode |= MODE_R;
-      break;
-    case 'w':
-      imode |= MODE_W;
-      break;
-    case 'a':
-      imode |= MODE_A;
-      break;
-    default:
-      errno = EINVAL;
-      return 0;
-  }
 
-  if(mode_len > 1)
+  // Parse file mode
+  if(mode)
   {
-    switch(mode[1])
+    size_t mode_len = strlen(mode);
+
+    for(size_t i = 0; i < mode_len; ++i)
     {
-      case '+':
-        if(imode & MODE_R)
-          imode |= MODE_W;
-        else
+      switch(mode[i])
+      {
+        case 'p': // HeliumOS specific
+          imode |= MODE_P;
+          break;
+        case 'r':
           imode |= MODE_R;
-        break;
-      default:
-        errno = EINVAL;
-        return 0;
+          break;
+        case 'w':
+          imode |= MODE_W;
+          break;
+        case 'a':
+          imode |= MODE_A;
+          break;
+        default:
+          errno = EINVAL;
+          return 0;
+      }
     }
   }
 
@@ -54,7 +43,6 @@ FILE *fopen(char *path, char *mode)
     errno = EINVAL;
     return 0;
   }
-
 
   fsnode *fnode = fs_search(path);
   if(!fnode)
@@ -88,28 +76,35 @@ FILE *fopen(char *path, char *mode)
     return 0;
   }
 
-  if((imode & MODE_R) && !(fnode->file.cap & FSCAP_FREAD))
+  if((imode & MODE_R) && !fs_check_fcap(fnode, FSCAP_FREAD))
   {
     fs_close(fnode);
     errno = EOPNOTSUPP;
     return 0;
   }
 
-  if((imode & MODE_W) && !(fnode->file.cap & FSCAP_FWRITE))
+  if((imode & MODE_W) && !fs_check_fcap(fnode, FSCAP_FWRITE))
   {
     fs_close(fnode);
     errno = EOPNOTSUPP;
     return 0;
   }
 
-  if((imode & MODE_A) && !(fnode->file.cap & FSCAP_FAPPEND))
+  if((imode & MODE_A) && !fs_check_fcap(fnode, FSCAP_FAPPEND))
   {
     fs_close(fnode);
     errno = EOPNOTSUPP;
     return 0;
   }
 
-  FILE *file = calloc(1, sizeof(FILE));;
+  if((imode & MODE_P) && !fs_check_fcap(fnode, FSCAP_FPULL))
+  {
+    fs_close(fnode);
+    errno = EOPNOTSUPP;
+    return 0;
+  }
+
+  FILE *file = calloc(1, sizeof(FILE));
   if(!file) // errno set by calloc
     return 0;
 

@@ -15,6 +15,9 @@ struct STDIO_FILE
   int mode;
 
   size_t cur; // cursor
+
+  int eof;
+  int err;
 };
 
 extern FILE* stdout;
@@ -46,8 +49,33 @@ int puts(char const* s);
 int tpf(char const* template, ...);
 
 // File functions
+
+// This functions does not work exactly like libc
+// mode: a string of modes that the files needs to support
+// possible modes are:
+// 'p': Pull
+// 'r': Read
+// 'w': Write
+// 'a': Append
+// Mode is a string of those characters
+// for example, mode can be "rw", "pa", "prw" etc
 FILE *fopen(char *path, char *mode);
 int fclose(FILE *stream);
+
+size_t fread(
+  void *ptr,
+  size_t size,
+  size_t nmemb,
+  FILE *stream
+);
+
+// Non standard
+size_t fpull(
+  void *ptr,
+  size_t size,
+  size_t nmemb,
+  FILE *stream
+);
 
 FILE *__get_stdout();
 FILE *__get_stderr();

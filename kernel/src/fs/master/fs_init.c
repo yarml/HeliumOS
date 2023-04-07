@@ -5,11 +5,13 @@
 
 #include <fs/tar.h>
 
-#include "master/internal_fs.h"
+#include "internal_fs.h"
 
 void fs_init()
 {
   i_fs_head = 0;
+
+  debug_initfs();
 
   mem_vmap(
     INITRD_VPTR,

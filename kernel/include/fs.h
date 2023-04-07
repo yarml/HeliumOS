@@ -16,7 +16,8 @@ typedef uint64_t filecap;
 #define FSCAP_FREAD     (1<<1)
 #define FSCAP_FWRITE    (1<<2)
 #define FSCAP_FAPPEND   (1<<3)
-#define FSCAP_FTELLSIZE (1<<4)
+#define FSCAP_FPULL     (1<<4)
+#define FSCAP_FTELLSIZE (1<<5)
 
 #define FSCAP_DLIST     (1<<1)
 #define FSCAP_DTELLSIZE (1<<2)
@@ -49,6 +50,10 @@ struct FS_IMPL
 
   // Read `size` bytes of data from file, returns number of bytes read
   size_t (*fs_file_read)(fsnode *file, size_t off, char *buf, size_t size);
+
+  size_t (*fs_file_pull)(fsnode *file, char *buf, size_t size);
+
+  size_t (*fs_file_skip)(fsnode *file, size_t size); // Default impl
 
   size_t (*fs_file_tellsize)(fsnode *file);
 };
@@ -154,7 +159,14 @@ fsnode *fs_mklink(fsnode *parent, char *name, fsnode *target);
 int fs_check_fcap(fsnode *node, int cap);
 int fs_check_dcap(fsnode *dir, int cap);
 
+// FSCAP_FREAD
 size_t fs_read(fsnode *file, size_t off, char *buf, size_t size);
+
+// FSCAP_FPULL
+size_t fs_pull(fsnode *file, char *buf, size_t size);
+size_t fs_skip(fsnode *file, size_t size);
+
+// FSCAP_FTELLSIZE
 size_t fs_tellsize(fsnode *file);
 
 void fs_print(filesys *fs);

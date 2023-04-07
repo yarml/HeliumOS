@@ -14,6 +14,7 @@ int fs_check_fcap(fsnode *file, int cap)
   ) & 1;
 }
 
+// FSCAP_FREAD
 size_t fs_read(fsnode *file, size_t off, char *buf, size_t size)
 {
   if(!file->fs->impl.fs_file_read || !fs_check_fcap(file, FSCAP_FREAD))
@@ -25,6 +26,45 @@ size_t fs_read(fsnode *file, size_t off, char *buf, size_t size)
   return file->fs->impl.fs_file_read(file, off, buf, size);
 }
 
+// FSCAP_FPULL
+size_t fs_pull(fsnode *file, char *buf, size_t size)
+{
+  if(!file->fs->impl.fs_file_pull || !fs_check_fcap(file, FSCAP_FPULL))
+  {
+    errno = EOPNOTSUPP;
+    return 0;
+  }
+
+  return file->fs->impl.fs_file_pull(file, buf, size);
+}
+
+// FSCAP_FPULL
+size_t fs_skip(fsnode *file, size_t size)
+{
+  if(
+    (!file->fs->impl.fs_file_pull && !file->fs->impl.fs_file_skip) || 
+    !fs_check_fcap(file, FSCAP_FPULL)
+  ) {
+    errno = EOPNOTSUPP;
+    return 0;
+  }
+
+  if(!file->fs->impl.fs_file_skip)
+  {
+    char buf[size];
+    return file->fs->impl.fs_file_pull(file, buf, size);
+  }
+
+  return file->fs->impl.fs_file_skip(file, size);
+}
+
+// FSCAP_FPULL
+size_t fs_skip(fsnode *file, size_t size)
+{
+
+}
+
+// FSCAP_FTELLSIZE
 size_t fs_tellsize(fsnode *file)
 {
   if(!file->fs->impl.fs_file_tellsize || !fs_check_fcap(file, FSCAP_FTELLSIZE))

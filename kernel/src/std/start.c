@@ -1,17 +1,10 @@
 #include <interrupts.h>
 #include <boot_info.h>
-#include <initrd.h>
-#include <stdlib.h>
 #include <cpuid.h>
 #include <stdio.h>
-#include <ctype.h>
-#include <utils.h>
 #include <mem.h>
 #include <sys.h>
 
-#include <fs/tar.h>
-
-void __init_stdio();
 void __init_stdlib();
 int kmain();
 

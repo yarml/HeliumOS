@@ -38,6 +38,12 @@ char *tar_entry_type(tar_header *header)
   }
 }
 
+void *tarfs_direct_access(fsnode *f)
+{
+  tar_header *header = f->ext;
+  return header+1;
+}
+
 // Implementation functions
 static size_t tar_file_read(fsnode *f, size_t off, char *buf, size_t size)
 {

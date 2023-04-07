@@ -40,4 +40,7 @@ size_t tar_file_size(tar_header *header);
 // Make immutable memory filesystem
 filesys *tar_mkimfs(char *fsname, void *membuf, size_t size);
 
+// Get direct access to the memory region of a file
+void *tarfs_direct_access(fsnode *f);
+
 #endif

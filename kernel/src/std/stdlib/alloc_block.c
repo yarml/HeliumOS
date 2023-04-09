@@ -267,3 +267,19 @@ block_header *i_stdlib_alloc_block(size_t size)
   return header;
   // Done :)
 }
+
+// Public Heap block allocation function
+void *alloc_block(size_t size)
+{
+  // i_stdlib_alloc_block adds sizeof(block_header) to the size, but we don't
+  // need it here
+  if(size > sizeof(block_header))
+    size -= sizeof(block_header);
+
+  void *block = i_stdlib_alloc_block(size);
+
+  // Remove headers just in case
+  if(block)
+    memset(block, 0, sizeof(block_header) + sizeof(unit_header));
+  return block;
+}

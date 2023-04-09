@@ -11,6 +11,7 @@
 
 # I should do these now, but I'm lazy
 * Implement mem_vumap()
+* Implement free_block()
 
 # Do no forget
 * Make page invalidation inter processor proof(When multi processing is

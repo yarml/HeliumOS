@@ -283,3 +283,8 @@ void *alloc_block(size_t size, int flags)
     memset(block, 0, sizeof(block_header) + sizeof(unit_header));
   return block;
 }
+
+void free_block(void *vadr, size_t size)
+{
+  // TODO: Implement free_block
+}

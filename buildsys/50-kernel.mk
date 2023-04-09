@@ -41,7 +41,6 @@ $(KERNEL_BIN): $(HOST_CC) $(MKBOOTIMG_BIN) $(LINKER_SCRIPT) $(OBJS)
 	$(MKDIR) -p $(dir $@)
 	$(MKDIR) -p $(OUT_DIR)
 	$(HOST_CC) $(CFLAGS) $(OBJS) -o $(OUT_DIR)kernel.elf -T $(LINKER_SCRIPT)
-	ls -lash build/out
 	$(HOST_OBJCOPY) --only-keep-debug $(OUT_DIR)kernel.elf $(OUT_DIR)kernel.dbg
 	$(HOST_OBJCOPY) --strip-debug $(OUT_DIR)kernel.elf
 	$(HOST_OBJCOPY) --extract-symbol $(OUT_DIR)kernel.elf $(KERNEL_SYM)

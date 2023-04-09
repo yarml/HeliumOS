@@ -133,9 +133,10 @@ This project is only possible because of the following resources:
 
 * [OSDev Wiki]: Compresses the information found in the below manuals to be more
   intelligible, although sometimes innacurate.
-* [Intel® 64 and IA-32 Architectures Software Developer’s Manuals]: Especially the 3rd volume.
-* [AMD64 Architecture Programmer's Manual]: Especially the 2nd volume.
-* [Bootboot Protocol Specification]: Describing how Bootboot works.
+* [Intel® 64 and IA-32 Architectures Software Developer’s Manuals]: Details about the processor's behavior.
+* [AMD64 Architecture Programmer's Manual]: Details about the processor's behavior.
+* [Bootboot Protocol Specification]: Details about the Bootboot protocol.
+* [Oracle Linker documentation]: Contains details about the structure of ELF files.
 
 <!-- Raw links  -->
 [buildsys/]: buildsys/

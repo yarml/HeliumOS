@@ -1,8 +1,9 @@
-/ext
-/sysroots/build
-/sysroots/initrd/sys/helium
-/sysroots/initrd/sys/ksym
-/build
-/.vscode/
-/tests
+/sysroots/initrd/modules/
+/sysroots/initrd/sys/
+/sysroots/build/
+/modules/test/
 /output.txt
+/.vscode/
+/build
+/tests
+/ext

@@ -184,7 +184,7 @@ static void *find_consecutive_pages(size_t page_count, vcache_unit cache[3])
   return 0; // Everything must come to an end
 }
 
-block_header *i_stdlib_alloc_block(size_t size)
+block_header *i_stdlib_alloc_block(size_t size, int flags)
 {
   prtrace_begin("i_stdlib_alloc_block", "size=%lu", size);
   // Used to cache PDPTs, PDs, & PTs as we traverse the Vstructure of the heap
@@ -242,7 +242,7 @@ block_header *i_stdlib_alloc_block(size_t size)
       );
 
     // Map the newly allocated physical pages to their place in the heap
-    mem_vmap(vptr + allocated, alloc.padr, alloc.size, MAPF_W | MAPF_R);
+    mem_vmap(vptr + allocated, alloc.padr, alloc.size, flags);
     allocated += alloc.size;
   }
 
@@ -269,14 +269,14 @@ block_header *i_stdlib_alloc_block(size_t size)
 }
 
 // Public Heap block allocation function
-void *alloc_block(size_t size)
+void *alloc_block(size_t size, int flags)
 {
   // i_stdlib_alloc_block adds sizeof(block_header) to the size, but we don't
   // need it here
   if(size > sizeof(block_header))
     size -= sizeof(block_header);
 
-  void *block = i_stdlib_alloc_block(size);
+  void *block = i_stdlib_alloc_block(size, flags);
 
   // Remove headers just in case
   if(block)

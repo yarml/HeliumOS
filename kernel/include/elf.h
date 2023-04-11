@@ -9,6 +9,7 @@ typedef struct ELF64_FHEADER elf64_header;
 typedef struct ELF64_PROG_HEADER elf64_prog_header;
 typedef struct ELF64_SECT_HEADER elf64_sect_header;
 typedef struct ELF64_SYM elf64_sym;
+typedef struct ELF64_RELA elf64_rela;
 
 struct ELF64_ID
 {
@@ -75,7 +76,15 @@ struct ELF64_SYM
   uint64_t size;
 };
 
+struct ELF64_RELA
+{
+  uint64_t offset;
+  uint64_t info;
+  int64_t addend;
+};
+
 #define SHT_SYMTAB (0x02)
 #define SHT_STRTAB (0x03)
+#define SHT_RELA   (0x04)
 
 #endif

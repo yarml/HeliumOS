@@ -136,7 +136,7 @@ This project is only possible because of the following resources:
 * [Intel® 64 and IA-32 Architectures Software Developer’s Manuals]: Details about the processor's behavior.
 * [AMD64 Architecture Programmer's Manual]: Details about the processor's behavior.
 * [Bootboot Protocol Specification]: Details about the Bootboot protocol.
-* [Oracle Linker documentation]: Contains details about the structure of ELF files.
+* [Oracle Linker documentation Chapter 12]: Contains details about the structure of ELF files.
 
 <!-- Raw links  -->
 [buildsys/]: buildsys/
@@ -158,6 +158,7 @@ This project is only possible because of the following resources:
 [Intel® 64 and IA-32 Architectures Software Developer’s Manuals]: https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html
 [AMD64 Architecture Programmer's Manual]: https://www.amd.com/en/support/tech-docs/amd64-architecture-programmers-manual-volumes-1-5
 [Bootboot Protocol Specification]: https://gitlab.com/bztsrc/bootboot/-/raw/master/bootboot_spec_1st_ed.pdf
+[Oracle Linker documentation Chapter 12]: https://docs.oracle.com/cd/E23824_01/html/819-0690/chapter6-46512.html#scrolltoc
 [Bootboot]: https://gitlab.com/bztsrc/bootboot
 [Gnu Compiler Collections]: https://gcc.gnu.org/
 [Nasm]: https://www.nasm.us/

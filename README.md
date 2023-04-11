@@ -1,3 +1,11 @@
+```
+██   ██ ███████ ██      ██ ██    ██ ███    ███  ██████  ███████
+██   ██ ██      ██      ██ ██    ██ ████  ████ ██    ██ ██
+███████ █████   ██      ██ ██    ██ ██ ████ ██ ██    ██ ███████
+██   ██ ██      ██      ██ ██    ██ ██  ██  ██ ██    ██      ██
+██   ██ ███████ ███████ ██  ██████  ██      ██  ██████  ███████
+```
+
 # HeliumOS
 HeliumOS, a hobby operating system I am working on to keep myself from
 overthinking life. The long term goal of the OS is to have a mixture of

@@ -1,7 +1,6 @@
 /sysroots/initrd/modules/
 /sysroots/initrd/sys/
 /sysroots/build/
-/modules/test/
 /output.txt
 /.vscode/
 /build

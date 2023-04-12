@@ -2,7 +2,7 @@
 
 
 SRCS := $(shell $(FIND) $(KERNEL_SRC_DIR) -name "*.c" -o -name "*.asm")
-OBJS := $(patsubst %,$(OUT_DIR)%.o,$(SRCS))
+OBJS := $(patsubst $(KERNEL_SRC_DIR)%,$(OUT_DIR)kernel/%.o,$(SRCS))
 KERNEL_BIN := $(INITRD_SYSROOT)sys/helium
 
 KERNEL_SYM := $(INITRD_SYSROOT)sys/ksym
@@ -21,17 +21,19 @@ else
 CFLAGS += -O3
 endif
 
+CLEAN += $(INITRD_SYSROOT)sys/
+
 # Compile targets
-$(OUT_DIR)%.c.o: %.c
+$(OUT_DIR)kernel/%.c.o: $(KERNEL_SRC_DIR)%.c
 	$(MKDIR) -p $(dir $@)
 	$(HOST_CC) $(CFLAGS)  $(INC_FLAGS) -o $@ -c $^
 
 # Some special files need special flags, we handle them separatly
-$(OUT_DIR)%.int.c.o: %.int.c
+$(OUT_DIR)kernel/%.int.c.o: $(KERNEL_SRC_DIR)%.int.c
 	$(MKDIR) -p $(dir $@)
 	$(HOST_CC) $(CFLAGS) -mgeneral-regs-only $(INC_FLAGS) -o $@ -c $^
 
-$(OUT_DIR)%.asm.o: %.asm
+$(OUT_DIR)kernel/%.asm.o: $(KERNEL_SRC_DIR)%.asm
 	$(MKDIR) -p $(dir $@)
 	$(HOST_AS) $(ASFLAGS) $(INC_FLAGS) -o $@ $^
 

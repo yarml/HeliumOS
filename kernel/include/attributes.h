@@ -1,6 +1,8 @@
 #ifndef HELIUM_ATTRIBUTES_H
 #define HELIUM_ATTRIBUTES_H
 
+#include <stdnoreturn.h>
+
 /**
  * \brief Marks a struct or variable as packed.
  * \note Equivalent to GCC's __attribute__((packed)).

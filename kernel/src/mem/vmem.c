@@ -186,7 +186,6 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags)
         pte->user = (flags & MAPF_U) != 0;
       pte->global = vadr >= KVMSPACE || (flags & MAPF_G) != 0;
       pte->padr = (uintptr_t) padr >> 12;
-
       pte->present = 1;
     }
 

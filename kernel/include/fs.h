@@ -49,17 +49,40 @@ struct FS_IMPL
   void (*fs_release)(filesys *fs);
 
   // Read `size` bytes of data from file, returns number of bytes read
-  size_t (*fs_file_read)(fsnode *file, size_t off, char *buf, size_t size);
+  size_t (*fs_file_read)(
+    fsnode *file,
+    size_t off,
+    char *buf,
+    size_t size
+  );
 
-  size_t (*fs_file_pull)(fsnode *file, char *buf, size_t size);
+  size_t (*fs_file_pull)(
+    fsnode *file,
+    char *buf,
+    size_t size
+  );
 
-  size_t (*fs_file_skip)(fsnode *file, size_t size); // Default impl
+  size_t (*fs_file_skip)(
+    fsnode *file,
+    size_t size
+  ); // Default impl
 
-  size_t (*fs_file_write)(fsnode *file, size_t off, char const *buf, size_t size);
+  size_t (*fs_file_write)(
+    fsnode *file,
+    size_t off,
+    char const *buf,
+    size_t size
+  );
 
-  size_t (*fs_file_append)(fsnode *file, char const *buf, size_t size);
+  size_t (*fs_file_append)(
+    fsnode *file,
+    char const *buf,
+    size_t size
+  );
 
-  size_t (*fs_file_tellsize)(fsnode *file);
+  size_t (*fs_file_tellsize)(
+    fsnode *file
+  );
 };
 
 // Structure that defines a filesystem

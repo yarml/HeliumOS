@@ -61,6 +61,8 @@ EXT_DIR 	  := $(ROOT_DIR)ext/
 EXT_SRC_DIR   := $(EXT_DIR)src/
 EXT_BUILD_DIR := $(EXT_DIR)build/
 
+TOOLS_DIR := $(ROOT_DIR)tools/
+
 SYSROOTS 	   := $(ROOT_DIR)sysroots/
 INITRD_SYSROOT := $(SYSROOTS)initrd/
 BUILD_SYSROOT  := $(SYSROOTS)build/

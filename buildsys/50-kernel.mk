@@ -13,8 +13,6 @@ CFLAGS := -mno-red-zone -Wall -fpic -ffreestanding -fno-stack-protector \
 INC_FLAGS := -I$(KERNEL_INC_DIR) -I$(BOOTBOOT_DIST_DIR) -I$(STD_INC)
 STRIPFLAGS :=  -s -K mmio -K fb -K bootboot -K environment -K initstack
 
-HELIUM_IMG := $(OUT_DIR)helium.img
-
 ifeq ($(M),DEBUG)
 CFLAGS += -DHELIUM_DEBUG -O0 -ggdb3
 else
@@ -49,10 +47,5 @@ $(KERNEL_BIN): $(HOST_CC) $(MKBOOTIMG_BIN) $(LINKER_SCRIPT) $(OBJS)
 	$(HOST_STRIP) $(STRIPFLAGS) $(OUT_DIR)kernel.elf  -o $@
 	$(MKBOOTIMG_BIN) check $@
 
-$(HELIUM_IMG): $(BOOTBOOT_CFG) $(BOOTIMG_CFG) $(KERNEL_BIN) $(INITRD_SYSROOT) $(HOST_SYSROOT) $(MKBOOTIMG_BIN)
-	$(MKDIR) -p $(dir $@)
-	$(MKBOOTIMG_BIN) $(BOOTIMG_CFG) $@
-
-.PHONY: kernel bootimg
+.PHONY: kernel
 kernel: $(KERNEL_BIN)
-bootimg: $(HELIUM_IMG)

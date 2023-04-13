@@ -10,11 +10,11 @@ QEMU_CMD := $(QEMU_BIN) $(QEMU_FLAGS) \
 		-drive format=raw,file=$(HELIUM_IMG) -debugcon stdio \
 		-smp 4
 
-run-qemu: $(HELIUM_IMG)
+run-qemu: bootimg
 	$(QEMU_CMD)
 
 
-debug: $(HELIUM_IMG)
+debug: bootimg
 	$(TMUX) new $(GDB) -tui \; \
 		splitp -h $(QEMU_CMD) -s -S\
 			-monitor unix:$(BUILD_DIR)qms,server\; \

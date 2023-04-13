@@ -24,6 +24,14 @@ to no knowledge about other platforms, so they may never be supported.
 - [Contributions](#contributions)
 - [Contact](#contact)
 - [Source directory structure](#source-directory-structure)
+  - [buildsys/](#buildsys)
+  - [kernel/](#kernel)
+  - [modules/](#modules)
+  - [tools/](#tools)
+  - [sysroots/](#sysroots)
+  - [docs/](#docs)
+  - [ext/ (Build system generated)](#ext-build-system-generated)
+  - [build/ (Build system generated)](#build-build-system-generated)
 - [3rd Party tools](#3rd-party-tools)
 - [Resources](#resources)
 
@@ -46,9 +54,10 @@ then check [dependencies].
 and compile binutils, gcc, bootboot and mkbootimg before building the kernel,
 which can take a good half hour(or even more depending on your system))
 
-You can then run the boot image from a vm using `make run-qemu`, or install
-it in your system with `sudo make install`
-(You should want to check [buildsys/70-install.mk] before running this one)
+You can then run the boot image from a vm using `make run-qemu`.
+
+The output file `build/helium.img` can be flashed to a USB and used to boot
+on real hardware, although I rarely test that.
 
 # Progress
 The following list of features may change order any time depending on
@@ -90,37 +99,59 @@ wanna chat about anything.
 - Email: youssefharmal@gmail.com
 
 # Source directory structure
-* ## [buildsys/]
-  * `*.mk` a number of make files that, together, form the build system.
-  * `sedscripts/` contains some sed scripts that are used by some targets of
- the build system.
-  * `pyscripts/` contains some Python scripts that do statistics on source code
-  * `shscripts` contains shell scripts used by the buildsystem
-  * `IDE` contains pre-made configurations for some IDEs
+## [buildsys/]
+  * `*.mk` Make files that, together, form the build system.
+  * `late/*.mk` Other make files that together form the buildsystem, but are
+    included later in the buildsystem.
+  * `sedscripts/` sed scripts that are used by some targets of the build system.
+  * `pyscripts/` Python scripts used by the build system.
+  * `shscripts` Shell scripts used by the buildsystem
+  * `IDE` Pre-made configurations for some IDEs
+  * `templates/` Files used by the build system to generate other files.
 
-* ## [kernel/]
-  * `src/`,`include/`,`stdinc/` contains the source code for HeliumOS.
-  * `link.ld` configurations for the linker.
-  * `bootimg.json` configurations for mkbootimg.
-  * `bootboot.config` Bootboot configuration.
+Documentation for the buildsystem can be found here [Buildsystem].
 
-* ## [sysroots/]
-  * `build/` (Build system generated) The prefix where the toolchain to build
-    HeliumOS will be installed if built using the build system.
-  * `host/` This folder represents the disk which will be passed to the
-  virtual macine.
-  * `initrd/` This folder represents the file tree for the initrd
-  loaded with bootboot.
+## [kernel/]
+`src/`,`include/`,`stdinc/` Source code for HeliumOS.
 
-* ## [docs/]
-  * `*` Documentation for HeliumOS.
+`link.ld` Linker configuration.
 
-* ## ext/ (Build system generated)
-  * `src/` contains source code for gcc, binutils, bootboot and mkbootimg.
-  * `build` conatins configured build folders for gcc and binutils.
+`bootimg.json` mkbootimg configuration.
 
-* ## build/ (Build system generated)
-  * `*` temporary files used by the build system.
+`bootboot.config` Bootboot configuration.
+
+## [modules/]
+Each directory in `modules/` represents a separate kernel module that can
+be loaded dynamically by the kernel during execution.
+
+`modules.cfg` determines which kernel modules are to be included `M`, or skipped
+`U`.
+
+## [tools/]
+Some tools used by the buildsystem to generate other files used by
+the buildsystem.
+
+## [sysroots/]
+`build/` (Build system generated) The prefix where the toolchain to build
+HeliumOS will be installed.
+
+`host/` represents the disk which will be passed to the virtual
+macine (unused yet).
+
+`initrd/` The file tree for the initrd loaded with bootboot.
+
+## [docs/]
+Documentation for HeliumOS.
+
+## ext/ (Build system generated)
+`src/` contains source code for gcc, binutils, bootboot and mkbootimg.
+
+`build` conatins configured build folders for gcc and binutils.
+
+## build/ (Build system generated)
+Temporary files used by the build system.
+
+The target file of the entire buildsystem is `build/helium.img`.
 
 # 3rd Party tools
 While the code for HeliumOS is completely original, transforming this source
@@ -151,13 +182,15 @@ This project is only possible because of the following resources:
 [kernel/]: kernel/
 [sysroots/]: sysroots/
 [docs/]: docs/
-[buildsys/70-install.mk]: buildsys/70-install.mk
+[tools/]: tools/
+[modules/]: modules/
 
 <!-- Named links  -->
 [dependencies]: docs/Dependencies.md
 [Code Style]: docs/Code-Style.md
 [Memory management]: docs/Memory.md
 [Filesystem]: docs/Filesystem.md
+[Buildsystem]: docs/Buildsystem.md
 
 <!-- External links  -->
 [make]: https://en.wikipedia.org/wiki/Make_(software)

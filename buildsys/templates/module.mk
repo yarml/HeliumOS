@@ -15,7 +15,7 @@ $(MODULE_<mod-name>_BIN): $(MODULE_LINKSCRIPT) $(MODULE_<mod-name>_OBJ)
 
 $(OUT_DIR)modules/<mod-name>/%.c.o: $(MODULES_DIR)<mod-name>/%.c
 	$(MKDIR) -p $(dir $@)
-	$(HOST_CC) $(CFLAGS)  $(INC_FLAGS) -o $@ -c $^
+	$(HOST_CC) $(CFLAGS) $(INC_FLAGS) -o $@ -c $^
 
 MODULES_ALL += $(MODULE_<mod-name>_BIN)
 

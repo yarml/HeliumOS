@@ -44,8 +44,13 @@ int kmain()
   {
     elf64_prog_header *ph = (void *) fptr + fptr->phoff + i * fptr->phent_size;
     printf("\tProgram header #%lu:\n", i);
-    printf("\tType: %04x\n", ph->type);
-    printf("\tMachine: %02x\n", fptr->machine);
+    printf("\t\tType: %04x\n", ph->type);
+    printf("\t\tVadr: %p\n", ph->vadr);
+    printf("\t\tPadr: %p\n", ph->padr);
+    printf("\t\tOffset: %p\n", ph->offset);
+    printf("\t\tFile size: %lz\n", ph->file_size);
+    printf("\t\tMem size: %lz\n", ph->mem_size);
+    printf("\t\tAlign: %lz\n", ph->align);
   }
 
   printf("Section headers:\n");
@@ -54,7 +59,7 @@ int kmain()
     elf64_sect_header *sh = (void *) fptr + fptr->shoff + i * fptr->shent_size;
     printf("\tSection header #%lu\n", i);
     printf("\t\tName: '%s'\n", shstrtab + sh->name);
-    printf("\t\tSize: %lu\n", sh->size);
+    printf("\t\tSize: %lz\n", sh->size);
     printf("\t\tOffset: %p\n", sh->offset);
     printf("\t\tType: %x\n", sh->type);
     printf("\t\tFlags: %lx\n", sh->flags);
@@ -69,24 +74,12 @@ int kmain()
       for(size_t j = 0; j < sym_count; ++j)
       {
         elf64_sym *sym = (void *) fptr + sh->offset + j * sh->ent_size;
-        elf64_sect_header *symsh = (void *) fptr + fptr->shoff + sym->shidx * fptr->shent_size;
         printf("\t\t\tSymbol #%lu:\n", j);
         printf("\t\t\t\tName: '%s'\n", strtab + sym->name);
         printf("\t\t\t\tValue: %p\n", sym->value);
         printf("\t\t\t\tSize: %lu\n", sym->size);
         printf("\t\t\t\tInfo: %02x\n", sym->info);
         printf("\t\t\t\tVisibility: %02x\n", sym->other);
-        printf("\t\t\t\tSection: '%s'\n", shstrtab + symsh->name);
-
-        if(!strcmp("module_init", strtab + sym->name))
-        {
-          void *vsec = alloc_block(symsh->size, MAPF_X);
-          memcpy(vsec, (void *) fptr + symsh->offset, symsh->size);
-          int (*mod_init)() = vsec + sym->value;
-          int a = mod_init();
-          printf("module_init()=%d\n", a);
-          free_block(vsec, symsh->size);
-        }
       }
     }
     else if(sh->type == SHT_RELA)

@@ -3,9 +3,23 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+int c;
+
+void f()
+{
+  printf("Hello ");
+}
+
+void g()
+{
+  printf("World ");
+}
+
 // This should be called from HeliumOS
 int module_init()
 {
-  printf("Hello World from Kernel module!\n");
+  f();
+  g();
+  printf("from Kernel module!\n");
   return 42;
 }

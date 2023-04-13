@@ -121,7 +121,7 @@ int main(int argc, char **argv)
       if(ELF64_ST_BIND(sym->st_info) != STB_GLOBAL)
         continue;
 
-      fprintf(ld, "%s = %#0lx;\n", name, val);
+      fprintf(ld, "PROVIDE(%s = %#0lx);\n", name, val);
     }
   }
 

@@ -83,7 +83,7 @@ PYDIR         := $(BUILDSYS)pyscripts/
 SHDIR         := $(BUILDSYS)shscripts/
 TEMPLATES_DIR := $(BUILDSYS)templates/
 
-CLEAN := build
+CLEAN := $(BUILD_DIR)
 
 # Default target
 .PHONY: nothing

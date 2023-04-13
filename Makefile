@@ -76,11 +76,12 @@ BUILD_DIR := $(ROOT_DIR)build/
 
 OUT_DIR := $(BUILD_DIR)out/
 
-BUILDSYS := buildsys/
-SEDDIR   := $(BUILDSYS)sedscripts/
-IDEDIR   := $(BUILDSYS)IDE/
-PYDIR    := $(BUILDSYS)pyscripts/
-SHDIR    := $(BUILDSYS)shscripts/
+BUILDSYS      := buildsys/
+SEDDIR        := $(BUILDSYS)sedscripts/
+IDEDIR        := $(BUILDSYS)IDE/
+PYDIR         := $(BUILDSYS)pyscripts/
+SHDIR         := $(BUILDSYS)shscripts/
+TEMPLATES_DIR := $(BUILDSYS)templates/
 
 CLEAN := build
 

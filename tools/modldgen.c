@@ -13,9 +13,9 @@
 
 int main(int argc, char **argv)
 {
-  if(argc != 3)
+  if(argc != 4)
   {
-    fprintf(stderr, "Usage: %s <ELF-file> <ld-output-file>\n", argv[0]);
+    fprintf(stderr, "Usage: %s <ELF-file> <ld-output-file> <footer>\n", argv[0]);
     return 1;
   }
 
@@ -31,6 +31,12 @@ int main(int argc, char **argv)
   {
     fprintf(stderr, "Could not open linker script file '%s'.\n", argv[2]);
     return 2;
+  }
+  FILE *footer = fopen(argv[3], "r");
+  if(!footer)
+  {
+    fprintf(stderr, "Could not open linker script footer '%s'.\n", argv[3]);
+    return 3;
   }
 
   // Read symbol file header
@@ -80,6 +86,8 @@ int main(int argc, char **argv)
   fseek(elf, strtab_sh->sh_offset, SEEK_SET);
   fread(strtab, 1, sizeof(strtab), elf);
 
+  fprintf(ld, "/* Auto generated symbol definitions by '%s' */\n\n", argv[0]);
+
   // Now find symbol table
   for(size_t i = 0; i < eh.e_shnum; ++i)
   {
@@ -115,5 +123,15 @@ int main(int argc, char **argv)
 
       fprintf(ld, "%s = %#0lx;\n", name, val);
     }
+  }
+
+  fprintf(ld, "\n/* Footer from '%s'*/\n", argv[3]);
+
+  // Now we append the module linker script footer
+  char buf[32];
+  while(!feof(footer))
+  {
+    size_t read = fread(buf, 1, sizeof(buf), footer);
+    fwrite(buf, 1, read, ld);
   }
 }

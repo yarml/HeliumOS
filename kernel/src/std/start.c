@@ -65,6 +65,8 @@ void _start()
     for(x=0;x<20;x++)
       *((uint32_t*)(&fb + s*(y+20) + (x+80)*4))=0x000000FF;
 
+  fprintf(stdout, "Test?");
+
   printd("stop()\n");
   stop();
 }

@@ -64,9 +64,21 @@ int printd(char const *template, ...)
 
 int vprintd(char const *template, va_list va)
 {
-  return vfprintf(stdout, template, va);
+  return vfprintf(stddbg, template, va);
 }
 
+int printf(char const *template, ...)
+{
+  va_list va;
+  va_start(va, template);
+  int ret = vprintf(template, va);
+  va_end(va);
+  return ret;
+}
+int vprintf(char const *template, va_list va)
+{
+  return vfprintf(stdout, template, va);
+}
 
 int fprintf(FILE *stream, char const *template, ...)
 {

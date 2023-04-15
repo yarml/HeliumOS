@@ -7,8 +7,8 @@ static FILE *s_stddbg = 0;
 void __init_stdio()
 {
   s_stddbg = fopen("dbg://ostream", "a");
-  s_stdout = fopen("fb://stdout", "a");
-  s_stderr = fopen("fb://stderr", "a");
+  s_stdout = fopen("term://stdout", "a");
+  s_stderr = fopen("term://stderr", "a");
 }
 
 FILE *__get_stdout()
@@ -21,3 +21,7 @@ FILE *__get_stderr()
   return s_stderr;
 }
 
+FILE *__get_stddbg()
+{
+  return s_stddbg;
+}

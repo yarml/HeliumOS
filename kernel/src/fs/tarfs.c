@@ -10,11 +10,11 @@
 
 void tar_header_print(tar_header *header)
 {
-  printf("Name: %s%s\n", header->name_pref, header->name);
-  printf("Type: %c\n", header->type);
+  printd("Name: %s%s\n", header->name_pref, header->name);
+  printd("Type: %c\n", header->type);
   if(header->type == '1' || header->type == '2')
-    printf("Link to: %s", header->link_name);
-  printf("Size: %lu\n", tar_file_size(header));
+    printd("Link to: %s", header->link_name);
+  printd("Size: %lu\n", tar_file_size(header));
 }
 
 size_t tar_file_size(tar_header *header)

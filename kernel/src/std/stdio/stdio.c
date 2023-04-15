@@ -2,11 +2,13 @@
 
 static FILE *s_stdout = 0;
 static FILE *s_stderr = 0;
+static FILE *s_stddbg = 0;
 
 void __init_stdio()
 {
-  s_stdout = fopen("dbg://stdout", "a");
-  s_stderr = fopen("dbg://stderr", "a");
+  s_stddbg = fopen("dbg://ostream", "a");
+  s_stdout = fopen("fb://stdout", "a");
+  s_stderr = fopen("fb://stderr", "a");
 }
 
 FILE *__get_stdout()

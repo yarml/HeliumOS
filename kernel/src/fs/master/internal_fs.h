@@ -16,5 +16,6 @@ struct FILESYS_LLNODE
 extern filesys_llnode *i_fs_head;
 
 void debug_initfs();
+void fbfs_init();
 
 #endif

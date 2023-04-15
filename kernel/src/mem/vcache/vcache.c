@@ -194,7 +194,7 @@ void vcache_remap(vcache_unit unit, void *padr)
 {
   // Function stdout tracing disabled for vcache_remap because
   // it is called multiple times, especially during setup
-  // printf(
+  // printd(
   //   "begin vcache_remap(unit={ptr=%p,pde=%lu,pte=%lu}, padr=%p)\n",
   //   unit.ptr, unit.pde_idx, unit.pte_idx, padr
   // );
@@ -204,7 +204,7 @@ void vcache_remap(vcache_unit unit, void *padr)
   // If this PTE already points to padr, skip the function
   if(pte->present && pte->padr == (uintptr_t) padr >> 12)
   {
-    // printf("end vcache_remap() -> SKIP\n");
+    // printd("end vcache_remap() -> SKIP\n");
     return;
   }
 
@@ -220,7 +220,7 @@ void vcache_remap(vcache_unit unit, void *padr)
 
   as_invlpg((uint64_t) ptr);
 
-  // printf("end vcache_remap() -> SUCCESS\n");
+  // printd("end vcache_remap() -> SUCCESS\n");
 }
 
 void vcache_umap(vcache_unit unit, void *id)

@@ -6,6 +6,7 @@
 #include <sys.h>
 
 void __init_stdlib();
+void __init_stdio();
 int kmain();
 
 // Initialize C stdlib then call kmain()
@@ -19,31 +20,51 @@ void _start()
     if(b >> 24 != bootboot.bspid)
     {
       halt();
-      // If we ever leave this halt, then stdio was prooooobably intialized
-      printf("[Core %d] Unhalted... Stopping.\n", b >> 24);
-
+      printd("[Core %d] Unhalted... Stopping.\n", b >> 24);
+      stop();
     }
   }
+  // Draw debugging sqaures
+  int x, y;
+  int s = bootboot.fb_scanline;
+
+  // Red square to signal Helium booted
+  for(y=0;y<20;y++)
+    for(x=0;x<20;x++)
+      *((uint32_t*)(&fb + s*(y+20) + (x+20)*4))=0x00FF0000;
 
   // Disable interrupts for now
   int_disable();
 
-  printf("Initializing memory structures.\n");
+  printd("Initializing memory structures.\n");
   mem_init();
 
-  printf("Initializing stdlib.\n");
+  printd("Initializing stdlib.\n");
   __init_stdlib();
 
-  printf("Initializing interrupts.\n");
+  printd("Initializing interrupts.\n");
   int_init(); // This will also enable interrupts
 
   // Map initrd into virtual memory
-  printf("Initializing filesystem.\n");
+  printd("Initializing filesystem.\n");
   fs_init();
 
-  printf("Calling main function.\n");
+  __init_stdio();
+
+  // Green square to signal that all systems prior to kmain got initialized
+  for(y=0;y<20;y++)
+    for(x=0;x<20;x++)
+      *((uint32_t*)(&fb + s*(y+20) + (x+50)*4))=0x0000FF00;
+
+  printd("Calling main function.\n");
   kmain();
 
-  printf("stop()\n");
+  // Blue square to signal that everything went probably fine, or at least
+  // we didn't crash
+  for(y=0;y<20;y++)
+    for(x=0;x<20;x++)
+      *((uint32_t*)(&fb + s*(y+20) + (x+80)*4))=0x000000FF;
+
+  printd("stop()\n");
   stop();
 }

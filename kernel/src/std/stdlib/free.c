@@ -19,7 +19,7 @@ void free(void *ptr)
   unit_header *target_unit = PTR_UNIT(ptr);
 
   if(target_unit->magic != UNIT_MAGIC)
-    printf("free(): Pointer invalid\n");
+    printd("free(): Pointer invalid\n");
 
   target_unit->fprev = 0;
 

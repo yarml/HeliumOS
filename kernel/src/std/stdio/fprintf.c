@@ -5,12 +5,12 @@
 
 #include "internal_stdio.h"
 
-int tpf(char const *template, ...)
+int  tpd(char const *template, ...)
 {
-  /* Implementation copied from printf() */
+  /* Implementation copied from printd() */
   va_list va;
   va_start(va, template);
-  int ret = vprintf(template, va);
+  int ret = vprintd(template, va);
   va_end(va);
   return ret;
 }
@@ -22,10 +22,10 @@ int prtrace_begin(char const *fname, char const *args, ...)
 
   int r = 0;
 #ifdef PRINT_FUNC_TRACE
-  r += printf("begin %s(", fname);
+  r += printd("begin %s(", fname);
   if(args)
     r += vprintf(args, va);
-  r += printf(")\n");
+  r += printd(")\n");
 #endif
   va_end(va);
   return r;
@@ -38,31 +38,31 @@ int prtrace_end(char const *fname, char const *status, char const *result, ...)
 
   int r = 0;
 #ifdef PRINT_FUNC_TRACE
-  r += printf("end %s()", fname);
+  r += printd("end %s()", fname);
   if(status)
-    printf(" -> %s", status);
+    printd(" -> %s", status);
   if(result)
   {
-    printf("{");
+    printd("{");
     vprintf(result, va);
-    printf("}");
+    printd("}");
   }
-  printf("\n");
+  printd("\n");
 #endif
   va_end(va);
   return r;
 }
 
-int printf(char const *template, ...)
+int printd(char const *template, ...)
 {
   va_list va;
   va_start(va, template);
-  int ret = vprintf(template, va);
+  int ret = vprintd(template, va);
   va_end(va);
   return ret;
 }
 
-int vprintf(char const *template, va_list va)
+int vprintd(char const *template, va_list va)
 {
   return vfprintf(stdout, template, va);
 }

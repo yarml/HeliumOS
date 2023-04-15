@@ -278,25 +278,25 @@ static void fsnode_print_rscv(fsnode *node, size_t level)
     return;
 
   for(size_t i = 0; i < level; ++i)
-    printf(" ");
+    printd(" ");
 
-  printf("%s", node->name);
+  printd("%s", node->name);
 
   switch(node->type)
   {
     case FSNODE_DIR:
-      printf("/\n");
+      printd("/\n");
       fsnode_print_rscv(node->dir.fchild, level+1);
       break;
     case FSNODE_LINK:
-      printf(" ->");
+      printd(" ->");
       if(node->link.target)
-        printf("%s\n", node->link.target->name);
+        printd("%s\n", node->link.target->name);
       else
-        printf("-\n");
+        printd("-\n");
       break;
     case FSNODE_FILE:
-      printf("\n");
+      printd("\n");
       break;
   }
 
@@ -305,6 +305,6 @@ static void fsnode_print_rscv(fsnode *node, size_t level)
 
 void fs_print(filesys *fs)
 {
-  printf("%s://\n", fs->name);
+  printd("%s://\n", fs->name);
   fsnode_print_rscv(fs->root->dir.fchild, 1);
 }

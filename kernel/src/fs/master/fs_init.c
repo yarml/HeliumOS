@@ -11,14 +11,14 @@ void fs_init()
 {
   i_fs_head = 0;
 
-  debug_initfs();
-
   mem_vmap(
     INITRD_VPTR,
     (void *) bootboot.initrd_ptr,
     bootboot.initrd_size,
     MAPF_R
   );
-
   tar_mkimfs("initrd", INITRD_VPTR, bootboot.initrd_size);
+
+  debug_initfs();
+  fbfs_init();
 }

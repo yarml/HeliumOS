@@ -11,6 +11,7 @@ typedef struct ELF64_PROG_HEADER elf64_prog_header;
 typedef struct ELF64_SECT_HEADER elf64_sect_header;
 typedef struct ELF64_SYM elf64_sym;
 typedef struct ELF64_RELA elf64_rela;
+typedef struct ELF64_DYN elf64_dyn;
 
 struct ELF64_ID
 {
@@ -84,6 +85,16 @@ struct ELF64_RELA
   int64_t addend;
 };
 
+struct ELF64_DYN
+{
+  uint64_t tag;
+  union
+  {
+    uint64_t val;
+    uint64_t ptr;
+  };
+};
+
 size_t elf_sect_len(void *kmodf);
 elf64_sect_header *elf_sect_hdr(void *kmodf, size_t shidx);
 void *elf_sect_content(void *kmodf, size_t shidx);
@@ -92,9 +103,40 @@ void *elf_sect_ent(void *kmodf, size_t shidx, size_t entidx);
 char *elf_shstrtab(void *kmodf);
 char *elf_strtab(void *kmodf);
 
+size_t elf_proght_len(void *f);
+elf64_prog_header *elf_prog_hdr(void *f, size_t phidx);
+
 // The following macros were copied from
 // "Oracle Linker documentation Chapter 12"
 // Check resource section in README
+
+// Program header types
+#define PT_NULL          (0)
+#define PT_LOAD          (1)
+#define PT_DYNAMIC       (2)
+#define PT_INTERP        (3)
+#define PT_NOTE          (4)
+#define PT_SHLIB         (5)
+#define PT_PHDR          (6)
+#define PT_TLS           (7)
+#define PT_LOOS          (0x60000000)
+#define PT_SUNW_UNWIND   (0x6464e550)
+#define PT_SUNW_EH_FRAME (0x6474e550)
+#define PT_LOSUNW        (0x6ffffffa)
+#define PT_SUNWBSS       (0x6ffffffa)
+#define PT_SUNWSTACK     (0x6ffffffb)
+#define PT_SUNWDTRACE    (0x6ffffffc)
+#define PT_SUNWCAP       (0x6ffffffd)
+#define PT_HISUNW        (0x6fffffff)
+#define PT_HIOS          (0x6fffffff)
+#define PT_LOPROC        (0x70000000)
+#define PT_HIPROC        (0x7fffffff)
+
+// Program header flags
+#define PF_X        (0x1)
+#define PF_W        (0x2)
+#define PF_R        (0x4)
+#define PF_MASKPROC (0xf0000000)
 
 // Section types
 #define SHT_NULL          (0x0)

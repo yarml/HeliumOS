@@ -3,8 +3,6 @@
 #include <debug.h>
 #include <fs.h>
 
-void __init_stdio();
-
 static size_t debug_file_append(fsnode *file, char const *buf, size_t size)
 {
   char lbuf[size+1];
@@ -23,7 +21,7 @@ void debug_initfs()
   filesys *fs = fs_mount("dbg");
   if(!fs)
   {
-    printf("Could not mount 'dbg://'\n");
+    printd("Could not mount 'dbg://'\n");
     return;
   }
 
@@ -34,12 +32,9 @@ void debug_initfs()
   fs->impl = impl;
 
   // Make them files
-  fsnode *fstdout = fs_mkfile(fs->root, "stdout");
-  fs_mklink(fs->root, "stderr", fstdout);
+  fsnode *fostream = fs_mkfile(fs->root, "ostream");
 
-  fstdout->file.cap = FSCAP_USED | FSCAP_FAPPEND;
+  fostream->file.cap = FSCAP_USED | FSCAP_FAPPEND;
 
   fs->dir_cap = FSCAP_USED;
-
-  __init_stdio();
 }

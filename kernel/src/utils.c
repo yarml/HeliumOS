@@ -14,24 +14,24 @@ void hexdump(void *mem, size_t size)
 
   for(size_t line = 0; line < linec; ++line)
   {
-    printf("%p(+%05lu): ", mem + line * HEXDUMP_BPL, line*HEXDUMP_BPL);
+    printd("%p(+%05lu): ", mem + line * HEXDUMP_BPL, line*HEXDUMP_BPL);
     for(size_t i = 0; i < HEXDUMP_BPL; ++i)
     {
       size_t idx = line * HEXDUMP_BPL + i;
       if(idx < size)
-        printf("%02x ", cmem[idx]);
+        printd("%02x ", cmem[idx]);
       else
-        printf("   ");
+        printd("   ");
     }
-    printf("\t");
+    printd("\t");
     for(size_t i = 0; i < HEXDUMP_BPL; ++i)
     {
       size_t idx = line * HEXDUMP_BPL + i;
       if(idx < size && isprint(cmem[idx]))
-        printf("%c", cmem[idx]);
+        printd("%c", cmem[idx]);
       else
-        printf(".");
+        printd(".");
     }
-    printf("\n");
+    printd("\n");
   }
 }

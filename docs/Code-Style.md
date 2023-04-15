@@ -20,7 +20,6 @@
   - [Example](#example)
 - [Assembly](#assembly)
 - [Debug printing](#debug-printing)
-  - [Mid-Implementation debug printing](#mid-implementation-debug-printing)
   - [Value printing format](#value-printing-format)
 
 # Code structure
@@ -111,13 +110,6 @@ abstracted in a function written in an `.asm` file or a preprocessor macro with
 inline assembly if the instruction is simple enough.
 
 # Debug printing
-## Mid-Implementation debug printing
-When implementing a new feature, it is often necessary to print out a lot of
-information until that feature is completely implemented, figuring out later
-which printfs should be removed and which ones should stay can be tricky, this
-is why Helium source provides `tpf` standing for *temporary printf* so that it
-could be easily found and removed when no longer needed
-
 ## Value printing format
 When an internal value of the system is to be displayed out, the format
 `decription(var1=value1, ...)\n` is to be used. When only displaying a message,

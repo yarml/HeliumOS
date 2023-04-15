@@ -23,8 +23,8 @@ struct STDIO_FILE
 extern FILE* stdout;
 extern FILE* stderr;
 
-int printf(char const* template, ...);
-int vprintf(char const* template, va_list va);
+int printd(char const* template, ...);
+int vprintd(char const* template, va_list va);
 
 int fprintf(FILE* stream, char const* template, ...);
 int vfprintf(FILE* stream, char const* template, va_list va);
@@ -44,9 +44,9 @@ int putchar(int c);
 int fputs(char const* s, FILE* stream);
 int puts(char const* s);
 
-/* Temporary printf, used when in the middle of implementing
+/* Temporary printd, used when in the middle of implementing
    a feature to debug out internal information */
-int tpf(char const* template, ...);
+int  tpd(char const* template, ...);
 
 // File functions
 

@@ -6,7 +6,7 @@
 
 static void exception_common_prologue(int_frame *frame, char *name)
 {
-  printf("[EXCEPTION:%s]\n");
+  printd("[EXCEPTION:%s]\n");
   fprintf(
     stderr,
     "IP: %#016lx\n"

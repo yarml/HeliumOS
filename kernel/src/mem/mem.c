@@ -121,12 +121,12 @@ void mem_init()
     pmm_header_off += BITMAP_SIZE(mmap_usable[i].size)
                    + sizeof(mem_pseg_header);
 
-    printf(
+    printd(
       "header(header_adr=%016p,padr=%016p,size=%05lu)\n",
       h, h->padr, h->size / MEM_PS
     );
   }
-  printf(
+  printd(
     "pmm header(adr=%016p,offset=%05lu, size=%05lu)\n",
     i_pmm_header, pmm_header_off, pmm_header_total_size
   );

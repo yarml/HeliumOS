@@ -24,14 +24,6 @@ void _start()
       stop();
     }
   }
-  // Draw debugging sqaures
-  int x, y;
-  int s = bootboot.fb_scanline;
-
-  // Red square to signal Helium booted
-  for(y=0;y<20;y++)
-    for(x=0;x<20;x++)
-      *((uint32_t*)(&fb + s*(y+20) + (x+20)*4))=0x00FF0000;
 
   // Disable interrupts for now
   int_disable();
@@ -51,21 +43,8 @@ void _start()
 
   __init_stdio();
 
-  // Green square to signal that all systems prior to kmain got initialized
-  for(y=0;y<20;y++)
-    for(x=0;x<20;x++)
-      *((uint32_t*)(&fb + s*(y+20) + (x+50)*4))=0x0000FF00;
-
   printd("Calling main function.\n");
   kmain();
-
-  // Blue square to signal that everything went probably fine, or at least
-  // we didn't crash
-  for(y=0;y<20;y++)
-    for(x=0;x<20;x++)
-      *((uint32_t*)(&fb + s*(y+20) + (x+80)*4))=0x000000FF;
-
-  fprintf(stdout, "Test?");
 
   printd("stop()\n");
   stop();

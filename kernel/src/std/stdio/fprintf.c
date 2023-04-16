@@ -111,9 +111,9 @@ int vfprintf(FILE *stream, char const *template, va_list va)
   if(stream)
   {
     if(stream->mode & MODE_W)
-      fwrite(buf, sizeof(char), len+1, stream);
+      fwrite(buf, sizeof(char), len, stream);
     else
-      fappend(buf, sizeof(char), len+1, stream);
+      fappend(buf, sizeof(char), len, stream);
   }
   else
     // If stream is NULL; This is undefined behavior in libc, but in Helium

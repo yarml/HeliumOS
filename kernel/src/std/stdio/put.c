@@ -37,9 +37,9 @@ int fputs(char const *s, FILE *stream)
 
   size_t s_len = strlen(s);
   if(stream->mode & MODE_W)
-    return fwrite(s, sizeof(char), s_len+1, stream);
+    return fwrite(s, sizeof(char), s_len, stream);
   else if(stream->mode & MODE_A)
-    return fappend(s, sizeof(char), s_len+1, stream);
+    return fappend(s, sizeof(char), s_len, stream);
   else
   {
     errno = EOPNOTSUPP;

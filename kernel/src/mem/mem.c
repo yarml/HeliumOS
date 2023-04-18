@@ -22,7 +22,12 @@ size_t i_mmap_usable_len = 0;
 mem_pml4e *i_pmlmax = 0;
 mem_pml4e *i_ppmlmax = 0;
 
-size_t i_order_ps[ORDER_COUNT];
+size_t i_order_ps[ORDER_COUNT] = {
+  [0] = MEM_PS,
+  [1] = 512 * MEM_PS,
+  [2] = 512*512 * MEM_PS,
+  [3] = 512*512*512 * MEM_PS
+};
 
 static gdt_entry kernel_gdt[3]; // 3 GDT entries, one for the NULL entry
                          // one for code segment
@@ -39,13 +44,6 @@ void mem_init()
       - Map the PMM bitmap into virtual space
       - Remove identitity mapping at [0;16G)
   */
-
-  /* precalculate order page sizes */
-  // TODO: figure a way to do it at compile time
-  for(size_t i = 0; i < ORDER_COUNT; ++i)
-  {
-    i_order_ps[i] = ORDER_PS(i);
-  }
 
   // Setup gdt
   memset(kernel_gdt, 0, sizeof(kernel_gdt));

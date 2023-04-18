@@ -28,9 +28,7 @@
 #define ORDER_COUNT (4)
 #define MAX_ORDER   (ORDER_COUNT - 1)
 
-
-// TODO: calculate at compile time if possible
-#define ORDER_PS(n) (size_t)(MEM_PS * powi(512, (n)))
+#define ORDER_PS(n) (i_order_ps[n])
 
 extern void *i_pmm_header;
 extern size_t i_mmap_usable_len;

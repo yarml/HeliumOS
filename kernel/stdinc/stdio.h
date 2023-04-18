@@ -51,7 +51,9 @@ int puts(char const *s);
 
 /* Temporary printd, used when in the middle of implementing
    a feature to debug out internal information */
-int  tpd(char const *template, ...);
+int tpd(char const *template, ...);
+/* Temporary printf, like tpd but for printf instead of printd */
+int tpf(char const *template, ...);
 
 // File functions
 

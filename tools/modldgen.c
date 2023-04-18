@@ -7,37 +7,63 @@
 */
 
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
 #include <elf.h>
 
+FILE *open_safe(char *path, char *mode)
+{
+  FILE *f = fopen(path, mode);
+  if(!f)
+  {
+    fprintf(stderr, "Could not open file '%s'.\n", path);
+    exit(1);
+  }
+}
+
+void combine_name(char *out, char *p1, char *p2)
+{
+  out[0] = 0;
+  strcat(out, p1);
+  strcat(out, p2);
+}
+
 int main(int argc, char **argv)
 {
-  if(argc != 4)
+  if(argc != 3 || !strlen(argv[1]) || !strlen(argv[2]))
   {
-    fprintf(stderr, "Usage: %s <ELF-file> <ld-output-file> <footer>\n", argv[0]);
+    fprintf(stderr, "Usage: %s <sym-file> <ld-output-file-suffix>\n", argv[0]);
     return 1;
   }
 
-  FILE *elf = fopen(argv[1], "r");
-  if(!elf)
-  {
-    fprintf(stderr, "Could not open ELF file '%s'.\n", argv[1]);
-    return 1;
-  }
+  FILE *elf = open_safe(argv[1], "r");
 
-  FILE *ld = fopen(argv[2], "w");
-  if(!ld)
-  {
-    fprintf(stderr, "Could not open linker script file '%s'.\n", argv[2]);
-    return 2;
-  }
-  FILE *footer = fopen(argv[3], "r");
-  if(!footer)
-  {
-    fprintf(stderr, "Could not open linker script footer '%s'.\n", argv[3]);
-    return 3;
-  }
+  size_t ldpref_len = strlen(argv[2]);
+
+  char rodatald_path[ldpref_len+8];
+  char textld_path[ldpref_len+6];
+  char datald_path[ldpref_len+6];
+  char absld_path[ldpref_len+5];
+  char bssld_path[ldpref_len+5];
+  char comld_path[ldpref_len+5];
+  char unkld_path[ldpref_len+5];
+
+  combine_name(rodatald_path, argv[2], ".rodata");
+  combine_name(textld_path, argv[2], ".text");
+  combine_name(datald_path, argv[2], ".data");
+  combine_name(absld_path, argv[2], ".abs");
+  combine_name(bssld_path, argv[2], ".bss");
+  combine_name(comld_path, argv[2], ".com");
+  combine_name(unkld_path, argv[2], ".unk");
+
+  FILE *rodatald = open_safe(rodatald_path, "w");
+  FILE *textld = open_safe(textld_path, "w");
+  FILE *datald = open_safe(datald_path, "w");
+  FILE *absld = open_safe(absld_path, "w");
+  FILE *bssld = open_safe(bssld_path, "w");
+  FILE *comld = open_safe(comld_path, "w");
+  FILE *unkld = open_safe(unkld_path, "w");
 
   // Read symbol file header
   Elf64_Ehdr eh;
@@ -86,8 +112,6 @@ int main(int argc, char **argv)
   fseek(elf, strtab_sh->sh_offset, SEEK_SET);
   fread(strtab, 1, sizeof(strtab), elf);
 
-  fprintf(ld, "/* Auto generated symbol definitions by '%s' */\n\n", argv[0]);
-
   // Now find symbol table
   for(size_t i = 0; i < eh.e_shnum; ++i)
   {
@@ -109,8 +133,32 @@ int main(int argc, char **argv)
     for(size_t j = 1; j < sym_count; ++j)
     {
       Elf64_Sym *sym = (void *) symtab + j * sh->sh_entsize;
+
       char *name = strtab + sym->st_name;
       uint64_t val = sym->st_value;
+
+      char *sn;
+
+      if(sym->st_shndx < SHN_LORESERVE)
+      {
+        Elf64_Shdr *ssh = (void *) sht + sym->st_shndx * eh.e_shentsize;
+        sn = shstrtab + ssh->sh_name;
+      }
+      else
+      {
+        switch(sym->st_shndx)
+        {
+          case SHN_ABS:
+            sn = "abs";
+            break;
+          case SHN_COMMON:
+            sn = "common";
+            break;
+          default:
+            sn = "unk";
+        }
+      }
+
 
       // If the name is empty skip this symbol.
       if(!strlen(name))
@@ -121,17 +169,24 @@ int main(int argc, char **argv)
       if(ELF64_ST_BIND(sym->st_info) != STB_GLOBAL)
         continue;
 
-      fprintf(ld, "PROVIDE(%s = %#0lx);\n", name, val);
+      FILE *of;
+
+      if(!strcmp(sn, ".rodata"))
+        of = rodatald;
+      else if(!strcmp(sn, ".text"))
+        of = textld;
+      else if(!strcmp(sn, ".data"))
+        of = datald;
+      else if(!strcmp(sn, ".bss"))
+        of = bssld;
+      else if(!strcmp(sn, "abs"))
+        of = absld;
+      else if(!strcmp(sn, "common"))
+        of = comld;
+      else
+        of = unkld;
+
+      fprintf(of, "PROVIDE(%s = %#0lx);\n", name, val);
     }
-  }
-
-  fprintf(ld, "\n/* Footer from '%s'*/\n", argv[3]);
-
-  // Now we append the module linker script footer
-  char buf[32];
-  while(!feof(footer))
-  {
-    size_t read = fread(buf, 1, sizeof(buf), footer);
-    fwrite(buf, 1, read, ld);
   }
 }

@@ -157,7 +157,7 @@ static size_t term_file_append(fsnode *file, char const *buf, size_t size)
           * tstate.fontinfo.pixh * tstate.fbinfo.scanline,
         0, tstate.fontinfo.pixh * tstate.fbinfo.scanline
       );
-      tstate.cursor = tstate.ch - 1;
+      tstate.cursor = (tstate.ch - 1) * tstate.cw;
     }
 
     char cc = buf[i];

@@ -23,5 +23,8 @@ $(OUT_DIR)modules/<mod-name>/%.asm.o: $(MODULES_DIR)<mod-name>/%.asm
 
 MODULES_ALL += $(MODULE_<mod-name>_BIN)
 
-.PHONY: module-<mod-name>
+.PHONY: module-<mod-name> module-<mod-name>-clean
 module-<mod-name>: $(MODULE_<mod-name>_BIN)
+
+module-<mod-name>-clean:
+	$(RM) $(MODULE_<mod-name>_BIN) $(MODULE_<mod-name>_OBJ)

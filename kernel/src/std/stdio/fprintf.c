@@ -5,7 +5,7 @@
 
 #include "internal_stdio.h"
 
-int  tpd(char const *template, ...)
+int tpd(char const *template, ...)
 {
   /* Implementation copied from printd() */
   va_list va;
@@ -14,6 +14,17 @@ int  tpd(char const *template, ...)
   va_end(va);
   return ret;
 }
+
+int tpf(char const *template, ...)
+{
+  /* Implementation copied from printf() */
+  va_list va;
+  va_start(va, template);
+  int ret = vprintf(template, va);
+  va_end(va);
+  return ret;
+}
+
 
 int prtrace_begin(char const *fname, char const *args, ...)
 {

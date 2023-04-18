@@ -1,10 +1,14 @@
 global module_init
 
-extern putchar
+extern printd
 
 section .text
 module_init:
-  mov rdi, 'c'
-  call putchar
+  mov rdi, test_msg
+  mov rdx, printd
+  call printd
   mov rax, 42
   ret
+
+section .rodata:
+test_msg: db "Hello kernel module!", 0x0A, 0x00

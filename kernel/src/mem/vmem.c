@@ -240,7 +240,7 @@ static void recursive_find_vseg(
     for(; *pidx <= *peidx && (fentry || *pidx % 512); ++*pidx)
     {
       fentry = 0;
-      mem_vpstruct_ptr *centry = base + *pidx;
+      mem_vpstruct_ptr *centry = base + *pidx % 512;
       if(!centry->present)
       {
         if(!*seg_ptr)
@@ -255,7 +255,7 @@ static void recursive_find_vseg(
         vcache_remap(cache[order-1], SS_PADR(centry));
         recursive_find_vseg(
           req,
-          cache, cache[order].ptr, order - 1,
+          cache, cache[order-1].ptr, order - 1,
           seg_ptr, seg_size, indices, eindices
         );
         if(*seg_size >= req)
@@ -265,7 +265,7 @@ static void recursive_find_vseg(
   }
   else // PTE
   {
-    mem_pte *cpte = (mem_pte *) base + indices[0];
+    mem_pte *cpte = (mem_pte *) base + indices[0] % 512;
     if(!cpte->present)
     {
       if(!*seg_size)
@@ -336,4 +336,45 @@ void *mem_find_vsegment(size_t size, void *heap_start, size_t heap_size)
     vcache_umap(cache[i], 0);
 
   return seg_ptr;
+}
+
+void *mem_alloc_vblock(
+  size_t size,
+  int flags,
+  void *heap_start, size_t heap_size
+) {
+  size = ALIGN_UP(size, MEM_PS);
+
+  void *vptr = mem_find_vsegment(size, heap_start, heap_size);
+
+  if(!vptr)
+    return 0;
+
+  size_t allocated = 0;
+  while(allocated < size)
+  {
+    mem_pallocation alloc = mem_ppalloc(
+      PALLOC_STD_HEADER,
+      size - allocated,
+      0,
+      false,
+      0
+    );
+
+    if(alloc.error)
+    {
+      // TODO: Instead of error, we need to find a way to deallocate
+      // all the allocated phyical pages and return 0
+      error_out_of_memory(
+        "Could not allocate physical memory while "
+        "trying to allocate kernel heap space!"
+      );
+    }
+
+    // Map the newly allocated physical pages to their place in the heap
+    mem_vmap(vptr + allocated, alloc.padr, alloc.size, flags);
+    allocated += alloc.size;
+  }
+
+  return vptr;
 }

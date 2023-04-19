@@ -12,8 +12,4 @@ void *reallocarray(void *ptr, size_t nmemb, size_t size);
 
 void free(void *ptr);
 
-// Non standard
-void *alloc_block(size_t size, int flags);
-void free_block(void *vadr, size_t size);
-
 #endif

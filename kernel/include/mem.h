@@ -66,6 +66,15 @@ errno_t mem_vumap(void *vadr, size_t size);
 */
 void *mem_find_vsegment(size_t size, void *heap_start, size_t heap_size);
 
+/*
+  Allocates a block of at least the requested size withing the specified heap
+*/
+void *mem_alloc_vblock(
+  size_t size,
+  int flags,
+  void *heap_start, size_t heap_size
+);
+
 // Kernel virtual space
 #define KVMSPACE ((void *)(0xFFFF800000000000)) // not to be mistaken with
                                                 // linux's kvm, this is
@@ -74,6 +83,7 @@ void *mem_find_vsegment(size_t size, void *heap_start, size_t heap_size);
                                                      // physical memory header
 // KHEAP is 512 Gib in size, 1 PML4 page
 #define KHEAP    ((void *)(0xFFFF808000000000)) // Kernel heap
+#define KHEAP_SIZE ((size_t) 512 * 1024*1024*1024)
 
 // MAPF memory mapping flags
 #define MAPF_R   (1<<0) /* Read */

@@ -98,6 +98,7 @@ void *mem_alloc_vblock(
 #define MAPF_G   (1<<6) /* Global page */
 
 // Pointer manipulation
-void *ptr_make_canonical(void *p);
+#define PTR_MAKE_CANONICAL(p) (void *) ((uintptr_t) p & 0x0000800000000000 ? \
+                                      ((uintptr_t) p | 0xFFFF000000000000) : p)
 
 #endif

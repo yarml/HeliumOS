@@ -245,7 +245,7 @@ static void recursive_find_vseg(
       {
         if(!*seg_ptr)
           *seg_ptr =
-            ptr_make_canonical((void *) (indices[order] * ORDER_PS(order)));
+            PTR_MAKE_CANONICAL(indices[order] * ORDER_PS(order));
         *seg_size += ORDER_PS(order);
         if(*seg_size >= req)
           return;
@@ -270,7 +270,7 @@ static void recursive_find_vseg(
     {
       if(!*seg_size)
         *seg_ptr =
-          ptr_make_canonical((void *) (indices[0] * MEM_PS));
+          PTR_MAKE_CANONICAL(indices[0] * MEM_PS);
       *seg_size += MEM_PS;
       if(*seg_size >= req)
         return;

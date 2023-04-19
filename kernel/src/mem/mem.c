@@ -151,11 +151,3 @@ void mem_init()
 
   prtrace_end("mem_init", 0, 0);
 }
-
-void *ptr_make_canonical(void *p)
-{
-  uintptr_t up = (uintptr_t) p;
-  if(0x0000800000000000 <= up && up < 0xFFFF000000000000)
-    return(void *) up + 0xFFFF000000000000;
-  return (void *) up;
-}

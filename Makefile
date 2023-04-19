@@ -83,6 +83,8 @@ PYDIR         := $(BUILDSYS)pyscripts/
 SHDIR         := $(BUILDSYS)shscripts/
 TEMPLATES_DIR := $(BUILDSYS)templates/
 
+CACHE_DIR := $(ROOT_DIR)cache/
+
 CLEAN := $(BUILD_DIR)
 
 # Default target

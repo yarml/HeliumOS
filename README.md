@@ -32,6 +32,7 @@ to no knowledge about other platforms, so they may never be supported.
   - [docs/](#docs)
   - [ext/ (Build system generated)](#ext-build-system-generated)
   - [build/ (Build system generated)](#build-build-system-generated)
+- [cache/ (Build system generated)](#cache-build-system-generated)
 - [3rd Party tools](#3rd-party-tools)
 - [Resources](#resources)
 
@@ -152,6 +153,10 @@ Documentation for HeliumOS.
 Temporary files used by the build system.
 
 The target file of the entire buildsystem is `build/helium.img`.
+
+# cache/ (Build system generated)
+Contains files downloaded from the internet to avoid redownloading them
+each build.
 
 # 3rd Party tools
 While the code for HeliumOS is completely original, transforming this source

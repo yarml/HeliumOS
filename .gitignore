@@ -3,6 +3,7 @@
 /sysroots/build/
 /output.txt
 /.vscode/
-/build
-/tests
-/ext
+/build/
+/cache/
+/tests/
+/ext/

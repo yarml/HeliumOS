@@ -57,13 +57,11 @@ struct UNIT_HEADER
 
 #define UNIT_SPLIT_DELTA (sizeof(unit_header) + 32)
 
-#define DEFAULT_ALLOC_FLAGS (MAPF_W | MAPF_R)
-
 // Allocates a number of pages from Kernel heap and assigns them to the block
 // returned
 // This new block should be integrated in the linked list by the caller function
 // The block header is zeroed, and the magic number is placed
-block_header *i_stdlib_alloc_block(size_t size, int flags);
+block_header *i_stdlib_alloc_block(size_t size);
 
 extern block_header *i_stdlib_heap_header;
 

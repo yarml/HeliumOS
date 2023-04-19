@@ -92,7 +92,7 @@ void *malloc(size_t size)
     else
       alloc_size = size + sizeof(unit_header);
 
-    new_block = i_stdlib_alloc_block(alloc_size, DEFAULT_ALLOC_FLAGS);
+    new_block = i_stdlib_alloc_block(alloc_size);
 
     if(!new_block)
     {

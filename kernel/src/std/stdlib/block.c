@@ -8,7 +8,7 @@
 #include "../src/mem/internal_mem.h"
 #include "../src/mem/vcache/vcache.h"
 
-block_header *i_stdlib_alloc_block(size_t size, int flags)
+block_header *i_stdlib_alloc_block(size_t size)
 {
   // The requested size does not take into account that we need to allcoate
   // slightly more for the block header itself

@@ -1,6 +1,6 @@
 #include <string.h>
-#include <utils.h>
 #include <stdio.h>
+#include <utils.h>
 #include <mem.h>
 
 #include <asm/invlpg.h>
@@ -225,4 +225,115 @@ errno_t mem_vumap(void *vadr, size_t size)
   // Just return 0 who cares rn, i wanna work on malloc now
 
   return 0;
+}
+
+static void recursive_find_vseg(
+  size_t req,
+  vcache_unit *cache, mem_vpstruct_ptr *base, int order,
+  void **seg_ptr, size_t *seg_size, size_t *indices, size_t *eindices
+) {
+  if(order) // PML4E, PDPTE, PDE
+  {
+    size_t *pidx = indices + order;
+    size_t *peidx = eindices + order;
+    int fentry = 1;
+    for(; *pidx <= *peidx && (fentry || *pidx % 512); ++*pidx)
+    {
+      fentry = 0;
+      mem_vpstruct_ptr *centry = base + *pidx;
+      if(!centry->present)
+      {
+        if(!*seg_ptr)
+          *seg_ptr =
+            ptr_make_canonical((void *) (indices[order] * ORDER_PS(order)));
+        *seg_size += ORDER_PS(order);
+        if(*seg_size >= req)
+          return;
+      }
+      else
+      {
+        vcache_remap(cache[order-1], SS_PADR(centry));
+        recursive_find_vseg(
+          req,
+          cache, cache[order].ptr, order - 1,
+          seg_ptr, seg_size, indices, eindices
+        );
+        if(*seg_size >= req)
+          return;
+      }
+    }
+  }
+  else // PTE
+  {
+    mem_pte *cpte = (mem_pte *) base + indices[0];
+    if(!cpte->present)
+    {
+      if(!*seg_size)
+        *seg_ptr =
+          ptr_make_canonical((void *) (indices[0] * MEM_PS));
+      *seg_size += MEM_PS;
+      if(*seg_size >= req)
+        return;
+    }
+    else // This PTE is a disappointment
+    {
+      *seg_ptr = 0;
+      *seg_size = 0;
+    }
+  }
+}
+
+void *mem_find_vsegment(size_t size, void *heap_start, size_t heap_size)
+{
+  size = ALIGN_UP(size, MEM_PS);
+  heap_size = ALIGN_DN(heap_size, MEM_PS);
+
+  if(!size || !heap_size)
+    return 0;
+
+  vcache_unit cache[3];
+  for(size_t i = 0; i < 3; ++i)
+  {
+    cache[i] = vcache_map(0);
+
+    if(cache[i].error)
+    {
+      for(size_t j = 0; j < i; ++j)
+        vcache_umap(cache[j], 0);
+      return 0;
+    }
+  }
+
+  void *heap_end = heap_start + heap_size - 1;
+
+  size_t indices[ORDER_COUNT];
+  size_t eindices[ORDER_COUNT];
+
+  for(int order = MAX_ORDER; order >= 0; --order)
+  {
+    if(order != MAX_ORDER)
+    {
+      indices[order] = 512 * indices[order + 1] + ENTRY_IDX(order, heap_start);
+      eindices[order] = 512 * eindices[order + 1] + ENTRY_IDX(order, heap_end);
+    }
+    else
+    {
+      indices[MAX_ORDER] = ENTRY_IDX(MAX_ORDER, heap_start);
+      eindices[MAX_ORDER] = ENTRY_IDX(MAX_ORDER, heap_end);
+    }
+  }
+
+  void *seg_ptr = 0;
+  size_t seg_size = 0;
+
+  recursive_find_vseg(
+    size,
+    cache, i_pmlmax, MAX_ORDER,
+    &seg_ptr, &seg_size, indices, eindices
+  );
+
+  for(size_t i = 0; i < 3; ++i)
+    vcache_umap(cache[i], 0);
+
+  return seg_ptr;
 }

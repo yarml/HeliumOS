@@ -10,5 +10,5 @@ module_init:
   mov rax, 42
   ret
 
-section .rodata:
+section .rodata
 test_msg: db "Hello kernel module!", 0x0A, 0x00

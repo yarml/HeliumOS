@@ -5,7 +5,7 @@
 
 noreturn  void error_general(char *prefix, char *details)
 {
-  fprintf(stderr, "[%s] %s\n", prefix, details);
+  fprintf(stddbg, "[%s] %s\n", prefix, details);
   stop();
 }
 

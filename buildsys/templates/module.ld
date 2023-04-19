@@ -29,39 +29,20 @@ SECTIONS
     BYTE(0x00)
   } :text :interp
 
-
   .text : {
-
     <text-ksym>
-
     . = ALIGN(16);
     *(.text .text.*)
   } :text
 
   .rodata : {
     <rodata-ksym>
-
     . = ALIGN(16);
     *(.rodata .rodata.*)
   } :text
 
   .rela.dyn : {
     *(.rela.*)
-  } :text
-
-  .rela.plt : {
-    *(.rela.plt)
-    *(.rela.iplt)
-  } :text
-
-  .plt : {
-    *(.plt) *(.iplt)
-  } :text
-  .plt.got : {
-    *(.plt.got)
-  } :text
-  .plt.sec : {
-    *(.plt.sec)
   } :text
 
   .dynamic : {

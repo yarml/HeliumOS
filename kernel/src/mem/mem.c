@@ -23,10 +23,10 @@ mem_pml4e *i_pmlmax = 0;
 mem_pml4e *i_ppmlmax = 0;
 
 size_t i_order_ps[ORDER_COUNT] = {
-  [0] = MEM_PS,
-  [1] = 512 * MEM_PS,
-  [2] = 512*512 * MEM_PS,
-  [3] = 512*512*512 * MEM_PS
+  [0] = (size_t) MEM_PS,
+  [1] = (size_t) 512 * MEM_PS,
+  [2] = (size_t) 512*512 * MEM_PS,
+  [3] = (size_t) 512*512*512 * MEM_PS
 };
 
 static gdt_entry kernel_gdt[3]; // 3 GDT entries, one for the NULL entry
@@ -150,4 +150,12 @@ void mem_init()
   as_rlcr3();
 
   prtrace_end("mem_init", 0, 0);
+}
+
+void *ptr_make_canonical(void *p)
+{
+  uintptr_t up = (uintptr_t) p;
+  if(0x0000800000000000 <= up && up < 0xFFFF000000000000)
+    return(void *) up + 0xFFFF000000000000;
+  return (void *) up;
 }

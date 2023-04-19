@@ -60,6 +60,12 @@ void mem_ppfree(void *pheader, mem_pallocation alloc);
 errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags);
 errno_t mem_vumap(void *vadr, size_t size);
 
+/*
+  Find a consecutive segment of the specified size in virtual memory
+  inside the location specified by heap_start -> +heap_size
+*/
+void *mem_find_vsegment(size_t size, void *heap_start, size_t heap_size);
+
 // Kernel virtual space
 #define KVMSPACE ((void *)(0xFFFF800000000000)) // not to be mistaken with
                                                 // linux's kvm, this is
@@ -80,4 +86,8 @@ errno_t mem_vumap(void *vadr, size_t size);
 #define MAPF_P1G (1<<5) /* Map using 1 Gib page entries */
 
 #define MAPF_G   (1<<6) /* Global page */
+
+// Pointer manipulation
+void *ptr_make_canonical(void *p);
+
 #endif

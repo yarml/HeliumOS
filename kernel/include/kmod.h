@@ -1,0 +1,18 @@
+#ifndef HELIUM_KMOD_H
+#define HELIUM_KMOD_H
+
+#define KMOD_NAMELEN (256)
+
+typedef struct KMOD kmod;
+struct KMOD
+{
+  char name[KMOD_NAMELEN];
+};
+
+#define KMOD_HEAP ((void *) 0xFFFFFFFF80000000)
+#define KMOD_HEAP_SIZE ((size_t) 0x78000000)
+
+kmod *kmod_load(void *kmodf);
+void kmod_uload(kmod *mod);
+
+#endif

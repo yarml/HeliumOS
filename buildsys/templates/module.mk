@@ -11,7 +11,7 @@ $(MODULE_<mod-name>_BIN): $(MODULE_LINKSCRIPT) $(MODULE_<mod-name>_OBJ)
 	$(HOST_CC) -pie $(CFLAGS) $(MODULE_<mod-name>_OBJ) -o $@ -T $(MODULE_LINKSCRIPT)
 	$(HOST_OBJCOPY) --only-keep-debug $@ $(OUT_DIR)modules/<mod-name>.dbg
 	$(HOST_OBJCOPY) --strip-debug $@
-#	$(HOST_OBJCOPY) --strip-unneeded $@
+	$(HOST_OBJCOPY) --strip-unneeded $@
 
 $(OUT_DIR)modules/<mod-name>/%.c.o: $(MODULES_DIR)<mod-name>/%.c
 	$(MKDIR) -p $(dir $@)

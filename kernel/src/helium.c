@@ -1,27 +1,44 @@
 #include <stdio.h>
+#include <kmod.h>
+#include <term.h>
 
-static void setfg(int r, int g, int b)
-{
-  printf("\efg %u %u %u\e", r, g, b);
-}
+#include <fs/tar.h>
 
 static void prompt(char *user, char *pwd, int super)
 {
-  setfg(255, 255, 0);
+  term_setfg(255, 255, 0);
   fputs(user, stdout);
-  setfg(255, 0, 0);
+  term_setfg(255, 0, 0);
   printf(" [");
-  setfg(0, 255, 255);
+  term_setfg(0, 255, 255);
   fputs(pwd, stdout);
-  setfg(255, 0, 0);
+  term_setfg(255, 0, 0);
   printf("] ");
-  setfg(255, 255, 0);
+  term_setfg(255, 255, 0);
   printf(super ? "# " : "$ ");
-  setfg(255, 255, 255);
+  term_setfg(255, 255, 255);
 }
 
 int kmain()
 {
-  prompt("kernel", "initrd://sys", 1);
+  term_setfg(255, 128, 0);
+  printf(
+    "##   ## ####### ##      ## ##    ## ###    ###  ######  #######\n"
+    "##   ## ##      ##      ## ##    ## ####  #### ##    ## ##     \n"
+    "####### #####   ##      ## ##    ## ## #### ## ##    ## #######\n"
+    "##   ## ##      ##      ## ##    ## ##  ##  ## ##    ##      ##\n"
+    "##   ## ####### ####### ##  ######  ##      ##  ######  #######\n"
+    "\n"
+  );
+  prompt("kernel", "initrd://sys/", 1);
+  printf("\n");
+
+
+  fsnode *fkmod = fs_search("initrd://modules/test.mod");
+  void *kmodf = tarfs_direct_access(fkmod);
+  fs_close(fkmod);
+
+  kmod_load(kmodf);
+
   return 0;
 }

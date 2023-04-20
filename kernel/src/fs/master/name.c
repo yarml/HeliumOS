@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <fs.h>
 
-int fs_valid_sys_name(char *name)
+int fs_valid_sys_name(char const *name)
 {
   size_t name_len = strlen(name);
 
@@ -23,7 +23,7 @@ int fs_valid_sys_name(char *name)
   return 1;
 }
 
-int fs_valid_node_name(char *name)
+int fs_valid_node_name(char const *name)
 {
   size_t name_len = strlen(name);
 
@@ -71,7 +71,7 @@ int fs_valid_node_name(char *name)
   return 1;
 }
 
-int fs_valid_path(char *path)
+int fs_valid_path(char const *path)
 {
   char lpath[strlen(path)+1];
   strcpy(lpath, path);
@@ -124,7 +124,7 @@ int fs_valid_path(char *path)
 
 // Warning; Functions assumes opath is at least as big as path
 // Also assumes path is valid even if non-canonical
-void fs_makecanonical(char *path, char *opath)
+void fs_makecanonical(char const *path, char *opath)
 {
   size_t head = 0;
   size_t ohead = 0;
@@ -198,7 +198,7 @@ void fs_makecanonical(char *path, char *opath)
   opath[ohead] = 0;
 }
 
-void fs_basename(char *path, char *name)
+void fs_basename(char const *path, char *name)
 {
   char *names = 0;
   size_t n = 0;
@@ -218,7 +218,7 @@ void fs_basename(char *path, char *name)
 
 // Assumes path is valid
 // *nodes needs to be free()d later
-void fs_pathtok(char *path, char *fsname, char **nodes, size_t *len)
+void fs_pathtok(char const *path, char *fsname, char **nodes, size_t *len)
 {
   size_t path_len = strlen(path);
   char canon_path[path_len+1];

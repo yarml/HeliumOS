@@ -156,23 +156,23 @@ struct FSNODE
   };
 };
 
-filesys *fs_mount(char *name);
-filesys *fs_from_name(char *name);
+filesys *fs_mount(char const *name);
+filesys *fs_from_name(char const *name);
 void fs_umount(filesys *fs);
 
 // name functions
-int fs_valid_sys_name(char *name);
-int fs_valid_node_name(char *name);
-int fs_valid_path(char *path);
-void fs_makecanonical(char *path, char *opath);
-void fs_pathtok(char *path, char *fsname, char **nodes, size_t *len);
-void fs_basename(char *path, char *name);
+int fs_valid_sys_name(char const *name);
+int fs_valid_node_name(char const *name);
+int fs_valid_path(char const *path);
+void fs_makecanonical(char const *path, char *opath);
+void fs_pathtok(char const *path, char *fsname, char **nodes, size_t *len);
+void fs_basename(char const *path, char *name);
 
 // TODO: when processes are implemented, al fs functions should also
 // get a pointer to the process making the request
-fsnode *fs_open(char *fsname, char *names, size_t depth);
-fsnode *fs_search(char *path);
-fsnode *fs_dirof(char *path);
+fsnode *fs_open(char const *fsname, char const *names, size_t depth);
+fsnode *fs_search(char const *path);
+fsnode *fs_dirof(char const *path);
 
 void fs_close(fsnode *node);
 

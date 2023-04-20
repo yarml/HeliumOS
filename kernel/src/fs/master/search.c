@@ -7,7 +7,7 @@
 
 #include "internal_fs.h"
 
-filesys *fs_from_name(char *name)
+filesys *fs_from_name(char const *name)
 {
   filesys_llnode *cfsn = i_fs_head;
 
@@ -26,7 +26,7 @@ filesys *fs_from_name(char *name)
   return &cfsn->fs;
 }
 
-fsnode *fs_open(char *fsname, char *names, size_t depth)
+fsnode *fs_open(char const *fsname, char const *names, size_t depth)
 {
   filesys *fs;
   fsnode *target;
@@ -94,7 +94,7 @@ fsnode *fs_open(char *fsname, char *names, size_t depth)
   return target;
 }
 
-fsnode *fs_search(char *path)
+fsnode *fs_search(char const *path)
 {
   char fsname[FS_NAMELEN];
   char *names = 0;
@@ -109,7 +109,7 @@ fsnode *fs_search(char *path)
   return target;
 }
 
-fsnode *fs_dirof(char *path)
+fsnode *fs_dirof(char const *path)
 {
   char fsname[FS_NAMELEN];
   char *names = 0;

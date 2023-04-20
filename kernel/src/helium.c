@@ -33,12 +33,8 @@ int kmain()
   prompt("kernel", "initrd://sys/", 1);
   printf("\n");
 
-
-  fsnode *fkmod = fs_search("initrd://modules/test.mod");
-  void *kmodf = tarfs_direct_access(fkmod);
-  fs_close(fkmod);
-
-  kmod_load(kmodf);
+  kmod_loadf("initrd://modules/test1.mod");
+  kmod_loadf("initrd://modules/test2.mod");
 
   return 0;
 }

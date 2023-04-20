@@ -12,7 +12,8 @@ struct KMOD
 #define KMOD_HEAP ((void *) 0xFFFFFFFF80000000)
 #define KMOD_HEAP_SIZE ((size_t) 0x78000000)
 
-kmod *kmod_load(void *kmodf);
+kmod *kmod_loadf(char const *path);
+kmod *kmod_loadb(void *kmodf);
 void kmod_uload(kmod *mod);
 
 #endif

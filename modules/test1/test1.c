@@ -2,6 +2,6 @@
 
 int module_init()
 {
-  printd("Hello, World from kernel module!\n");
+  printf("Test Module 1\n");
   return 42;
 }

@@ -29,10 +29,9 @@ def main():
       mod_en = m.group(2)
       match mod_en:
         case 'M':
-          print(f'Including module: \'{mod_name}\'')
           modules.append(mod_name)
         case 'U':
-          print(f'Skipping module: \'{mod_name}\'')
+          pass
   for mod in modules:
     with open(f'{BUILD_DIR}buildsys/{mod}.mk', 'w') as mmk:
       mmk.write(template.replace('<mod-name>', mod))

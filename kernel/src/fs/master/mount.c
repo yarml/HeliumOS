@@ -7,7 +7,7 @@
 
 filesys_llnode *i_fs_head;
 
-filesys *fs_mount(char *name)
+filesys *fs_mount(char const *name)
 {
   if(!fs_valid_sys_name(name))
   {

@@ -1,5 +1,24 @@
 #include <elf.h>
 
+char const *elf_etstr(uint16_t type)
+{
+  switch(type)
+  {
+    case ET_NONE:
+      return "ET_NONE";
+    case ET_REL:
+      return "ET_REL";
+    case ET_EXEC:
+      return "ET_EXEC";
+    case ET_DYN:
+      return "ET_DYN";
+    case ET_CORE:
+      return "ET_CORE";
+    default:
+      return "ET_INVALID";
+  }
+}
+
 char const *elf_ptstr(uint32_t type)
 {
   switch(type)
@@ -21,7 +40,7 @@ char const *elf_ptstr(uint32_t type)
     case PT_TLS:
       return "PT_TLS";
     default:
-      return "Unknown";
+      return "PT_INVALID";
   }
 }
 
@@ -148,7 +167,7 @@ char const *elf_dtstr(uint64_t tag)
     case DT_FILTER:
       return "DT_FILTER";
     default:
-      return "Unknown";
+      return "DT_INVALID";
   }
 }
 
@@ -199,6 +218,6 @@ char const *elf_rtstr(uint32_t type)
     case R_AMD64_SIZE64:
       return "R_AMD64_SIZE64";
     default:
-      return "Unknown";
+      return "R_AMD64_INVALID";
   }
 }

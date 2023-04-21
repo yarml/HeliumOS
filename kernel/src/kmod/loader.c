@@ -45,6 +45,15 @@ kmod *kmod_loadb(void *kmodf)
 
   elf64_header *eh = kmodf;
 
+  if(eh->type != ET_DYN)
+  {
+    printd(
+      "Cannot load ELF file with type %s as a kernel module.\n",
+      elf_etstr(eh->type)
+    );
+    return 0;
+  }
+
   size_t entrypoint = ((elf64_header *) kmodf)->entrypoint;
 
   printd("Entry point: %p\n", entrypoint);
@@ -92,7 +101,7 @@ kmod *kmod_loadb(void *kmodf)
         switch(dyns[j].tag)
         {
           case DT_RELA:
-            relaoff = dyns[j].ptr - 0xffffffff80000000;
+            relaoff = dyns[j].ptr;
             break;
           case DT_RELASZ:
             relasz = dyns[j].val;
@@ -101,13 +110,13 @@ kmod *kmod_loadb(void *kmodf)
             relaent = dyns[j].val;
             break;
           case DT_SYMTAB:
-            symtab_off = dyns[j].ptr - 0xffffffff80000000;
+            symtab_off = dyns[j].ptr;
             break;
           case DT_SYMENT:
             symtab_ent = dyns[j].val;
             break;
           case DT_STRTAB:
-            strtab = kmodf + dyns[j].ptr - 0xffffffff80000000;
+            strtab = kmodf + dyns[j].ptr;
             break;
         }
       }
@@ -134,14 +143,14 @@ kmod *kmod_loadb(void *kmodf)
       toload += ALIGN_UP(ph->mem_size, MEM_PS);
     }
   }
-  base = mem_alloc_vblock(
+  mem_vseg seg = mem_alloc_vblock(
     toload,
     MAPF_R | MAPF_W | MAPF_X,
     KMOD_HEAP, KMOD_HEAP_SIZE
   );
-  if(!base)
+  if(seg.error)
     error_out_of_memory("Could not allocate memory to load kernel module\n");
-
+  base = seg.ptr;
   tpd("Allocated %lz of memory for kernel module at %p\n", toload, base);
 
   for(size_t i = 0; i < eh->pht_len; ++i)
@@ -150,8 +159,8 @@ kmod *kmod_loadb(void *kmodf)
 
     if(ph->type == PT_LOAD)
     {
-      memcpy(base+(uintptr_t)ph->vadr - 0xffffffff80000000, kmodf+ph->offset, ph->file_size);
-      memset(base+(uintptr_t)ph->vadr - 0xffffffff80000000 + ph->file_size, 0, ph->mem_size - ph->file_size);
+      memcpy(base+(uintptr_t)ph->vadr, kmodf+ph->offset, ph->file_size);
+      memset(base+(uintptr_t)ph->vadr + ph->file_size, 0, ph->mem_size - ph->file_size);
     }
   }
 
@@ -174,8 +183,8 @@ kmod *kmod_loadb(void *kmodf)
       switch(ELF64_R_TYPE(rela->info))
       {
         case R_AMD64_RELATIVE:
-          uint64_t *target = base + rela->offset - 0xffffffff80000000;
-          *target = (uintptr_t) base + rela->addend - 0xffffffff80000000;
+          uint64_t *target = base + rela->offset;
+          *target = (uintptr_t) base + rela->addend;
           break;
         case R_AMD64_NONE:
           break;
@@ -185,7 +194,7 @@ kmod *kmod_loadb(void *kmodf)
     }
   }
 
-  int (*mod_init)() = base + entrypoint - 0xffffffff80000000;
+  int (*mod_init)() = base + entrypoint;
 
   tpd("Calling mod_init: %p.\n", mod_init);
   int ret = mod_init();

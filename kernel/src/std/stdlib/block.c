@@ -14,10 +14,12 @@ block_header *i_stdlib_alloc_block(size_t size)
   // slightly more for the block header itself
   size += sizeof(block_header);
 
-  void *vptr = mem_alloc_vblock(size, MAPF_R | MAPF_W, KHEAP, KHEAP_SIZE);
+  mem_vseg seg = mem_alloc_vblock(size, MAPF_R | MAPF_W, KHEAP, KHEAP_SIZE);
 
-  if(!vptr)
+  if(seg.error)
     return 0;
+
+  void *vptr = seg.ptr;
 
   block_header *header = vptr;
   memset(header, 0, sizeof(*header));

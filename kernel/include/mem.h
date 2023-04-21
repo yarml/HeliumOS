@@ -60,16 +60,28 @@ void mem_ppfree(void *pheader, mem_pallocation alloc);
 errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags);
 errno_t mem_vumap(void *vadr, size_t size);
 
+#define MEM_VSEG_ERROR_INVALID   (-1)
+#define MEM_VSEG_ERROR_NMEM      (-2)
+#define MEM_VSEG_ERROR_NOT_FOUND (-3)
+
+typedef struct MEM_VSEG mem_vseg;
+struct MEM_VSEG
+{
+  void *ptr;
+  size_t size;
+  errno_t error;
+};
+
 /*
   Find a consecutive segment of the specified size in virtual memory
   inside the location specified by heap_start -> +heap_size
 */
-void *mem_find_vsegment(size_t size, void *heap_start, size_t heap_size);
+mem_vseg mem_find_vsegment(size_t size, void *heap_start, size_t heap_size);
 
 /*
   Allocates a block of at least the requested size withing the specified heap
 */
-void *mem_alloc_vblock(
+mem_vseg mem_alloc_vblock(
   size_t size,
   int flags,
   void *heap_start, size_t heap_size

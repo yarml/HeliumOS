@@ -283,13 +283,13 @@ static void recursive_find_vseg(
   }
 }
 
-void *mem_find_vsegment(size_t size, void *heap_start, size_t heap_size)
+mem_vseg mem_find_vsegment(size_t size, void *heap_start, size_t heap_size)
 {
   size = ALIGN_UP(size, MEM_PS);
   heap_size = ALIGN_DN(heap_size, MEM_PS);
 
   if(!size || !heap_size)
-    return 0;
+    return (mem_vseg) { 0, 0, MEM_VSEG_ERROR_INVALID };
 
   vcache_unit cache[3];
   for(size_t i = 0; i < 3; ++i)
@@ -300,7 +300,7 @@ void *mem_find_vsegment(size_t size, void *heap_start, size_t heap_size)
     {
       for(size_t j = 0; j < i; ++j)
         vcache_umap(cache[j], 0);
-      return 0;
+      return (mem_vseg) { 0, 0, MEM_VSEG_ERROR_NMEM };
     }
   }
 
@@ -335,20 +335,23 @@ void *mem_find_vsegment(size_t size, void *heap_start, size_t heap_size)
   for(size_t i = 0; i < 3; ++i)
     vcache_umap(cache[i], 0);
 
-  return seg_ptr;
+  if(seg_size < size)
+    return (mem_vseg) { 0, 0, MEM_VSEG_ERROR_NOT_FOUND };
+
+  return (mem_vseg) { seg_ptr, seg_size, 0 };
 }
 
-void *mem_alloc_vblock(
+mem_vseg mem_alloc_vblock(
   size_t size,
   int flags,
   void *heap_start, size_t heap_size
 ) {
   size = ALIGN_UP(size, MEM_PS);
 
-  void *vptr = mem_find_vsegment(size, heap_start, heap_size);
+  mem_vseg seg = mem_find_vsegment(size, heap_start, heap_size);
 
-  if(!vptr)
-    return 0;
+  if(seg.error)
+    return seg;
 
   size_t allocated = 0;
   while(allocated < size)
@@ -372,9 +375,9 @@ void *mem_alloc_vblock(
     }
 
     // Map the newly allocated physical pages to their place in the heap
-    mem_vmap(vptr + allocated, alloc.padr, alloc.size, flags);
+    mem_vmap(seg.ptr + allocated, alloc.padr, alloc.size, flags);
     allocated += alloc.size;
   }
 
-  return vptr;
+  return seg;
 }

@@ -1,0 +1,65 @@
+
+/* Apparently, putting all symbols here is what works */
+<abs-ksym>
+<unk-ksym>
+
+ENTRY(module_init)
+
+PHDRS
+{
+  headers PT_PHDR PHDRS;
+  interp PT_INTERP;
+  text PT_LOAD FILEHDR PHDRS;
+  data PT_LOAD;
+  dyn PT_DYNAMIC;
+}
+
+SECTIONS
+{
+  . = SIZEOF_HEADERS;
+
+  .interp : {
+    /* Makes interpreter equal to 'kmod' */
+    BYTE(0x6B)
+    BYTE(0x6D)
+    BYTE(0x6F)
+    BYTE(0x64)
+    BYTE(0x00)
+  } :text :interp
+
+  .text : {
+    <text-ksym>
+    *(.text .text.*)
+  } :text
+
+  .rodata : {
+    <rodata-ksym>
+    . = ALIGN(16);
+    *(.rodata .rodata.*)
+  } :text
+
+  .rela.dyn : {
+    *(.rela.text .rela.data .rela.*)
+  } :text
+
+  .dynamic : {
+    *(.dynamic)
+  } :text :dyn
+
+  . = ALIGN(4K);
+
+  .data : {
+    <data-ksym>
+    *(.data .data.*)
+  } :data
+
+  .bss (NOLOAD) : {
+    <bss-ksym>
+    <com-ksym>
+    . = ALIGN(16);
+    *(.bss .bss.*)
+    *(COMMON)
+  } :data
+
+  /DISCARD/ : { *(.eh_frame) *(.comment) *(.interp) }
+}

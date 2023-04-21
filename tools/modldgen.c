@@ -186,7 +186,7 @@ int main(int argc, char **argv)
       else
         of = unkld;
 
-      fprintf(of, "PROVIDE(%s = ABSOLUTE(%#0lx));\n", name, val);
+      fprintf(of, "PROVIDE(%s = %#0lx);\n", name, val);
     }
   }
 }

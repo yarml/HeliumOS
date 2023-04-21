@@ -95,6 +95,7 @@ struct ELF64_DYN
   };
 };
 
+char const *elf_etstr(uint16_t type);
 char const *elf_ptstr(uint32_t type);
 char const *elf_dtstr(uint64_t tag);
 char const *elf_rtstr(uint32_t type);
@@ -102,6 +103,15 @@ char const *elf_rtstr(uint32_t type);
 // The following macros were copied from
 // "Oracle Linker documentation Chapter 12 & Chaper 13"
 // Check resource section in README
+
+// ELF type
+#define ET_NONE   (0)
+#define ET_REL    (1)
+#define ET_EXEC   (2)
+#define ET_DYN    (3)
+#define ET_CORE   (4)
+#define ET_LOPROC (0xff00)
+#define ET_HIPROC (0xffff)
 
 // Program header types
 #define PT_NULL    (0)

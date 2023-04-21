@@ -6,20 +6,24 @@ MODULE_<mod-name>_OBJ := $(patsubst $(MODULES_DIR)%,$(OUT_DIR)modules/%.o,$(MODU
 
 MODULE_<mod-name>_BIN := $(INITRD_SYSROOT)modules/<mod-name>.mod
 
+MODULE_<mod-name>_ASFLAGS := -felf64
+MODULE_<mod-name>_CFLAGS := -mno-red-zone -Wall -ffreestanding -fno-stack-protector \
+		  -nostdlib -Werror -fno-asynchronous-unwind-tables -fpie
+
 $(MODULE_<mod-name>_BIN): $(MODULE_LINKSCRIPT) $(MODULE_<mod-name>_OBJ)
 	$(MKDIR) -p $(dir $@)
-	$(HOST_CC) -pie $(CFLAGS) $(MODULE_<mod-name>_OBJ) -o $@ -T $(MODULE_LINKSCRIPT)
+	$(HOST_CC) -pie $(MODULE_<mod-name>_CFLAGS) $(MODULE_<mod-name>_OBJ) -o $@ -T $(MODULE_LINKSCRIPT)
 	$(HOST_OBJCOPY) --only-keep-debug $@ $(OUT_DIR)modules/<mod-name>.dbg
 	$(HOST_OBJCOPY) --strip-debug $@
 	$(HOST_OBJCOPY) --strip-unneeded $@
 
 $(OUT_DIR)modules/<mod-name>/%.c.o: $(MODULES_DIR)<mod-name>/%.c
 	$(MKDIR) -p $(dir $@)
-	$(HOST_CC) $(CFLAGS) $(INC_FLAGS) -o $@ -c $^
+	$(HOST_CC) $(MODULE_<mod-name>_CFLAGS) $(INC_FLAGS) -o $@ -c $^
 
 $(OUT_DIR)modules/<mod-name>/%.asm.o: $(MODULES_DIR)<mod-name>/%.asm
 	$(MKDIR) -p $(dir $@)
-	$(HOST_AS) $(ASFLAGS) $(INC_FLAGS) -o $@ $^
+	$(HOST_AS) $(MODULE_<mod-name>_ASFLAGS) $(INC_FLAGS) -o $@ $^
 
 MODULES_ALL += $(MODULE_<mod-name>_BIN)
 

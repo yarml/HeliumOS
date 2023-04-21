@@ -1,10 +1,5 @@
-/* Apparently, putting all symbols here is what works */
-<text-ksym>
-<data-ksym>
 <abs-ksym>
 <unk-ksym>
-<bss-ksym>
-<com-ksym>
 
 ENTRY(module_init)
 
@@ -19,7 +14,7 @@ PHDRS
 
 SECTIONS
 {
-  . = 0xffffffff80000000 + SIZEOF_HEADERS;
+  . = SIZEOF_HEADERS;
 
   .interp : {
     /* Makes interpreter equal to 'kmod' */
@@ -31,6 +26,7 @@ SECTIONS
   } :text :interp
 
   .text : {
+    <text-ksym>
     *(.text .text.*)
   } :text
 
@@ -51,11 +47,14 @@ SECTIONS
   . = ALIGN(4K);
 
   .data : {
+    <data-ksym>
     *(.data .data.*)
   } :data
 
   .bss (NOLOAD) : {
     . = ALIGN(16);
+    <bss-ksym>
+    <com-ksym>
     *(.bss .bss.*)
     *(COMMON)
   } :data

@@ -221,3 +221,67 @@ char const *elf_rtstr(uint32_t type)
       return "R_AMD64_INVALID";
   }
 }
+
+char const *elf_shnstr(uint16_t idx)
+{
+  switch(idx)
+  {
+    case SHN_UNDEF:
+      return "SHN_UNDEF";
+    case SHN_AMD64_LCOMMON:
+      return "SHN_AMD64_LCOMMON";
+    case SHN_ABS:
+      return "SHN_ABS";
+    case SHN_COMMON:
+      return "SHN_COMMON";
+    case SHN_XINDEX:
+      return "SHN_XINDEX";
+    default:
+      return 0;
+  }
+}
+
+char const *elf_shtstr(uint32_t type)
+{
+  switch(type)
+  {
+    case SHT_NULL:
+      return "SHT_NULL";
+    case SHT_PROGBITS:
+      return "SHT_PROGBITS";
+    case SHT_SYMTAB:
+      return "SHT_SYMTAB";
+    case SHT_STRTAB:
+      return "SHT_STRTAB";
+    case SHT_RELA:
+      return "SHT_RELA";
+    case SHT_HASH:
+      return "SHT_HASH";
+    case SHT_DYNAMIC:
+      return "SHT_DYNAMIC";
+    case SHT_NOTE:
+      return "SHT_NOTE";
+    case SHT_NOBITS:
+      return "SHT_NOBITS";
+    case SHT_REL:
+      return "SHT_REL";
+    case SHT_SHLIB:
+      return "SHT_SHLIB";
+    case SHT_DYNSYM:
+      return "SHT_DYNSYM";
+    case SHT_INIT_ARRAY:
+      return "SHT_INIT_ARRAY";
+    case SHT_FINI_ARRAY:
+      return "SHT_FINI_ARRAY";
+    case SHT_PREINIT_ARRAY:
+      return "SHT_PREINIT_ARRAY";
+    case SHT_GROUP:
+      return "SHT_GROUP";
+    case SHT_SYMTAB_SHNDX:
+      return "SHT_SYMTAB_SHNDX";
+    case SHT_NUM:
+      return "SHT_NUM";
+    default:
+      return "SHT_INVALID";
+  }
+}

@@ -12,7 +12,7 @@ MODULE_<mod-name>_CFLAGS := -mno-red-zone -Wall -ffreestanding -fno-stack-protec
 
 $(MODULE_<mod-name>_BIN): $(MODULE_LINKSCRIPT) $(MODULE_<mod-name>_OBJ)
 	$(MKDIR) -p $(dir $@)
-	$(HOST_CC) -pie $(MODULE_<mod-name>_CFLAGS) $(MODULE_<mod-name>_OBJ) -o $@ -T $(MODULE_LINKSCRIPT)
+	$(HOST_LD) -r $(MODULE_<mod-name>_OBJ) -o $@
 	$(HOST_OBJCOPY) --only-keep-debug $@ $(OUT_DIR)modules/<mod-name>.dbg
 	$(HOST_OBJCOPY) --strip-debug $@
 	$(HOST_OBJCOPY) --strip-unneeded $@

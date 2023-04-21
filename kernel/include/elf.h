@@ -99,6 +99,8 @@ char const *elf_etstr(uint16_t type);
 char const *elf_ptstr(uint32_t type);
 char const *elf_dtstr(uint64_t tag);
 char const *elf_rtstr(uint32_t type);
+char const *elf_shtstr(uint32_t type);
+char const *elf_shnstr(uint16_t idx);
 
 // The following macros were copied from
 // "Oracle Linker documentation Chapter 12 & Chaper 13"

@@ -1,3 +1,4 @@
+#include <error.h>
 #include <stdio.h>
 #include <kmod.h>
 #include <term.h>
@@ -32,6 +33,9 @@ int kmain()
   );
   prompt("kernel", "initrd://sys/", 1);
   printf("\n");
+
+  if(ksym_loadf("initrd://sys/ksym"))
+    error_inv_state("Could not load kernel symbols.");
 
   kmod_loadf("initrd://modules/test1.mod");
   kmod_loadf("initrd://modules/test2.mod");

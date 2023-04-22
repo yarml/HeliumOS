@@ -48,7 +48,7 @@ void hash_table_destroy(hash_table *ht)
 
 void *hash_table_addkey(hash_table *ht, char const *key)
 {
-  hash_table_addkey_extra(ht, key, ht->default_elsize);
+  return hash_table_addkey_extra(ht, key, ht->default_elsize);
 }
 void *hash_table_addkey_extra(hash_table *ht, char const *key, size_t elsize)
 {
@@ -58,14 +58,15 @@ void *hash_table_addkey_extra(hash_table *ht, char const *key, size_t elsize)
   ht_node **bucket = ht->buckets + hash % ht->nbuckets;
   if(!newnode)
     return 0;
-  if((*bucket)->len >= ht->max_collisions)
+  if((*bucket) && (*bucket)->len >= ht->max_collisions)
   {
     hash_table_resize_buckets(ht, 2*ht->nbuckets);
-    bucket = ht->buckets[hash % ht->nbuckets];
+    bucket = ht->buckets + hash % ht->nbuckets;
   }
   newnode->next = *bucket;
-  newnode->len = (*bucket)->len + 1;
+  newnode->len = (*bucket) ? (*bucket)->len + 1 : 1;
   newnode->keyoff = sizeof(ht_node) + elsize;
+  strcpy((void *) newnode + newnode->keyoff, key);
   *bucket = newnode;
   return (void *) (newnode+1);
 }

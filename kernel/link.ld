@@ -2,7 +2,7 @@ mmio        = 0xfffffffff8000000;
 fb          = 0xfffffffffc000000;
 bootboot    = 0xffffffffffe00000;
 environment = 0xffffffffffe01000;
-initstack   = 1K                ;
+initstack   = 16K               ;
 
 ENTRY(_start);
 

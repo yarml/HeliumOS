@@ -4,18 +4,21 @@
 MODULE_<mod-name>_SRC := $(shell $(FIND) $(MODULES_DIR)<mod-name>/ -name "*.c" -o -name "*.asm")
 MODULE_<mod-name>_OBJ := $(patsubst $(MODULES_DIR)%,$(OUT_DIR)modules/%.o,$(MODULE_<mod-name>_SRC))
 
+MODULE_<mod-name>_CO := $(OUT_DIR)modules/<mod-name>/<mod-name>.co
 MODULE_<mod-name>_BIN := $(INITRD_SYSROOT)modules/<mod-name>.mod
 
 MODULE_<mod-name>_ASFLAGS := -felf64
 MODULE_<mod-name>_CFLAGS := -mno-red-zone -Wall -ffreestanding -fno-stack-protector \
 		  -nostdlib -Werror -fno-asynchronous-unwind-tables -fpie
 
-$(MODULE_<mod-name>_BIN): $(MODULE_LINKSCRIPT) $(MODULE_<mod-name>_OBJ)
+$(MODULE_<mod-name>_BIN): $(MODLD_BIN) $(MODULE_<mod-name>_OBJ)
 	$(MKDIR) -p $(dir $@)
-	$(HOST_LD) -r $(MODULE_<mod-name>_OBJ) -o $@
-	$(HOST_OBJCOPY) --only-keep-debug $@ $(OUT_DIR)modules/<mod-name>.dbg
-	$(HOST_OBJCOPY) --strip-debug $@
-	$(HOST_OBJCOPY) --strip-unneeded $@
+	$(MKDIR) -p $(dir $(MODULE_<mod-name>_CO))
+	$(HOST_LD) -r $(MODULE_<mod-name>_OBJ) -o $(MODULE_<mod-name>_CO)
+	$(HOST_OBJCOPY) --only-keep-debug $(MODULE_<mod-name>_CO) $(OUT_DIR)modules/<mod-name>/<mod-name>.dbg
+	$(HOST_OBJCOPY) --strip-debug $(MODULE_<mod-name>_CO)
+	$(HOST_OBJCOPY) --strip-unneeded $(MODULE_<mod-name>_CO)
+	$(MODLD_BIN) $(MODULE_<mod-name>_CO) $@
 
 $(OUT_DIR)modules/<mod-name>/%.c.o: $(MODULES_DIR)<mod-name>/%.c
 	$(MKDIR) -p $(dir $@)

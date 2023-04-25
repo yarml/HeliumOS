@@ -6,15 +6,15 @@ from itertools import chain
 
 collections = {
     'C source code': ('c', 'h'),
-    'Assembly source code': ('asm',),
+    'Assembly source code': ('asm', ),
     'Source code': ('c', 'h', 'asm'),
     'Build system': ('mk', 'py', 'sh', 'sed'),
-    'Configuration': ('ld', 'config', 'json', 'gdbinit'),
-    'Documentation': ('md',)
+    'Configuration': ('ld', 'cfg', 'config', 'json', 'gdbinit', 'gitignore'),
+    'Documentation': ('md', )
 }
 
-paths = ('kernel/', 'buildsys/', 'docs/')
-files = ['README.md', 'LICENSE.md','.gdbinit']
+paths = ('kernel/', 'buildsys/', 'docs/', 'tools/', 'modules/')
+files = ['README.md', 'LICENSE.md','.gdbinit', '.gitignore']
 
 def main():
   total_lines = 0

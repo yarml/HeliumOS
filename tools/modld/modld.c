@@ -115,6 +115,7 @@ int main(int argc, char **argv)
     fprintf(stderr, "'module_init' is defined in an unloadable section\n");
     exit(1);
   }
+  printf("mod_init = %zx\n", entrypoint_off);
 
   // Loop through all relocations and apply the ones that we have enough
   // information for
@@ -195,6 +196,14 @@ int main(int argc, char **argv)
           memcpy(patch, &val, 4);
         }
           break;
+        case R_X86_64_PLT32:
+        {
+          uint32_t off = symval - rela->r_offset + 5;
+          patch_size = 4;
+          memcpy(patch, &off, 4);
+        }
+          break;
+        break;
         default:
           fprintf(
             stderr,

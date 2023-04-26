@@ -154,7 +154,7 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
   eh.e_type = ET_DYN;
   eh.e_machine = EM_X86_64;
   eh.e_version = EV_CURRENT;
-  eh.e_entry = 0; // TODO: Put correct entry point
+  eh.e_entry = entrypoint_off;
   // Program header immediatly after ELF header
   eh.e_phoff = sizeof(eh);
   eh.e_shoff = 0; // No section header

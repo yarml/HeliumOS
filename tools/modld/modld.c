@@ -2,9 +2,9 @@
   HeliumOS kernel module linker:
 
     Kernel modules for HeliumOS need special treatment when linked
-  this too is to be used to generate a kernel module from a relocatable file
+  this tool is to be used to generate a kernel module from a relocatable file
     If the kernel module has multiple source files, they should be first
-  combined into one relocatable file using `ld -r` then passed
+  combined into one relocatable file using `ld -r` then passed to this tools
 */
 
 #include <stdlib.h>
@@ -44,76 +44,98 @@ int main(int argc, char **argv)
 
   fclose(frel);
 
+  mod_ctx *mctx = mod_ctx_create();
   Elf64_Ehdr *eh = verify_ehdr(frel_data, frel_size);
-
-  char const *strtab = getstrtab(eh);
 
   for(size_t i = 0; i < eh->e_shnum; ++i)
   {
     if(i == SHN_UNDEF)
       continue;
     Elf64_Shdr *sh = verify_shdr(eh, i);
+    size_t shsize = sh->sh_size;
+
     char const *shname = get_shstr(eh, sh->sh_name);
+    void const *shcontent = get_shcontent(eh, sh);
 
-    if(!strcmp(shname, ".comment")) /* Discard .comment */
+    if(!shsize)
       continue;
-    if(sh->sh_type == SHT_RELA)
+    if(sh_isalloc(sh)) // This should only be .text, .data, .rodata & .bss
     {
-      Elf64_Shdr *targetsh = getsh(eh, sh->sh_info);
-      Elf64_Shdr *symsh = getsh(eh, sh->sh_link);
-
-      if(!targetsh)
+      switch(sh->sh_type)
       {
-        fprintf(
-          stderr,
-          "Unspecified target for relocation section '%s'\n",
-          shname
-        );
-        exit(1);
-      }
-      if(!symsh)
-      {
-        fprintf(
-          stderr,
-          "Unspecified symbol tavle for relocation section '%s'\n",
-          shname
-        );
-      }
-
-      char const *targetname = get_shstr(eh, targetsh->sh_name);
-      char const *symshname = get_shstr(eh, symsh->sh_name);
-
-      printf(
-        "'%s': Relocations for section '%s': Symbols '%s'\n",
-        shname, targetname, symshname
-      );
-
-      size_t rela_count = sh->sh_size / sh->sh_entsize;
-      for(size_t r = 0; r < rela_count; ++r)
-      {
-        Elf64_Rela *rela = getrela(eh, sh, r);
-        Elf64_Sym *sym = getsym(eh, symsh, ELF64_R_SYM(rela->r_info));
-        Elf64_Shdr *symsh2 = getsh(eh, sym->st_shndx);
-        printf("\tRelocation #%zu:\n", r);
-        printf("\t\tOffset: %#016lx\n", rela->r_offset);
-        printf("\t\tInfo: %#016lx\n", rela->r_info);
-        printf("\t\t\tType:%#08lx\n", ELF64_R_TYPE(rela->r_info));
-        printf("\t\t\tSymbol %lu:\n", ELF64_R_SYM(rela->r_info));
-        printf("\t\t\t\tName: '%s'\n", strtab + sym->st_name);
-        printf("\t\t\t\tValue: %#016lx\n", sym->st_value);
-        printf("\t\t\t\tSize: %#016lx\n", sym->st_size);
-        printf("\t\t\t\tVisibility: %#02x\n", sym->st_other);
-        printf("\t\t\t\tInfo: %#016x\n", sym->st_info);
-        printf("\t\t\t\t\tType: %#01x\n", ELF64_ST_TYPE(sym->st_info));
-        printf("\t\t\t\t\tBind: %#016x\n", ELF64_ST_BIND(sym->st_info));
-        if(symsh2)
-          printf("\t\t\tSection: '%s'\n", get_shstr(eh, symsh2->sh_name));
-        else
-          printf("\t\t\tUndefined symbol\n");
+        case SHT_PROGBITS:
+          mod_add_alloc_section(
+            mctx, shname,
+            shcontent, sh->sh_size,
+            sh->sh_flags, sh->sh_addralign
+          );
+          break;
+        case SHT_NOBITS:
+          mod_add_alloc_nobits(
+            mctx, shname,
+            sh->sh_size, sh->sh_flags,
+            sh->sh_addralign
+          );
+          break;
+        default:
+          fprintf(
+            stderr,
+            "Unsupported allocatable section type %08x for '%s'",
+            sh->sh_type, shname
+          );
+          exit(1);
       }
     }
   }
 
+  // Find entrypoint image offset
+  size_t entrypoint_off = 0;
+  Elf64_Shdr *symtab = getsymtab(eh);
+  size_t symcount = symtab->sh_size / symtab->sh_entsize;
+  char const *strtab = getstrtab(eh);
+  Elf64_Sym *modinit_sym = 0;
+  // First, find the symbol 'module_init'
+  for(size_t i = 0; i < symcount; ++i)
+  {
+    Elf64_Sym *sym = getsym(eh, symtab, i);
+    if(!sym)
+      continue;
+    char const *symname = strtab + sym->st_name;
+    if(!strcmp(symname, "module_init"))
+    {
+      if(ELF64_ST_TYPE(sym->st_info) != STT_FUNC)
+      {
+        fprintf(stderr, "Symbol 'module_init' is not a function\n");
+        exit(1);
+      }
+      modinit_sym = sym;
+      break;
+    }
+  }
+  if(!modinit_sym)
+  {
+    fprintf(stderr, "Could not find 'module_init' symbol\n");
+    exit(1);
+  }
+  // Now, find the memory offset of the section module_init is in
+  Elf64_Shdr *modinitsh = getsh(eh, modinit_sym->st_shndx);
+  if(!modinitsh)
+  {
+    fprintf(stderr, "'module_init' is not associated with a section\n");
+    exit(1);
+  }
+  char const *modinit_shname = get_shstr(eh, modinitsh->sh_name);
+  size_t modinit_off = mod_section_moff(mctx, modinit_shname);
+  if(modinit_off == SIZE_MAX)
+  {
+    fprintf(stderr, "'module_init' is defined in an unloadable section\n");
+    exit(1);
+  }
+  entrypoint_off = modinit_off + modinit_sym->st_value;
+
+  mod_genfile(mctx, entrypoint_off, fmod);
+
   free(frel_data);
   fclose(fmod);
+  mod_ctx_destroy(mctx);
 }

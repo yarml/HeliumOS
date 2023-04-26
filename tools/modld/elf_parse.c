@@ -133,11 +133,30 @@ char const *getstrtab(Elf64_Ehdr *eh)
     Elf64_Shdr *sh = getsh(eh, i);
     if(!sh)
       continue;
+    if(sh->sh_type != SHT_STRTAB)
+      continue;
     char const *shname = get_shstr(eh, sh->sh_name);
     if(!strcmp(shname, ".strtab"))
-      return (void *) eh + sh->sh_offset;
+      return get_shcontent(eh, sh);
   }
   fprintf(stderr, "Object file's string table not found.\n");
+  exit(1);
+}
+
+Elf64_Shdr *getsymtab(Elf64_Ehdr *eh)
+{
+  for(size_t i = 0; i < eh->e_shnum; ++i)
+  {
+    Elf64_Shdr *sh = getsh(eh, i);
+    if(!sh)
+      continue;
+    if(sh->sh_type != SHT_SYMTAB)
+      continue;
+    char const *shname = get_shstr(eh, sh->sh_name);
+    if(!strcmp(shname, ".symtab"))
+      return sh;
+  }
+  fprintf(stderr, "Object file's symbol table not found.\n");
   exit(1);
 }
 
@@ -162,6 +181,12 @@ char const *get_shstr(Elf64_Ehdr *eh, Elf64_Word name)
   shstrtab = (void *) eh + shstrtab_sh->sh_offset;
   return shstrtab + name;
 }
+void *get_shcontent(Elf64_Ehdr *eh, Elf64_Shdr *sh)
+{
+  if(sh->sh_offset)
+    return (void *) eh + sh->sh_offset;
+  return 0;
+}
 
 int section_whitelisted(char const *name)
 {
@@ -173,6 +198,11 @@ int section_whitelisted(char const *name)
         return 1;
   }
   return 0;
+}
+
+int sh_isalloc(Elf64_Shdr *sh)
+{
+  return sh->sh_flags & SHF_ALLOC;
 }
 
 Elf64_Shdr *verify_shdr(Elf64_Ehdr *eh, Elf64_Word ndx)

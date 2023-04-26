@@ -29,7 +29,9 @@ char const *get_shstr(Elf64_Ehdr *eh, Elf64_Word name);
 Elf64_Shdr *getsymtab(Elf64_Ehdr *eh);
 int section_whitelisted(char const *name);
 Elf64_Shdr *getsh(Elf64_Ehdr *eh, Elf64_Word ndx);
+char const *getshname(Elf64_Ehdr *eh, Elf64_Word ndx);
 Elf64_Sym *getsym(Elf64_Ehdr *eh, Elf64_Shdr *symsh, Elf64_Word ndx);
+Elf64_Sym *getsymn(Elf64_Ehdr *eh, char const *name);
 Elf64_Rela *getrela(Elf64_Ehdr *eh, Elf64_Shdr *relash, Elf64_Word ndx);
 void *get_shcontent(Elf64_Ehdr *eh, Elf64_Shdr *sh);
 int sh_isalloc(Elf64_Shdr *sh);
@@ -100,7 +102,10 @@ void mod_add_alloc_nobits(
   size_t size, size_t shflags, size_t shalign
 );
 
+void *mod_section_content(mod_ctx *ctx, char const *shname);
+
 size_t mod_section_moff(mod_ctx *ctx, char const *shname);
+size_t mod_symoff(mod_ctx *ctx, char const *shname, size_t symval);
 void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f);
 
 #endif

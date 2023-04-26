@@ -11,6 +11,12 @@ MODULE_<mod-name>_ASFLAGS := -felf64
 MODULE_<mod-name>_CFLAGS := -mno-red-zone -Wall -ffreestanding -fno-stack-protector \
 		  -nostdlib -Werror -fno-asynchronous-unwind-tables -fpie
 
+ifeq ($(M),DEBUG)
+MODULE_<mod-name>_CFLAGS += -DHELIUM_DEBUG -O0 -ggdb3
+else
+MODULE_<mod-name>_CFLAGS += -O3
+endif
+
 $(MODULE_<mod-name>_BIN): $(MODLD_BIN) $(MODULE_<mod-name>_OBJ)
 	$(MKDIR) -p $(dir $@)
 	$(MKDIR) -p $(dir $(MODULE_<mod-name>_CO))

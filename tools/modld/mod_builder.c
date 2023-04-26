@@ -115,6 +115,26 @@ size_t mod_section_moff(mod_ctx *ctx, char const *shname)
   return SIZE_MAX;
 }
 
+size_t mod_symoff(mod_ctx *ctx, char const *shname, size_t symval)
+{
+  size_t sec_off = mod_section_moff(ctx, shname);
+  if(sec_off == SIZE_MAX)
+    return SIZE_MAX;
+  return sec_off + symval;
+}
+
+void *mod_section_content(mod_ctx *ctx, char const *shname)
+{
+  mod_section *csec = ctx->alloc_sections;
+  while(csec)
+  {
+    if(!strcmp(csec->name, shname))
+      return csec->content;
+    csec = csec->next;
+  }
+  return 0;
+}
+
 void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
 {
   size_t const ph_num = 1; // Only one program header.

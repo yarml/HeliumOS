@@ -47,6 +47,8 @@ int main(int argc, char **argv)
   mod_ctx *mctx = mod_ctx_create();
   Elf64_Ehdr *eh = verify_ehdr(frel_data, frel_size);
 
+  // Verify all section headers are supported & add allocatable sections to
+  // the module context
   for(size_t i = 0; i < eh->e_shnum; ++i)
   {
     if(i == SHN_UNDEF)
@@ -59,79 +61,163 @@ int main(int argc, char **argv)
 
     if(!shsize)
       continue;
-    if(sh_isalloc(sh)) // This should only be .text, .data, .rodata & .bss
+    if(!sh_isalloc(sh)) // This should only be .text, .data, .rodata & .bss
+      continue;
+    switch(sh->sh_type)
     {
-      switch(sh->sh_type)
-      {
-        case SHT_PROGBITS:
-          mod_add_alloc_section(
-            mctx, shname,
-            shcontent, sh->sh_size,
-            sh->sh_flags, sh->sh_addralign
-          );
-          break;
-        case SHT_NOBITS:
-          mod_add_alloc_nobits(
-            mctx, shname,
-            sh->sh_size, sh->sh_flags,
-            sh->sh_addralign
-          );
-          break;
-        default:
-          fprintf(
-            stderr,
-            "Unsupported allocatable section type %08x for '%s'",
-            sh->sh_type, shname
-          );
-          exit(1);
-      }
+      case SHT_PROGBITS:
+        mod_add_alloc_section(
+          mctx, shname,
+          shcontent, sh->sh_size,
+          sh->sh_flags, sh->sh_addralign
+        );
+        break;
+      case SHT_NOBITS:
+        mod_add_alloc_nobits(
+          mctx, shname,
+          sh->sh_size, sh->sh_flags,
+          sh->sh_addralign
+        );
+        break;
+      default:
+        fprintf(
+          stderr,
+          "Unsupported allocatable section type %08x for '%s'",
+          sh->sh_type, shname
+        );
+        exit(1);
     }
   }
 
   // Find entrypoint image offset
   size_t entrypoint_off = 0;
-  Elf64_Shdr *symtab = getsymtab(eh);
-  size_t symcount = symtab->sh_size / symtab->sh_entsize;
-  char const *strtab = getstrtab(eh);
-  Elf64_Sym *modinit_sym = 0;
-  // First, find the symbol 'module_init'
-  for(size_t i = 0; i < symcount; ++i)
-  {
-    Elf64_Sym *sym = getsym(eh, symtab, i);
-    if(!sym)
-      continue;
-    char const *symname = strtab + sym->st_name;
-    if(!strcmp(symname, "module_init"))
-    {
-      if(ELF64_ST_TYPE(sym->st_info) != STT_FUNC)
-      {
-        fprintf(stderr, "Symbol 'module_init' is not a function\n");
-        exit(1);
-      }
-      modinit_sym = sym;
-      break;
-    }
-  }
+  Elf64_Sym *modinit_sym = getsymn(eh, "module_init");
   if(!modinit_sym)
   {
-    fprintf(stderr, "Could not find 'module_init' symbol\n");
+    fprintf(stderr, "Could not find symbol 'module_init'\n");
     exit(1);
   }
   // Now, find the memory offset of the section module_init is in
-  Elf64_Shdr *modinitsh = getsh(eh, modinit_sym->st_shndx);
-  if(!modinitsh)
+  char const *modinit_shname = getshname(eh, modinit_sym->st_shndx);
+  if(!modinit_shname)
   {
-    fprintf(stderr, "'module_init' is not associated with a section\n");
+    fprintf(stderr, "Could not find the section of 'module_init'\n");
     exit(1);
   }
-  char const *modinit_shname = get_shstr(eh, modinitsh->sh_name);
-  size_t modinit_off = mod_section_moff(mctx, modinit_shname);
-  if(modinit_off == SIZE_MAX)
+  if(modinit_sym->st_shndx >= SHN_LORESERVE)
+  {
+    fprintf(stderr, "Unsupported symbol type of 'module_init'\n");
+    exit(1);
+  }
+  entrypoint_off = mod_symoff(mctx, modinit_shname, modinit_sym->st_value);
+  if(entrypoint_off == SIZE_MAX)
   {
     fprintf(stderr, "'module_init' is defined in an unloadable section\n");
     exit(1);
   }
-  entrypoint_off = modinit_off + modinit_sym->st_value;
+
+  // Loop through all relocations and apply the ones that we have enough
+  // information for
+  for(size_t i = 0; i < eh->e_shnum; ++i)
+  {
+    if(i == SHN_UNDEF)
+      continue;
+    Elf64_Shdr *sh = getsh(eh, i);
+    size_t shsize = sh->sh_size;
+
+    if(!shsize)
+      continue;
+    if(sh->sh_type == SHT_REL)
+    {
+      fprintf(stderr, "Unsupported relocation type REL\n");
+      exit(1);
+    }
+    if(sh->sh_type != SHT_RELA)
+      continue;
+    // Elf64_Shdr *targetsh = getsh(eh, sh->sh_info);
+    char const *targetshname = getshname(eh, sh->sh_info);
+    Elf64_Shdr *rela_symtab = getsh(eh, sh->sh_link);
+    char const *strtab = getstrtab(eh);
+    size_t relacount = shsize / sh->sh_entsize;
+    for(size_t j = 0; j < relacount; ++j)
+    {
+      Elf64_Rela *rela = getrela(eh, sh, j);
+      Elf64_Sym *target_sym =
+        getsym(eh, rela_symtab, ELF64_R_SYM(rela->r_info));
+      printf(
+        "Relocation #%lu: name='%s' sym=%lu type=%lu addend=%lx off=%lx\n",
+        j, strtab + target_sym->st_name,
+        ELF64_R_SYM(rela->r_info), ELF64_R_TYPE(rela->r_info),
+        rela->r_addend, rela->r_offset
+      );
+      if(target_sym->st_shndx == SHN_UNDEF)
+      {
+        printf("\tNot enough info\n");
+        continue; // Not enough information to apply this relocation
+      }
+      size_t symval;
+      if(target_sym->st_shndx < SHN_LORESERVE)
+      {
+        char const *symshname = getshname(eh, target_sym->st_shndx);
+        symval = mod_symoff(mctx, symshname, target_sym->st_value);
+        if(symval == SIZE_MAX)
+        {
+          fprintf(
+            stderr,
+            "Could not determine value of symbol %s\n",
+            strtab + target_sym->st_name
+          );
+          exit(1);
+        }
+      }
+      else if(target_sym->st_shndx == SHN_ABS)
+        symval = target_sym->st_value;
+      else
+      {
+        fprintf(
+          stderr,
+          "Unsupported section index %x for symbol '%s'\n",
+          target_sym->st_shndx, strtab + target_sym->st_name
+        );
+        exit(1);
+      }
+
+      uint8_t patch[8];
+      int patch_size = 0;
+
+      printf("\tSymbol image offset: %zx\n", symval);
+      switch(ELF64_R_TYPE(rela->r_info))
+      {
+        case R_X86_64_PC32:
+        {
+          uint32_t val = symval + rela->r_addend - rela->r_offset;
+          patch_size = 4;
+          memcpy(patch, &val, 4);
+        }
+          break;
+        default:
+          fprintf(
+            stderr,
+            "Unsupported relocation type %lx\n",
+            ELF64_R_TYPE(rela->r_info)
+          );
+          exit(1);
+      }
+
+      void *shcontent = mod_section_content(mctx, targetshname);
+      if(!shcontent)
+      {
+        fprintf(
+          stderr,
+          "Relocation to unallocated section '%s'\n",
+          targetshname
+        );
+        exit(1);
+      }
+
+      memcpy(shcontent + rela->r_offset, patch, patch_size);
+    }
+  }
 
   mod_genfile(mctx, entrypoint_off, fmod);
 

@@ -235,8 +235,30 @@ Elf64_Sym *getsym(Elf64_Ehdr *eh, Elf64_Shdr *symsh, Elf64_Word ndx)
 {
   return (void *) eh + symsh->sh_offset + ndx * symsh->sh_entsize;
 }
-
+Elf64_Sym *getsymn(Elf64_Ehdr *eh, char const *name)
+{
+  Elf64_Shdr *symtab = getsymtab(eh);
+  size_t symcount = symtab->sh_size / symtab->sh_entsize;
+  char const *strtab = getstrtab(eh);
+  for(size_t i = 0; i < symcount; ++i)
+  {
+    Elf64_Sym *sym = getsym(eh, symtab, i);
+    if(!sym)
+      continue;
+    char const *symname = strtab + sym->st_name;
+    if(!strcmp(symname, "module_init"))
+      return sym;
+  }
+  return 0;
+}
 Elf64_Rela *getrela(Elf64_Ehdr *eh, Elf64_Shdr *relash, Elf64_Word ndx)
 {
   return (void *) eh + relash->sh_offset + ndx * relash->sh_entsize;
+}
+char const *getshname(Elf64_Ehdr *eh, Elf64_Word ndx)
+{
+  Elf64_Shdr *sh = getsh(eh, ndx);
+  if(!sh)
+    return 0;
+  return get_shstr(eh, sh->sh_name);
 }

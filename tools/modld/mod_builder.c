@@ -428,7 +428,7 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
     memset(&cmd, 0, sizeof(cmd));
     cmd.command = CM_JTE;
     cmd.jte.symoff = cjte->nameoff;
-    cmd.jte.patchoff = jt_moff + 5 * cjte->index;
+    cmd.jte.patchoff = jt_moff + 5 * cjte->index + 1;
 
     fseek(
       f,

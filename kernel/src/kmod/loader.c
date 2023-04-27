@@ -1,3 +1,4 @@
+#include <hashtable.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
@@ -7,6 +8,8 @@
 #include <elf.h>
 #include <mem.h>
 #include <fs.h>
+
+#include "internal_kmod.h"
 
 kmod *kmod_loadf(char const *path)
 {
@@ -64,6 +67,7 @@ kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN])
   mod->vseg = kmod_vseg;
 
   void *base = kmod_vseg.ptr;
+  char const *symtab = 0;
 
   for(size_t i = 0; i < cmd_count; ++i)
   {
@@ -75,17 +79,47 @@ kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN])
       case CM_MAP:
         tpd(
           "MAP foff=%p, moff=%p, size=%lu, flags=%lx\n",
-          cmd[i].foff, cmd[i].moff, cmd[i].size, cmd[i].flags
+          cmd[i].mem.foff,
+          cmd[i].mem.moff,
+          cmd[i].mem.size,
+          cmd[i].mem.flags
         );
-        memcpy(base + cmd[i].moff, kmodf + cmd[i].foff, cmd[i].size);
+        memcpy(
+          base + cmd[i].mem.moff,
+          kmodf + cmd[i].mem.foff,
+          cmd[i].mem.size
+        );
         break;
       case CM_ZMEM:
         tpd(
           "ZMEM moff=%p, size=%lu, flags=%lx\n",
-          cmd[i].moff, cmd[i].size, cmd[i].flags
+          cmd[i].mem.moff, cmd[i].mem.size, cmd[i].mem.flags
         );
-        memset(base + cmd[i].moff, 0, cmd[i].size);
+        memset(base + cmd[i].mem.moff, 0, cmd[i].mem.size);
         break;
+      case CM_LDSYM:
+        tpd("LDSYM foff=%p\n", cmd[i].mem.foff);
+        symtab = kmodf + cmd[i].mem.foff;
+        break;
+      case CM_JTE:
+        if(!symtab)
+          error_inv_state("Module contains JTE instruction before LDSYM");
+        if(!i_ksym_table)
+          error_inv_state(
+            "Module uses kernel symbols but "
+            "kernel symbols are not loaded"
+          );
+      {
+        char const *symname = symtab + cmd[i].jte.symoff;
+        tpd("JTE sym='%s' off=%p\n", symname, cmd[i].jte.patchoff);
+        void *patch_vadr = base + cmd[i].jte.patchoff;
+        uint64_t *symvalp = hash_table_search(i_ksym_table, symname);
+        if(!symvalp)
+          error_inv_state("Module uses unknown symbol");
+        uint64_t symval = *symvalp;
+        uint32_t patch = symval - (uintptr_t) base - cmd[i].jte.patchoff - 4;
+        memcpy(patch_vadr, &patch, 4);
+      }
     }
   }
   tpd("ENTRYPOINT moff=%p\n", eh->entrypoint);

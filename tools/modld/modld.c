@@ -218,7 +218,7 @@ int main(int argc, char **argv)
           break;
         case R_X86_64_PLT32:
         {
-          uint32_t off = symval - rela->r_offset + 5;
+          uint32_t off = symval - rela->r_offset - 4;
           patch_size = 4;
           memcpy(patch, &off, 4);
         }

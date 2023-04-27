@@ -153,7 +153,27 @@ int main(int argc, char **argv)
       );
       if(target_sym->st_shndx == SHN_UNDEF)
       {
-        printf("\tNot enough info\n");
+        printf("\tNot enough info. Exporting relocation to output file\n");
+        switch(ELF64_R_TYPE(rela->r_info))
+        {
+          case R_X86_64_PLT32:
+          {
+            mod_refjte(
+              mctx,
+              strtab + target_sym->st_name,
+              targetshname,
+              rela->r_offset
+            );
+          }
+            break;
+          default:
+            fprintf(
+              stderr,
+              "Unsupported undefined symbol relocation %lx\n",
+              ELF64_R_TYPE(rela->r_info)
+            );
+            exit(1);
+        }
         continue; // Not enough information to apply this relocation
       }
       size_t symval;

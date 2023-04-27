@@ -1,11 +1,20 @@
 #include <stdio.h>
-#include <utils.h>
 
-void do_print();
+int a = 3;
+
+int sum(char const *str)
+{
+  int s = 0;
+  while(*str)
+  {
+    s += *str;
+    ++str;
+  }
+  return s + a;
+}
 
 int module_init()
 {
-  printd("%c\n", g_units_sign[2]);
-  do_print();
-  return 34;
+  int s = sum("ccc");
+  return s;
 }

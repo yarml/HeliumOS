@@ -40,6 +40,8 @@ int sh_isalloc(Elf64_Shdr *sh);
 typedef struct MOD_CTX mod_ctx;
 typedef struct MOD_SECTION mod_section;
 typedef struct MOD_NOBITS_SECTION mod_nobits_section;
+typedef struct MOD_JTE mod_jte; // Jump table entries
+typedef struct MOD_JTREF_PATCH mod_jtref_patch;
 
 struct MOD_CTX
 {
@@ -47,6 +49,11 @@ struct MOD_CTX
   size_t sections_count; // Count of alloc and nobits sections
   mod_section *alloc_sections;
   mod_nobits_section *nobits_sections;
+  size_t jte_count;
+  size_t jte_refcount;
+  mod_jte *jt_entries;
+  char *symtab;
+  size_t symtab_size;
 };
 
 struct MOD_SECTION
@@ -72,23 +79,55 @@ struct MOD_NOBITS_SECTION
   mod_nobits_section *next;
 };
 
+struct MOD_JTE
+{
+  size_t nameoff;
+  size_t index;
+  size_t refcount;
+  mod_jtref_patch *refs;
+  mod_jte *next;
+};
+
+struct MOD_JTREF_PATCH
+{
+  mod_section *tsection;
+  size_t offset;
+};
+
 typedef struct ELF64_KMOD_LOADER_COMMAND elf64_kmod_loader_command;
 
 #define CM_UNDEF (0)
 #define CM_MAP   (1)
 #define CM_ZMEM  (2)
+#define CM_LDSYM (3)
+#define CM_JTE   (4)
+
 
 struct ELF64_KMOD_LOADER_COMMAND
 {
   uint64_t command;
-  uint64_t foff;
-  uint64_t moff;
-  uint64_t size;
-  uint64_t flags;
+  union
+  {
+    struct
+    {
+      uint64_t foff;
+      uint64_t moff;
+      uint64_t size;
+      uint64_t flags;
+    } mem;
+    struct
+    {
+      uint64_t symoff;
+      uint64_t patchoff;
+    } jte;
+  };
 };
 
 mod_ctx *mod_ctx_create();
 void mod_ctx_destroy(mod_ctx *ctx);
+
+size_t mod_addsym(mod_ctx *ctx, char const *sym);
+size_t mod_searchsym(mod_ctx *ctx, char const *sym);
 
 void mod_add_alloc_section(
   mod_ctx *ctx,
@@ -100,6 +139,14 @@ void mod_add_alloc_nobits(
   mod_ctx *ctx,
   char const *shname,
   size_t size, size_t shflags, size_t shalign
+);
+mod_section *mod_search_alloc_section(mod_ctx *ctx, char const *shname);
+mod_jte *mod_add_jte(mod_ctx *ctx, char const *symname);
+void mod_refjte(
+  mod_ctx *ctx,
+  char const *symname,
+  char const *shname,
+  size_t off
 );
 
 void *mod_section_content(mod_ctx *ctx, char const *shname);

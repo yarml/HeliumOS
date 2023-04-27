@@ -69,9 +69,11 @@ what I want to work on.
 * [X] Kernel heap
 * [X] Interrupts
 * [X] Filesystems
-* [X] initrd filesystem
-* [X] libc FILE
-* [ ] Kernel modules
+  * [X] initrd filesystem
+  * [X] Debug filesystem
+  * [X] Kernel terminal filesystem
+* [X] Kernel modules
+  * [ ] Make kernel terminal a module
 * [ ] Basic device drivers (Keyboard, Mouse, etc)
 * [ ] Power Management
 * [ ] System calls

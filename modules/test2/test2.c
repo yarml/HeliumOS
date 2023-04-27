@@ -16,5 +16,6 @@ int sum(char const *str)
 int module_init()
 {
   int s = sum("ccc");
-  return s;
+  printd("And this is test module 2!\n");
+  return s + a;
 }

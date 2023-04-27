@@ -39,6 +39,7 @@ int kmain()
 
   kmod_loadf("initrd://modules/test1.mod");
   kmod_loadf("initrd://modules/test2.mod");
+  kmod_loadf("initrd://modules/test3.mod");
 
   return 0;
 }

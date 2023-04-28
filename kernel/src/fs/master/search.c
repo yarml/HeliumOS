@@ -14,16 +14,12 @@ filesys *fs_from_name(char const *name)
   while(cfsn)
   {
     if(!strcmp(cfsn->fs.name, name))
-      break;
+      return &cfsn->fs;
     cfsn = cfsn->next;
   }
 
-  if(!cfsn)
-  {
-    errno = ENOFS;
-    return 0;
-  }
-  return &cfsn->fs;
+  errno = ENOFS;
+  return 0;
 }
 
 fsnode *fs_open(char const *fsname, char const *names, size_t depth)

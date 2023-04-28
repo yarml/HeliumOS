@@ -83,3 +83,20 @@ fsnode *fs_mklink(fsnode *parent, char *name, fsnode *target)
 
   return link;
 }
+
+fsnode *fs_nextnode(fsnode *dir, fsnode *current)
+{
+  // Implementation not finished, some filesystems need
+  // to first load some resource from a device and update their
+  // fs tree before reading from the fs tree
+  if(!fs_check_dcap(dir, FSCAP_DLIST))
+  {
+    errno = EOPNOTSUPP;
+    return 0;
+  }
+  if(!current)
+    return dir->dir.fchild;
+  if(current->nsib)
+    ++current->nsib->refcount;
+  return current->nsib;
+}

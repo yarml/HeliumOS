@@ -183,6 +183,8 @@ fsnode *fs_mkdir(fsnode *parent, char *name);
 fsnode *fs_mkfile(fsnode *parent, char *name);
 fsnode *fs_mklink(fsnode *parent, char *name, fsnode *target);
 
+fsnode *fs_nextnode(fsnode *dir, fsnode *current);
+
 int fs_check_fcap(fsnode *node, int cap);
 int fs_check_dcap(fsnode *dir, int cap);
 

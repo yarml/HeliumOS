@@ -11,17 +11,21 @@
 
 #include "internal_kmod.h"
 
-kmod *kmod_loadf(char const *path)
+kmod *kmod_loadp(char const *path)
 {
   fsnode *f = fs_search(path);
   if(!f)
     return 0;
+  kmod *mod = kmod_loadf(f);
+  fs_close(f);
+  return mod;
+}
+
+kmod *kmod_loadf(fsnode *f)
+{
   size_t fsize = fs_tellsize(f);
   if(!fsize)
-  {
-    fs_close(f);
     return 0;
-  }
   char buf[fsize];
   size_t read = 0;
   while(read < fsize)
@@ -29,15 +33,10 @@ kmod *kmod_loadf(char const *path)
     errno = 0;
     size_t cr = fs_read(f, read, buf + read, fsize - read);
     if(!cr && errno)
-    {
-      fs_close(f);
       return 0;
-    }
     read += cr;
   }
-  kmod *mod = kmod_loadb(buf, f->name);
-  fs_close(f);
-  return mod;
+  return kmod_loadb(buf, f->name);
 }
 
 kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN])

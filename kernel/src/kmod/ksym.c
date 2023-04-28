@@ -10,17 +10,21 @@
 
 hash_table *i_ksym_table = 0;
 
-int ksym_loadf(char const *path)
+int ksym_loadp(char const *path)
 {
   fsnode *f = fs_search(path);
   if(!f)
     return 1;
+  int status = ksym_loadf(f);
+  fs_close(f);
+  return status;
+}
+
+int ksym_loadf(fsnode *f)
+{
   size_t fsize = fs_tellsize(f);
   if(!fsize)
-  {
-    fs_close(f);
     return 1;
-  }
   char buf[fsize];
   size_t read = 0;
   while(read < fsize)
@@ -28,13 +32,9 @@ int ksym_loadf(char const *path)
     errno = 0;
     size_t cr = fs_read(f, read, buf + read, fsize - read);
     if(!cr && errno)
-    {
-      fs_close(f);
       return 1;
-    }
     read += cr;
   }
-  fs_close(f);
   return ksym_loadb(buf);
 }
 

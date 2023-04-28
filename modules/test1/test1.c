@@ -1,12 +1,12 @@
+#include <string.h>
 #include <stdio.h>
 
 int a;
 
 int sum(char const *str)
 {
-  return 3 + a;
+  return memsum(str, strlen(str));
 }
-
 
 int module_init()
 {

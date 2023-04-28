@@ -167,7 +167,7 @@ filesys *tar_mkimfs(char *fsname, void *membuf, size_t size)
   }
 
   // Set dir_cap to its real value
-  fs->dir_cap = FSCAP_USED;
+  fs->dir_cap = FSCAP_USED | FSCAP_DLIST;
 
   return fs;
 }

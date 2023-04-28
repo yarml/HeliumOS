@@ -85,7 +85,6 @@ Elf64_Ehdr *verify_ehdr(uint8_t *frel_data, size_t frel_size)
     );
     exit(1);
   }
-
   Elf64_Ehdr *eh = (void *) frel_data;
   if(eh->e_type != ET_REL)
   {

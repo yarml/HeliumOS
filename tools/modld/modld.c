@@ -115,7 +115,6 @@ int main(int argc, char **argv)
     fprintf(stderr, "'module_init' is defined in an unloadable section\n");
     exit(1);
   }
-  printf("mod_init = %zx\n", entrypoint_off);
 
   // Loop through all relocations and apply the ones that we have enough
   // information for
@@ -145,15 +144,8 @@ int main(int argc, char **argv)
       Elf64_Rela *rela = getrela(eh, sh, j);
       Elf64_Sym *target_sym =
         getsym(eh, rela_symtab, ELF64_R_SYM(rela->r_info));
-      printf(
-        "Relocation #%lu: name='%s' sym=%lu type=%lu addend=%lx off=%lx\n",
-        j, strtab + target_sym->st_name,
-        ELF64_R_SYM(rela->r_info), ELF64_R_TYPE(rela->r_info),
-        rela->r_addend, rela->r_offset
-      );
       if(target_sym->st_shndx == SHN_UNDEF)
       {
-        printf("\tNot enough info. Exporting relocation to output file\n");
         switch(ELF64_R_TYPE(rela->r_info))
         {
           case R_X86_64_PLT32:
@@ -206,7 +198,6 @@ int main(int argc, char **argv)
       uint8_t patch[8];
       int patch_size = 0;
 
-      printf("\tSymbol image offset: %zx\n", symval);
       switch(ELF64_R_TYPE(rela->r_info))
       {
         case R_X86_64_PC32:

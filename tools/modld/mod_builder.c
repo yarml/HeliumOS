@@ -385,10 +385,7 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
   }
 
   if(!ctx->jte_refcount) // If we don't have any jt refs, we're done
-  {
-    printf("No JT stuff to do\n");
     return;
-  }
 
   // Now for the jump table
   // First we map it
@@ -439,11 +436,4 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
     ++cmd_idx;
     cjte = cjte->next;
   }
-
-  if(cmd_idx != cmd_count)
-  {
-    fprintf(stderr, "You failure, this isn't working %zu %zu\n", cmd_idx, cmd_count);
-    exit(1);
-  }
-
 }

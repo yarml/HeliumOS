@@ -207,14 +207,26 @@ int main(int argc, char **argv)
           memcpy(patch, &val, 4);
         }
           break;
-        case R_X86_64_PLT32:
+        case R_X86_64_PLT32: // Kernel module calling its own function
         {
-          uint32_t off = symval - rela->r_offset - 4;
+          uint32_t off = symval - rela->r_offset - rela->r_addend;
           patch_size = 4;
           memcpy(patch, &off, 4);
         }
           break;
-        break;
+        case R_X86_64_REX_GOTPCRELX: // Kernel module accessing its own data
+        {
+          // We cannot do the patch now
+          patch_size = 0;
+          // We will let mod_builder do it when generating the output file
+          mod_refgote(
+            mctx,
+            targetshname,
+            rela->r_offset,
+            symval
+          );
+        }
+          break;
         default:
           fprintf(
             stderr,

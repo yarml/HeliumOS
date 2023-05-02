@@ -20,5 +20,4 @@ void fs_init()
   tar_mkimfs("initrd", INITRD_VPTR, bootboot.initrd_size);
 
   debug_initfs();
-  termfs_init();
 }

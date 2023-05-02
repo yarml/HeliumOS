@@ -177,12 +177,13 @@ number of 3rd party tools developped indepedently from HeliumOS:
 # Resources
 This project is only possible because of the following resources:
 
-* [OSDev Wiki]: Compresses the information found in the below manuals to be more
-  intelligible, although sometimes innacurate.
-* [Intel® 64 and IA-32 Architectures Software Developer’s Manuals]: Details about the processor's behavior.
-* [AMD64 Architecture Programmer's Manual]: Details about the processor's behavior.
-* [Bootboot Protocol Specification]: Details about the Bootboot protocol.
-* [Oracle Linker documentation Chapter 12]: Contains details about the structure of ELF files.
+* [OSDev Wiki]
+* [Intel® 64 and IA-32 Architectures Software Developer’s Manuals]
+* [AMD64 Architecture Programmer's Manual]
+* [Bootboot Protocol Specification]
+* [Oracle's Linker and Libraries Guide]
+* [ELF Specification]
+* [ELF x86-64-ABI psABI]
 
 <!-- Raw links  -->
 [buildsys/]: buildsys/
@@ -206,7 +207,9 @@ This project is only possible because of the following resources:
 [Intel® 64 and IA-32 Architectures Software Developer’s Manuals]: https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html
 [AMD64 Architecture Programmer's Manual]: https://www.amd.com/en/support/tech-docs/amd64-architecture-programmers-manual-volumes-1-5
 [Bootboot Protocol Specification]: https://gitlab.com/bztsrc/bootboot/-/raw/master/bootboot_spec_1st_ed.pdf
-[Oracle Linker documentation Chapter 12]: https://docs.oracle.com/cd/E23824_01/html/819-0690/chapter6-46512.html#scrolltoc
+[Oracle's Linker and Libraries Guide]: https://docs.oracle.com/cd/E23824_01/html/819-0690/toc.html
+[ELF Specification]: https://refspecs.linuxfoundation.org/elf/elf.pdf
+[ELF x86-64-ABI psABI]: https://gitlab.com/x86-psABIs/x86-64-ABI/-/jobs/artifacts/master/raw/x86-64-ABI/abi.pdf?job=build
 [Bootboot]: https://gitlab.com/bztsrc/bootboot
 [Gnu Compiler Collections]: https://gcc.gnu.org/
 [Nasm]: https://www.nasm.us/

@@ -208,6 +208,65 @@ void mod_refjte(
   ++ctx->jte_refcount;
 }
 
+void mod_refgote(
+  mod_ctx *ctx,
+  char const *shname,
+  size_t patchoff,
+  size_t symval
+) {
+  mod_gote *gote = 0;
+  // First search if a symbol with the same offset has a GOT entry
+  mod_gote *cgote = ctx->got_entries;
+  while(cgote)
+  {
+    if(cgote->symval == symval)
+    {
+      gote = cgote;
+      break;
+    }
+    cgote = cgote->next;
+  }
+
+  // If we didn't find any GOT entry with the same symboll offset,
+  // we should create a new one
+  if(!gote)
+  {
+    gote = calloc_or_exit(1, sizeof(mod_gote));
+    gote->index = ctx->gote_count;
+    gote->next = ctx->got_entries;
+    gote->symval = symval;
+
+    ctx->got_entries = gote;
+    ++ctx->gote_count;
+  }
+
+  mod_gotref_patch *newrefs = reallocarray(
+    gote->refs,
+    gote->refcount + 1,
+    sizeof(mod_gotref_patch)
+  );
+  if(!newrefs)
+  {
+    fprintf(
+      stderr,
+      "Could not allocate memory for GOT entry references"
+    );
+    exit(1);
+  }
+  mod_section *tsection = mod_search_alloc_section(ctx, shname);
+  if(!tsection)
+  {
+    fprintf(stderr, "Relocation in an unallocated section\n");
+    exit(1);
+  }
+
+  gote->refs = newrefs;
+  gote->refs[gote->refcount].tsection = tsection;
+  gote->refs[gote->refcount].offset = patchoff;
+  ++gote->refcount;
+  ++ctx->jte_refcount;
+}
+
 size_t mod_section_moff(mod_ctx *ctx, char const *shname)
 {
   mod_section *csec = ctx->alloc_sections;
@@ -253,6 +312,12 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
   size_t jt_moff = ctx->alloc_size;
   ctx->alloc_size += ctx->jte_count * 5;
 
+  // GOT needs to be aligned to 8 bytes
+  if(ctx->gote_count)
+    ctx->alloc_size = ALIGN_UP(ctx->alloc_size, 8);
+  size_t got_moff = ctx->alloc_size;
+  ctx->alloc_size += ctx->gote_count * sizeof(void *); // * 8
+
   // Apply JT patches
   mod_jte *cjte = ctx->jt_entries;
   while(cjte)
@@ -265,6 +330,21 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
       memcpy(ts->content + off, &patch, 4);
     }
     cjte = cjte->next;
+  }
+
+  // Apply GOT patches
+  mod_gote *cgote = ctx->got_entries;
+  while(cgote)
+  {
+    for(size_t i = 0; i < cgote->refcount; ++i)
+    {
+      mod_section *ts = cgote->refs[i].tsection;
+      size_t off = cgote->refs[i].offset;
+      uint32_t patch =
+        got_moff + sizeof(void *) * cgote->index - ts->moffset - off - 4;
+      memcpy(ts->content + off, &patch, 4);
+    }
+    cgote = cgote->next;
   }
 
 
@@ -299,15 +379,21 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
   size_t const data_off_begin = eh.e_phoff + ph_num * eh.e_phentsize;
   size_t data_off = data_off_begin;
 
-  // Number of loader commands
-  // A command to load symbol table
-  // There is a command for each section
-  // A command for each jump table entry
-  size_t cmd_count = ctx->sections_count + ctx->jte_count + 1;
+  // Number of loader commands:
+  // A command to load symbol table (LDSYM)
+  // There is a command for each section (MAP/ZMEM)
+  // A command for each jump table entry (JTE)
+  // A command for each GOT entry (ADDBASE)
+  size_t cmd_count = ctx->sections_count + ctx->jte_count + ctx->gote_count + 1;
 
-  // If we have any jumot entry, then we also have an additional
-  // command to map the jump table
+  // If we have any jump entry, then we also have an additional
+  // command to map the jump table (MAP)
   if(ctx->jte_count)
+    ++cmd_count;
+
+  // If we have any GOT entry, then we also have an additional
+  // command to map the GOT (MAP)
+  if(ctx->gote_count)
     ++cmd_count;
 
   Elf64_Phdr lseg;
@@ -384,8 +470,8 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
     cnsec = cnsec->next;
   }
 
-  if(!ctx->jte_refcount) // If we don't have any jt refs, we're done
-    return;
+  if(!ctx->jte_refcount) // If we don't have any jt refs, we can jump to GOTEs
+    goto setup_got;
 
   // Now for the jump table
   // First we map it
@@ -412,6 +498,7 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
   }
   fseek(f, data_off, SEEK_SET);
   fwrite(jt, 5, ctx->jte_count, f);
+  free(jt);
 
   ++cmd_idx;
   data_off += ctx->jte_count * 5;
@@ -435,5 +522,57 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
     fwrite(&cmd, sizeof(cmd), 1, f);
     ++cmd_idx;
     cjte = cjte->next;
+  }
+
+  setup_got:
+  if(!ctx->gote_count) // If no GOT entries, we're done
+    return;
+
+  // First we generate the command to map the GOT
+  elf64_kmod_loader_command gotmap_cmd;
+  memset(&gotmap_cmd, 0, sizeof(gotmap_cmd));
+  gotmap_cmd.command = CM_MAP;
+  gotmap_cmd.mem.foff = data_off;
+  jtmap_cmd.mem.moff = got_moff;
+  jtmap_cmd.mem.size = ctx->gote_count * sizeof(void *);
+  jtmap_cmd.mem.flags = SHF_ALLOC;
+
+  fseek(
+    f,
+    data_off_begin + cmd_idx * entsize,
+    SEEK_SET
+  );
+  fwrite(&gotmap_cmd, sizeof(gotmap_cmd), 1, f);
+
+  ++cmd_idx;
+
+  // Next we write the GOT
+  // Why do I use heap memory? no clue
+  uint8_t *got = calloc_or_exit(ctx->gote_count, sizeof(void *));
+  fseek(f, data_off, SEEK_SET);
+  fwrite(got, sizeof(void *), ctx->gote_count, f);
+  free(got);
+
+  data_off += ctx->gote_count * sizeof(void *);
+
+  // Now add the ADDBASE commands for GOT entries
+  cgote = ctx->got_entries;
+  while(cgote)
+  {
+    elf64_kmod_loader_command cmd;
+    memset(&cmd, 0, sizeof(cmd));
+    cmd.command = CM_ADDBASE;
+    cmd.addbase.patchoff = got_moff + sizeof(void *) * cgote->index;
+    cmd.addbase.off = cgote->symval;
+
+    fseek(
+      f,
+      data_off_begin + cmd_idx * entsize,
+      SEEK_SET
+    );
+    fwrite(&cmd, sizeof(cmd), 1, f);
+    ++cmd_idx;
+
+    cgote = cgote->next;
   }
 }

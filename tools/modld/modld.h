@@ -42,6 +42,8 @@ typedef struct MOD_SECTION mod_section;
 typedef struct MOD_NOBITS_SECTION mod_nobits_section;
 typedef struct MOD_JTE mod_jte; // Jump table entries
 typedef struct MOD_JTREF_PATCH mod_jtref_patch;
+typedef struct MOD_GOTE mod_gote;
+typedef struct MOD_GOTREF_PATCH mod_gotref_patch;
 
 struct MOD_CTX
 {
@@ -52,6 +54,9 @@ struct MOD_CTX
   size_t jte_count;
   size_t jte_refcount;
   mod_jte *jt_entries;
+  size_t gote_count;
+  size_t got_refcount;
+  mod_gote *got_entries;
   char *symtab;
   size_t symtab_size;
 };
@@ -94,14 +99,29 @@ struct MOD_JTREF_PATCH
   size_t offset;
 };
 
+struct MOD_GOTE
+{
+  size_t symval;
+  size_t index;
+  size_t refcount;
+  mod_gotref_patch *refs;
+  mod_gote *next;
+};
+
+struct MOD_GOTREF_PATCH
+{
+  mod_section *tsection;
+  size_t offset;
+};
+
 typedef struct ELF64_KMOD_LOADER_COMMAND elf64_kmod_loader_command;
 
-#define CM_UNDEF (0)
-#define CM_MAP   (1)
-#define CM_ZMEM  (2)
-#define CM_LDSYM (3)
-#define CM_JTE   (4)
-
+#define CM_UNDEF   (0)
+#define CM_MAP     (1)
+#define CM_ZMEM    (2)
+#define CM_LDSYM   (3)
+#define CM_JTE     (4)
+#define CM_ADDBASE (5)
 
 struct ELF64_KMOD_LOADER_COMMAND
 {
@@ -120,6 +140,11 @@ struct ELF64_KMOD_LOADER_COMMAND
       uint64_t symoff;
       uint64_t patchoff;
     } jte;
+    struct
+    {
+      uint64_t patchoff;
+      uint64_t off;
+    } addbase;
   };
 };
 
@@ -147,6 +172,13 @@ void mod_refjte(
   char const *symname,
   char const *shname,
   size_t off
+);
+
+void mod_refgote(
+  mod_ctx *ctx,
+  char const *shname,
+  size_t patchoff,
+  size_t symval
 );
 
 void *mod_section_content(mod_ctx *ctx, char const *shname);

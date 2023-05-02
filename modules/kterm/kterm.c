@@ -265,8 +265,6 @@ static int term_init_state(term_state *s, void *f)
 
   psf2_header *pf = f;
 
-  printd("w=%u,h=%u,bpl=%u\n", pf->width, pf->height, ALIGN_UP(pf->width, 8) / 8);
-
   s->fbinfo.fb = &fb;
 
   s->fbinfo.pixw = bootboot.fb_width;
@@ -293,7 +291,7 @@ static int term_init_state(term_state *s, void *f)
   return 0;
 }
 
-void termfs_init()
+void module_init()
 {
   fsnode *font = fs_search("initrd://sys/font.psf");
   void *f = tarfs_direct_access(font);

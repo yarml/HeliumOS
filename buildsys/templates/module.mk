@@ -9,7 +9,7 @@ MODULE_<mod-name>_BIN := $(INITRD_SYSROOT)modules/<mod-name>.mod
 
 MODULE_<mod-name>_ASFLAGS := -felf64
 MODULE_<mod-name>_CFLAGS := -mno-red-zone -Wall -ffreestanding -fno-stack-protector \
-		  -nostdlib -Werror -fno-asynchronous-unwind-tables -fpie
+		  -nostdlib -Werror -fno-asynchronous-unwind-tables -fpic
 
 ifeq ($(M),DEBUG)
 MODULE_<mod-name>_CFLAGS += -DHELIUM_DEBUG -O0 -ggdb3

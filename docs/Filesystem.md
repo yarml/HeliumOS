@@ -1,3 +1,5 @@
+Warning: The filesystem API is going to be redesigned in the future.
+
 # Filesystem
 A file in HeliumOS denotes any system resource that has a path associated with
 it. The most obvious example of this is space on disk devices, but it is not

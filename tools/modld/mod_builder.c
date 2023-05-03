@@ -39,6 +39,14 @@ void mod_ctx_destroy(mod_ctx *ctx)
     free(cjte);
     cjte = next;
   }
+  mod_gote *cgote = ctx->got_entries;
+  while(cgote)
+  {
+    mod_gote *next = cgote->next;
+    free(cgote->refs);
+    free(cgote);
+    cgote = next;
+  }
   free(ctx->symtab);
   free(ctx);
 }
@@ -315,6 +323,7 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
   // GOT needs to be aligned to 8 bytes
   if(ctx->gote_count)
     ctx->alloc_size = ALIGN_UP(ctx->alloc_size, 8);
+
   size_t got_moff = ctx->alloc_size;
   ctx->alloc_size += ctx->gote_count * sizeof(void *); // * 8
 
@@ -470,7 +479,7 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
     cnsec = cnsec->next;
   }
 
-  if(!ctx->jte_refcount) // If we don't have any jt refs, we can jump to GOTEs
+  if(!ctx->jte_count) // If we don't have any jtes, we can jump to GOTEs
     goto setup_got;
 
   // Now for the jump table
@@ -489,6 +498,7 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
     SEEK_SET
   );
   fwrite(&jtmap_cmd, sizeof(jtmap_cmd), 1, f);
+
   // Write the Jump table
   uint8_t *jt = calloc_or_exit(ctx->jte_count, 5);
   for(size_t i = 0; i < ctx->jte_count; ++i)
@@ -533,9 +543,9 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
   memset(&gotmap_cmd, 0, sizeof(gotmap_cmd));
   gotmap_cmd.command = CM_MAP;
   gotmap_cmd.mem.foff = data_off;
-  jtmap_cmd.mem.moff = got_moff;
-  jtmap_cmd.mem.size = ctx->gote_count * sizeof(void *);
-  jtmap_cmd.mem.flags = SHF_ALLOC;
+  gotmap_cmd.mem.moff = got_moff;
+  gotmap_cmd.mem.size = ctx->gote_count * sizeof(void *);
+  gotmap_cmd.mem.flags = SHF_ALLOC;
 
   fseek(
     f,

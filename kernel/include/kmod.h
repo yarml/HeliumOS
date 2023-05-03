@@ -14,12 +14,12 @@ struct KMOD
 
 typedef struct ELF64_KMOD_LOADER_COMMAND elf64_kmod_loader_command;
 
-#define CM_UNDEF (0)
-#define CM_MAP   (1)
-#define CM_ZMEM  (2)
-#define CM_LDSYM (3)
-#define CM_JTE   (4)
-
+#define CM_UNDEF   (0)
+#define CM_MAP     (1)
+#define CM_ZMEM    (2)
+#define CM_LDSYM   (3)
+#define CM_JTE     (4)
+#define CM_ADDBASE (5)
 
 struct ELF64_KMOD_LOADER_COMMAND
 {
@@ -38,6 +38,11 @@ struct ELF64_KMOD_LOADER_COMMAND
       uint64_t symoff;
       uint64_t patchoff;
     } jte;
+    struct
+    {
+      uint64_t patchoff;
+      uint64_t off;
+    } addbase;
   };
 };
 

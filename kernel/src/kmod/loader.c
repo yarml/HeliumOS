@@ -110,15 +110,27 @@ kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN])
           );
       {
         char const *symname = symtab + cmd[i].jte.symoff;
-        tpd("JTE sym='%s' off=%p\n", symname, cmd[i].jte.patchoff);
+        tpd("JTE sym='%s' patchoff=%p\n", symname, cmd[i].jte.patchoff);
         void *patch_vadr = base + cmd[i].jte.patchoff;
         uint64_t *symvalp = hash_table_search(i_ksym_table, symname);
         if(!symvalp)
           error_inv_state("Module uses unknown symbol");
         uint64_t symval = *symvalp;
         uint32_t patch = symval - (uintptr_t) base - cmd[i].jte.patchoff - 4;
-        memcpy(patch_vadr, &patch, 4);
+        memcpy(patch_vadr, &patch, sizeof(patch));
       }
+        break;
+      case CM_ADDBASE:
+      {
+        tpd(
+          "ADDBASE patchoff=%p, off=%p\n",
+          cmd[i].addbase.patchoff, cmd[i].addbase.off
+        );
+        void *patch_vadr = base + cmd[i].addbase.patchoff;
+        uint64_t patch = (uintptr_t) base + cmd[i].addbase.off;
+        memcpy(patch_vadr, &patch, sizeof(patch));
+      }
+        break;
     }
   }
   tpd("ENTRYPOINT moff=%p\n", eh->entrypoint);

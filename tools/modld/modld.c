@@ -158,6 +158,16 @@ int main(int argc, char **argv)
             );
           }
             break;
+          case R_X86_64_REX_GOTPCRELX:
+          {
+            mod_refkgote(
+              mctx,
+              targetshname,
+              rela->r_offset,
+              strtab + target_sym->st_name
+            );
+          }
+            break;
           default:
             fprintf(
               stderr,

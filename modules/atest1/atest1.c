@@ -1,6 +1,6 @@
-extern int a;
+#include <boot_info.h>
 
 int module_init()
 {
-  return a;
+  return bootboot.magic[0];
 }

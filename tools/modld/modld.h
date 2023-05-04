@@ -43,6 +43,7 @@ typedef struct MOD_NOBITS_SECTION mod_nobits_section;
 typedef struct MOD_JTE mod_jte; // Jump table entries
 typedef struct MOD_JTREF_PATCH mod_jtref_patch;
 typedef struct MOD_GOTE mod_gote;
+typedef struct MOD_KGOTE mod_kgote;
 typedef struct MOD_GOTREF_PATCH mod_gotref_patch;
 
 struct MOD_CTX
@@ -57,6 +58,7 @@ struct MOD_CTX
   size_t gote_count;
   size_t got_refcount;
   mod_gote *got_entries;
+  mod_kgote *kgot_entries;
   char *symtab;
   size_t symtab_size;
 };
@@ -108,6 +110,17 @@ struct MOD_GOTE
   mod_gote *next;
 };
 
+struct MOD_KGOTE
+{
+  size_t nameoff;
+
+  size_t index;
+  size_t refcount;
+  mod_gotref_patch *refs;
+
+  mod_kgote *next;
+};
+
 struct MOD_GOTREF_PATCH
 {
   mod_section *tsection;
@@ -116,12 +129,13 @@ struct MOD_GOTREF_PATCH
 
 typedef struct ELF64_KMOD_LOADER_COMMAND elf64_kmod_loader_command;
 
-#define CM_UNDEF   (0)
-#define CM_MAP     (1)
-#define CM_ZMEM    (2)
-#define CM_LDSYM   (3)
-#define CM_JTE     (4)
-#define CM_ADDBASE (5)
+#define CM_UNDEF   (0) // Invalid command
+#define CM_MAP     (1) // Map a segment from module file to base memory offset
+#define CM_ZMEM    (2) // Zero a segment from base memory offset
+#define CM_LDSYM   (3) // Load symbol table from module file offset
+#define CM_JTE     (4) // Patch jump table entry
+#define CM_ADDBASE (5) // add base to target
+#define CM_KSYM    (6) // Put kernel symbol value to target
 
 struct ELF64_KMOD_LOADER_COMMAND
 {
@@ -134,17 +148,12 @@ struct ELF64_KMOD_LOADER_COMMAND
       uint64_t moff;
       uint64_t size;
       uint64_t flags;
-    } mem;
-    struct
-    {
-      uint64_t symoff;
-      uint64_t patchoff;
-    } jte;
+    } mem; // used by MAP, ZMEM, LDSYM
     struct
     {
       uint64_t patchoff;
-      uint64_t off;
-    } addbase;
+      uint64_t val;
+    } patch; // used by JTE, ADDBASE, KSYM
   };
 };
 
@@ -173,12 +182,17 @@ void mod_refjte(
   char const *shname,
   size_t off
 );
-
 void mod_refgote(
   mod_ctx *ctx,
   char const *shname,
   size_t patchoff,
   size_t symval
+);
+void mod_refkgote(
+  mod_ctx *ctx,
+  char const *shname,
+  size_t patchoff,
+  char const *name
 );
 
 void *mod_section_content(mod_ctx *ctx, char const *shname);

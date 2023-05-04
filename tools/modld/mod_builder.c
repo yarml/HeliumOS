@@ -272,7 +272,66 @@ void mod_refgote(
   gote->refs[gote->refcount].tsection = tsection;
   gote->refs[gote->refcount].offset = patchoff;
   ++gote->refcount;
-  ++ctx->jte_refcount;
+  ++ctx->got_refcount;
+}
+
+void mod_refkgote(
+  mod_ctx *ctx,
+  char const *shname,
+  size_t patchoff,
+  char const *name
+) {
+  size_t symoff = mod_addsym(ctx, name);
+
+  // Check if there is a KGOTE that already has this symbol
+  mod_kgote *kgote = 0;
+  mod_kgote *ckgote = ctx->kgot_entries;
+  while(ckgote)
+  {
+    if(ckgote->nameoff == symoff)
+    {
+      kgote = ckgote;
+      break;
+    }
+    ckgote = ckgote->next;
+  }
+
+  if(!kgote)
+  {
+    kgote = calloc_or_exit(1, sizeof(*kgote));
+    kgote->nameoff = symoff;
+    kgote->next = ctx->kgot_entries;
+    ctx->kgot_entries = kgote;
+    kgote->index = ctx->gote_count;
+
+    ++ctx->gote_count;
+  }
+
+  mod_gotref_patch *newrefs = reallocarray(
+    kgote->refs,
+    kgote->refcount + 1,
+    sizeof(mod_gotref_patch)
+  );
+  if(!newrefs)
+  {
+    fprintf(
+      stderr,
+      "Could not allocate memory for Kernel GOT entry references"
+    );
+    exit(1);
+  }
+  mod_section *tsection = mod_search_alloc_section(ctx, shname);
+  if(!tsection)
+  {
+    fprintf(stderr, "Relocation in an unallocated section\n");
+    exit(1);
+  }
+
+  kgote->refs = newrefs;
+  kgote->refs[kgote->refcount].tsection = tsection;
+  kgote->refs[kgote->refcount].offset = patchoff;
+  ++kgote->refcount;
+  ++ctx->got_refcount;
 }
 
 size_t mod_section_moff(mod_ctx *ctx, char const *shname)
@@ -354,6 +413,20 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
       memcpy(ts->content + off, &patch, 4);
     }
     cgote = cgote->next;
+  }
+  // Apply KGOT patches
+  mod_kgote *ckgote = ctx->kgot_entries;
+  while(ckgote)
+  {
+    for(size_t i = 0; i < ckgote->refcount; ++i)
+    {
+      mod_section *ts = ckgote->refs[i].tsection;
+      size_t off = ckgote->refs[i].offset;
+      uint32_t patch =
+        got_moff + sizeof(void *) * ckgote->index - ts->moffset - off - 4;
+      memcpy(ts->content + off, &patch, 4);
+    }
+    ckgote = ckgote->next;
   }
 
 
@@ -521,8 +594,8 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
     elf64_kmod_loader_command cmd;
     memset(&cmd, 0, sizeof(cmd));
     cmd.command = CM_JTE;
-    cmd.jte.symoff = cjte->nameoff;
-    cmd.jte.patchoff = jt_moff + 5 * cjte->index + 1;
+    cmd.patch.val = cjte->nameoff;
+    cmd.patch.patchoff = jt_moff + 5 * cjte->index + 1;
 
     fseek(
       f,
@@ -572,8 +645,8 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
     elf64_kmod_loader_command cmd;
     memset(&cmd, 0, sizeof(cmd));
     cmd.command = CM_ADDBASE;
-    cmd.addbase.patchoff = got_moff + sizeof(void *) * cgote->index;
-    cmd.addbase.off = cgote->symval;
+    cmd.patch.patchoff = got_moff + sizeof(void *) * cgote->index;
+    cmd.patch.val = cgote->symval;
 
     fseek(
       f,
@@ -584,5 +657,25 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
     ++cmd_idx;
 
     cgote = cgote->next;
+  }
+  // Now add the KSYM commands for KGOT entries
+  ckgote = ctx->kgot_entries;
+  while(ckgote)
+  {
+    elf64_kmod_loader_command cmd;
+    memset(&cmd, 0, sizeof(cmd));
+    cmd.command = CM_KSYM;
+    cmd.patch.patchoff = got_moff + sizeof(void *) * ckgote->index;
+    cmd.patch.val = ckgote->nameoff;
+
+    fseek(
+      f,
+      data_off_begin + cmd_idx * entsize,
+      SEEK_SET
+    );
+    fwrite(&cmd, sizeof(cmd), 1, f);
+    ++cmd_idx;
+
+    ckgote = ckgote->next;
   }
 }

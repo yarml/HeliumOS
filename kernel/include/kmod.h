@@ -14,12 +14,13 @@ struct KMOD
 
 typedef struct ELF64_KMOD_LOADER_COMMAND elf64_kmod_loader_command;
 
-#define CM_UNDEF   (0)
-#define CM_MAP     (1)
-#define CM_ZMEM    (2)
-#define CM_LDSYM   (3)
-#define CM_JTE     (4)
-#define CM_ADDBASE (5)
+#define CM_UNDEF   (0) // Invalid command
+#define CM_MAP     (1) // Map a segment from module file to base memory offset
+#define CM_ZMEM    (2) // Zero a segment from base memory offset
+#define CM_LDSYM   (3) // Load symbol table from module file offset
+#define CM_JTE     (4) // Patch jump table entry
+#define CM_ADDBASE (5) // add base to target
+#define CM_KSYM    (6) // Put kernel symbol value to target
 
 struct ELF64_KMOD_LOADER_COMMAND
 {
@@ -32,17 +33,12 @@ struct ELF64_KMOD_LOADER_COMMAND
       uint64_t moff;
       uint64_t size;
       uint64_t flags;
-    } mem;
-    struct
-    {
-      uint64_t symoff;
-      uint64_t patchoff;
-    } jte;
+    } mem; // used by MAP, ZMEM, LDSYM
     struct
     {
       uint64_t patchoff;
-      uint64_t off;
-    } addbase;
+      uint64_t val;
+    } patch; // used by JTE, ADDBASE, KSYM
   };
 };
 

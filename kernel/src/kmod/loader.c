@@ -109,14 +109,14 @@ kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN])
             "kernel symbols are not loaded"
           );
       {
-        char const *symname = symtab + cmd[i].jte.symoff;
-        tpd("JTE sym='%s' patchoff=%p\n", symname, cmd[i].jte.patchoff);
-        void *patch_vadr = base + cmd[i].jte.patchoff;
+        char const *symname = symtab + cmd[i].patch.val;
+        tpd("JTE sym='%s' patchoff=%p\n", symname, cmd[i].patch.patchoff);
+        void *patch_vadr = base + cmd[i].patch.patchoff;
         uint64_t *symvalp = hash_table_search(i_ksym_table, symname);
         if(!symvalp)
           error_inv_state("Module uses unknown symbol");
         uint64_t symval = *symvalp;
-        uint32_t patch = symval - (uintptr_t) base - cmd[i].jte.patchoff - 4;
+        uint32_t patch = symval - (uintptr_t) base - cmd[i].patch.patchoff - 4;
         memcpy(patch_vadr, &patch, sizeof(patch));
       }
         break;
@@ -124,10 +124,32 @@ kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN])
       {
         tpd(
           "ADDBASE patchoff=%p, off=%p\n",
-          cmd[i].addbase.patchoff, cmd[i].addbase.off
+          cmd[i].patch.patchoff, cmd[i].patch.val
         );
-        void *patch_vadr = base + cmd[i].addbase.patchoff;
-        uint64_t patch = (uintptr_t) base + cmd[i].addbase.off;
+        void *patch_vadr = base + cmd[i].patch.patchoff;
+        uint64_t patch = (uintptr_t) base + cmd[i].patch.val;
+        memcpy(patch_vadr, &patch, sizeof(patch));
+      }
+        break;
+      case CM_KSYM:
+        if(!symtab)
+          error_inv_state("Module contains JTE instruction before LDSYM");
+        if(!i_ksym_table)
+          error_inv_state(
+            "Module uses kernel symbols but "
+            "kernel symbols are not loaded"
+          );
+      {
+        char const *symname = symtab + cmd[i].patch.val;
+        tpd(
+          "KSYM patchoff=%p, sym='%s'\n",
+          cmd[i].patch.patchoff, symname
+        );
+        void *patch_vadr = base + cmd[i].patch.patchoff;
+        uint64_t *symvalp = hash_table_search(i_ksym_table, symname);
+        if(!symvalp)
+          error_inv_state("Module uses unknown symbol");
+        uint64_t patch = *symvalp;
         memcpy(patch_vadr, &patch, sizeof(patch));
       }
         break;

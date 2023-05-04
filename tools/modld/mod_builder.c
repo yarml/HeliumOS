@@ -47,6 +47,14 @@ void mod_ctx_destroy(mod_ctx *ctx)
     free(cgote);
     cgote = next;
   }
+  mod_gote *ckgote = ctx->kgot_entries;
+  while(ckgote)
+  {
+    mod_gote *next = ckgote->next;
+    free(ckgote->refs);
+    free(ckgote);
+    ckgote = next;
+  }
   free(ctx->symtab);
   free(ctx);
 }

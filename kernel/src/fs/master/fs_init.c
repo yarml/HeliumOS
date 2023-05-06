@@ -18,6 +18,4 @@ void fs_init()
     MAPF_R
   );
   tar_mkimfs("initrd", INITRD_VPTR, bootboot.initrd_size);
-
-  debug_initfs();
 }

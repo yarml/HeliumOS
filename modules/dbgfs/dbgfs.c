@@ -11,7 +11,7 @@ static size_t debug_file_append(fsnode *file, char const *buf, size_t size)
   return dbg_write_string(lbuf);
 }
 
-void debug_initfs()
+int module_init()
 {
   fsimpl impl;
   memset(&impl, 0, sizeof(impl));
@@ -22,7 +22,7 @@ void debug_initfs()
   if(!fs)
   {
     printd("Could not mount 'dbg://'\n");
-    return;
+    return 1;
   }
 
   // Set fake dir capabilities to be able to build the immutable
@@ -37,4 +37,6 @@ void debug_initfs()
   fostream->file.cap = FSCAP_USED | FSCAP_FAPPEND;
 
   fs->dir_cap = FSCAP_USED;
+
+  return 0;
 }

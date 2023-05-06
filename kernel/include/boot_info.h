@@ -3,9 +3,12 @@
 
 #include <stdint.h>
 #include <bootboot.h>
+#include <mem.h>
 
-extern char     environment[4096];
-extern BOOTBOOT bootboot         ;
-extern uint8_t  fb               ;
+extern char environment[MEM_PS];
+
+extern BOOTBOOT bootboot;
+
+extern uint8_t fb;
 
 #endif

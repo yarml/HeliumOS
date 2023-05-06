@@ -204,12 +204,24 @@ This project is only possible because of the following resources:
 [make]: https://en.wikipedia.org/wiki/Make_(software)
 [zip file]: https://github.com/yarml/HeliumOS/archive/refs/heads/master.zip
 [OSDev Wiki]: https://wiki.osdev.org/Expanded_Main_Page
-[Intel® 64 and IA-32 Architectures Software Developer’s Manuals]: https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html
-[AMD64 Architecture Programmer's Manual]: https://www.amd.com/en/support/tech-docs/amd64-architecture-programmers-manual-volumes-1-5
-[Bootboot Protocol Specification]: https://gitlab.com/bztsrc/bootboot/-/raw/master/bootboot_spec_1st_ed.pdf
-[Oracle's Linker and Libraries Guide]: https://docs.oracle.com/cd/E23824_01/html/819-0690/toc.html
+
+[Intel® 64 and IA-32 Architectures Software Developer’s Manuals]:
+https://www.intel.com/content/www/us/en/developer/articles/technical/intel-sdm.html
+
+[AMD64 Architecture Programmer's Manual]:
+https://www.amd.com/en/support/tech-docs/amd64-architecture-programmers-manual-volumes-1-5
+
+[Bootboot Protocol Specification]:
+https://gitlab.com/bztsrc/bootboot/-/raw/master/bootboot_spec_1st_ed.pdf
+
+[Oracle's Linker and Libraries Guide]:
+https://docs.oracle.com/cd/E23824_01/html/819-0690/toc.html
+
 [ELF Specification]: https://refspecs.linuxfoundation.org/elf/elf.pdf
-[ELF x86-64-ABI psABI]: https://gitlab.com/x86-psABIs/x86-64-ABI/-/jobs/artifacts/master/raw/x86-64-ABI/abi.pdf?job=build
+
+[ELF x86-64-ABI psABI]:
+https://gitlab.com/x86-psABIs/x86-64-ABI/-/jobs/artifacts/master/raw/x86-64-ABI/abi.pdf?job=build
+
 [Bootboot]: https://gitlab.com/bztsrc/bootboot
 [Gnu Compiler Collections]: https://gcc.gnu.org/
 [Nasm]: https://www.nasm.us/

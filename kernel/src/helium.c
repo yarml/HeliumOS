@@ -20,20 +20,10 @@ static void prompt(char *user, char *pwd, int super)
   term_setfg(255, 255, 255);
 }
 
+void __init_stdio();
+
 int kmain()
 {
-  term_setfg(255, 128, 0);
-  printf(
-    "##   ## ####### ##      ## ##    ## ###    ###  ######  #######\n"
-    "##   ## ##      ##      ## ##    ## ####  #### ##    ## ##     \n"
-    "####### #####   ##      ## ##    ## ## #### ## ##    ## #######\n"
-    "##   ## ##      ##      ## ##    ## ##  ##  ## ##    ##      ##\n"
-    "##   ## ####### ####### ##  ######  ##      ##  ######  #######\n"
-    "\n"
-  );
-  prompt("kernel", "initrd://sys/", 1);
-  printf("\n");
-
   if(ksym_loadp("initrd://sys/ksym"))
     error_inv_state("Could not load kernel symbols.");
 
@@ -54,6 +44,20 @@ int kmain()
       continue;
     kmod_loadf(current);
   }
+
+  __init_stdio();
+
+  term_setfg(255, 128, 0);
+  printf(
+    "##   ## ####### ##      ## ##    ## ###    ###  ######  #######\n"
+    "##   ## ##      ##      ## ##    ## ####  #### ##    ## ##     \n"
+    "####### #####   ##      ## ##    ## ## #### ## ##    ## #######\n"
+    "##   ## ##      ##      ## ##    ## ##  ##  ## ##    ##      ##\n"
+    "##   ## ####### ####### ##  ######  ##      ##  ######  #######\n"
+    "\n"
+  );
+  prompt("kernel", "initrd://sys/", 1);
+  printf("\n");
 
   return 0;
 }

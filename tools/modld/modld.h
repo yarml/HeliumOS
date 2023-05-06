@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <elf.h>
 
+#define MEM_PS (4096)
+
 #define PT_HELIUM_KMOD_LOADER (0x60000000)
 
 // Taken from helium source at: /kernel/include/utils.h

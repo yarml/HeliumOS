@@ -47,10 +47,10 @@ void mod_ctx_destroy(mod_ctx *ctx)
     free(cgote);
     cgote = next;
   }
-  mod_gote *ckgote = ctx->kgot_entries;
+  mod_kgote *ckgote = ctx->kgot_entries;
   while(ckgote)
   {
-    mod_gote *next = ckgote->next;
+    mod_kgote *next = ckgote->next;
     free(ckgote->refs);
     free(ckgote);
     ckgote = next;
@@ -493,7 +493,7 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
   lseg.p_filesz = cmd_count * sizeof(elf64_kmod_loader_command);
   data_off += lseg.p_filesz; // data_off used later for other structures
   lseg.p_memsz = ctx->alloc_size; // Size to allocate for this kernel module
-  lseg.p_align = 4096;
+  lseg.p_align = MEM_PS;
 
   // Write Ehdr & Phdr
   fwrite(&eh, eh.e_ehsize, 1, f);
@@ -518,6 +518,7 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
   size_t const entsize = sizeof(elf64_kmod_loader_command);
   while(casec)
   {
+    printf("'%s' at base+%016zx\n", casec->name, casec->moffset);
     elf64_kmod_loader_command cmd;
     memset(&cmd, 0, sizeof(cmd));
     cmd.command = CM_MAP;
@@ -542,6 +543,8 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
   mod_nobits_section *cnsec = ctx->nobits_sections;
   while(cnsec)
   {
+    printf("'%s' at base+%016zx\n", cnsec->name, cnsec->moffset);
+
     elf64_kmod_loader_command cmd;
     memset(&cmd, 0, sizeof(cmd));
     cmd.command = CM_ZMEM;

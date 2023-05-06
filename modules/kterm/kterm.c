@@ -291,7 +291,7 @@ static int term_init_state(term_state *s, void *f)
   return 0;
 }
 
-void module_init()
+int module_init()
 {
   fsnode *font = fs_search("initrd://sys/font.psf");
   void *f = tarfs_direct_access(font);
@@ -300,7 +300,7 @@ void module_init()
   if (term_init_state(&tstate, f))
   {
     printd("Could not initialize terminal state.\n");
-    return;
+    return 1;
   }
 
   fsimpl impl;
@@ -312,7 +312,7 @@ void module_init()
   if (!fs)
   {
     printd("Coud not mount 'term://'\n");
-    return;
+    return 1;
   }
 
   // Set fake dir capabilities to be able to build the immutable
@@ -333,4 +333,6 @@ void module_init()
   ctl = fctl;
 
   fs->dir_cap = FSCAP_USED;
+
+  return 0;
 }

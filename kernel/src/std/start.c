@@ -41,8 +41,6 @@ void _start()
   printd("Initializing filesystem.\n");
   fs_init();
 
-  __init_stdio();
-
   printd("Calling main function.\n");
   kmain();
 

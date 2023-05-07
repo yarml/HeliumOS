@@ -518,7 +518,6 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
   size_t const entsize = sizeof(elf64_kmod_loader_command);
   while(casec)
   {
-    printf("'%s' at base+%016zx\n", casec->name, casec->moffset);
     elf64_kmod_loader_command cmd;
     memset(&cmd, 0, sizeof(cmd));
     cmd.command = CM_MAP;
@@ -543,8 +542,6 @@ void mod_genfile(mod_ctx *ctx, size_t entrypoint_off, FILE *f)
   mod_nobits_section *cnsec = ctx->nobits_sections;
   while(cnsec)
   {
-    printf("'%s' at base+%016zx\n", cnsec->name, cnsec->moffset);
-
     elf64_kmod_loader_command cmd;
     memset(&cmd, 0, sizeof(cmd));
     cmd.command = CM_ZMEM;

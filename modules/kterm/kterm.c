@@ -84,7 +84,7 @@ struct TRIPLET
 {
   unsigned int a, b, c;
 };
-triplet read_triplet(char const *b)
+static triplet read_triplet(char const *b)
 {
   triplet t = {0, 0, 0};
   while(*b && isspace(*b))
@@ -99,7 +99,6 @@ triplet read_triplet(char const *b)
   while(*b && isspace(*b))
     ++b;
   t.c = stou(b, &b, 10);
-
   return t;
 }
 
@@ -160,57 +159,58 @@ static size_t term_file_append(fsnode *file, char const *buf, size_t size)
       tstate.cursor = (tstate.ch - 1) * tstate.cw;
     }
 
-    char cc = buf[i];
 
+    char cc = buf[i];
     // Handle special characters
-    switch(cc)
+    if(!cc || cc == '\a' || cc == '\b')
+      continue;
+    if(cc == '\n')
     {
-      case 0:
-        continue;
-      case '\a':
-        /* Not implemented yet */
-        continue;;
-      case '\b':
-        continue;
-      case '\n':
-        tstate.cursor =
-          GALIGN_DN(tstate.cursor, tstate.cw) + tstate.cw + tstate.origin;
-        continue;
-      case '\r':
-        tstate.cursor = GALIGN_DN(tstate.cursor, tstate.cw) + tstate.origin;
-        continue;
-      case '\t':
-        tstate.cursor += tstate.tabsize;
-        continue;
-      // In Helium terminals, \f and \v have special meanings, different from
-      // other systems
-      // \v: makes the current x position the x position \n and \r will
-      //     return to
-      // \f: makes 0 the x position \n and \r will return to
-      // These will be useful when displaying trees of data
-      case '\f':
-        tstate.origin = 0;
-        continue;
-      case '\v':
-        tstate.origin = tstate.cursor % tstate.cw;
-      // In Helium terminals, \e surrounds a string that is passed to
-      // the terminal control file `term://ctl`
-      // and example of a terminal command is:
-      // '\ecolor 255 0 0\e
-      case '\e':
-        size_t cmdend = 0;
-        for(size_t j = i+1; j < size; ++j)
-          if(buf[j] == '\e')
-          {
-            cmdend = j;
-            break;
-          }
-        if(!cmdend)
-          return size - i;
-        size_t cmdsize = cmdend - i - 1;
-        term_file_append(ctl, buf+i+1, cmdsize);
-        i = cmdend;
-        continue;
+      tstate.cursor =
+        GALIGN_DN(tstate.cursor, tstate.cw) + tstate.cw + tstate.origin;
+      continue;
+    }
+    if(cc == '\r')
+    {
+      tstate.cursor = GALIGN_DN(tstate.cursor, tstate.cw) + tstate.origin;
+      continue;
+    }
+    if(cc == '\t')
+    {
+      tstate.cursor += tstate.tabsize;
+      continue;
+    }
+    // In Helium terminals, \f and \v have special meanings, different from
+    // other systems
+    // \v: makes the current x position the x position \n and \r will
+    //     return to
+    // \f: makes 0 the x position \n and \r will return to
+    // These will be useful when displaying trees of data
+    if(cc == '\f')
+    {
+      tstate.origin = 0;
+      continue;
+    }
+    if(cc == '\v')
+    {
+      tstate.origin = tstate.cursor % tstate.cw;
+      continue;
+    }
+    if(cc == '\e')
+    {
+      size_t cmdend = 0;
+      for(size_t j = i+1; j < size; ++j)
+        if(buf[j] == '\e')
+        {
+          cmdend = j;
+          break;
+        }
+      if(!cmdend)
+        return size - i;
+      size_t cmdsize = cmdend - i - 1;
+      term_file_append(ctl, buf+i+1, cmdsize);
+      i = cmdend;
+      continue;
     }
 
     size_t glyphidx;
@@ -296,8 +296,8 @@ int module_init()
   fsnode *font = fs_search("initrd://sys/font.psf");
   void *f = tarfs_direct_access(font);
   fs_close(font);
-
-  if (term_init_state(&tstate, f))
+  int status = term_init_state(&tstate, f);
+  if(status)
   {
     printd("Could not initialize terminal state.\n");
     return 1;

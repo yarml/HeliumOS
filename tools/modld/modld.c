@@ -135,7 +135,6 @@ int main(int argc, char **argv)
     if(sh->sh_type != SHT_RELA)
       continue;
     char const *targetshname = getshname(eh, sh->sh_info);
-    printf("Relocation for: %s\n", targetshname);
     Elf64_Shdr *rela_symtab = getsh(eh, sh->sh_link);
     char const *strtab = getstrtab(eh);
     size_t relacount = shsize / sh->sh_entsize;

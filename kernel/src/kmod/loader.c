@@ -41,15 +41,11 @@ kmod *kmod_loadf(fsnode *f)
 
 kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN])
 {
-  tpd("### Loading kernel module ###\n");
-
-
   elf64_header *eh = kmodf;
   elf64_prog_header *ph = kmodf + eh->phoff;
   elf64_kmod_loader_command *cmd = kmodf + ph->offset;
   size_t cmd_count = ph->file_size / sizeof(elf64_kmod_loader_command);
 
-  tpd("ALLOC size=%lz\n", ph->mem_size);
   mem_vseg kmod_vseg = mem_alloc_vblock(
     ph->mem_size,
     MAPF_W | MAPF_R | MAPF_X, // TODO: Give 0 permissions by default
@@ -73,16 +69,8 @@ kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN])
     switch(cmd[i].command)
     {
       case CM_UNDEF:
-        tpd("UNDEF #\n");
         break;
       case CM_MAP:
-        tpd(
-          "MAP foff=%p, moff=%p, size=%lu, flags=%lx\n",
-          cmd[i].mem.foff,
-          cmd[i].mem.moff,
-          cmd[i].mem.size,
-          cmd[i].mem.flags
-        );
         memcpy(
           base + cmd[i].mem.moff,
           kmodf + cmd[i].mem.foff,
@@ -90,14 +78,9 @@ kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN])
         );
         break;
       case CM_ZMEM:
-        tpd(
-          "ZMEM moff=%p, size=%lu, flags=%lx\n",
-          cmd[i].mem.moff, cmd[i].mem.size, cmd[i].mem.flags
-        );
         memset(base + cmd[i].mem.moff, 0, cmd[i].mem.size);
         break;
       case CM_LDSYM:
-        tpd("LDSYM foff=%p\n", cmd[i].mem.foff);
         symtab = kmodf + cmd[i].mem.foff;
         break;
       case CM_JTE:
@@ -110,7 +93,6 @@ kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN])
           );
       {
         char const *symname = symtab + cmd[i].patch.val;
-        tpd("JTE sym='%s' patchoff=%p\n", symname, cmd[i].patch.patchoff);
         void *patch_vadr = base + cmd[i].patch.patchoff;
         uint64_t *symvalp = hash_table_search(i_ksym_table, symname);
         if(!symvalp)
@@ -122,10 +104,6 @@ kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN])
         break;
       case CM_ADDBASE:
       {
-        tpd(
-          "ADDBASE patchoff=%p, off=%p\n",
-          cmd[i].patch.patchoff, cmd[i].patch.val
-        );
         void *patch_vadr = base + cmd[i].patch.patchoff;
         uint64_t patch = (uintptr_t) base + cmd[i].patch.val;
         memcpy(patch_vadr, &patch, sizeof(patch));
@@ -141,10 +119,6 @@ kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN])
           );
       {
         char const *symname = symtab + cmd[i].patch.val;
-        tpd(
-          "KSYM patchoff=%p, sym='%s'\n",
-          cmd[i].patch.patchoff, symname
-        );
         void *patch_vadr = base + cmd[i].patch.patchoff;
         uint64_t *symvalp = hash_table_search(i_ksym_table, symname);
         if(!symvalp)
@@ -155,9 +129,8 @@ kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN])
         break;
     }
   }
-  tpd("ENTRYPOINT moff=%p\n", eh->entrypoint);
   int (*mod_init)() = base + eh->entrypoint;
-  tpd("Return value: %d\n", mod_init());
+  mod_init();
   return 0;
 }
 

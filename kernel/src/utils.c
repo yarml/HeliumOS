@@ -6,11 +6,11 @@ char g_units_sign[UNITS_COUNT] = {'B', 'K', 'M', 'G', 'T', 'P', 'E'};
 
 #define HEXDUMP_BPL (32)
 
-void hexdump(void *mem, size_t size)
+void hexdump(void const *mem, size_t size)
 {
   size_t linec = ALIGN_UP(size, HEXDUMP_BPL) / HEXDUMP_BPL;
 
-  unsigned char *cmem = mem;
+  unsigned char const *cmem = mem;
 
   for(size_t line = 0; line < linec; ++line)
   {

@@ -21,7 +21,6 @@ static void prompt(char *user, char *pwd, int super)
 }
 
 void __init_stdio();
-
 int kmain()
 {
   if(ksym_loadp("initrd://sys/ksym"))
@@ -44,7 +43,6 @@ int kmain()
       continue;
     kmod_loadf(current);
   }
-
   __init_stdio();
 
   term_setfg(255, 128, 0);

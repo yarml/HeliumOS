@@ -166,11 +166,12 @@ code into binaries that can boot on bare metal is a task which is handled by a
 number of 3rd party tools developped indepedently from HeliumOS:
 
 * [Bootboot]: Boot HeliumOS from UEFI environment.
-* [Gnu Compiler Collections]: Compile C source code.
+* [GNU Compiler Collections]: Compile C source code.
+* [GNU Binutils]: Providing linker and other binary file manipulation programs.
 * [Nasm]: Assemble assembly source code.
-* [Gnu Make]: Execute build commands.
-* [Gnu efi]: Used by bootboot.
-* [mkbootimg]: Make bootiable images from the initrd and kernel binary.
+* [GNU Make]: Execute build commands.
+* [GNU efi]: Used by bootboot.
+* [mkbootimg]: Make bootable images from the initrd and kernel binary.
 * [Qemu]: Emulate an x86-64 PC.
 * [Edk2]: Provide binaries for UEFI for Qemu.
 
@@ -223,10 +224,11 @@ https://docs.oracle.com/cd/E23824_01/html/819-0690/toc.html
 https://gitlab.com/x86-psABIs/x86-64-ABI/-/jobs/artifacts/master/raw/x86-64-ABI/abi.pdf?job=build
 
 [Bootboot]: https://gitlab.com/bztsrc/bootboot
-[Gnu Compiler Collections]: https://gcc.gnu.org/
+[GNU Compiler Collections]: https://gcc.gnu.org/
+[GNU Binutils]: https://www.gnu.org/software/binutils/
 [Nasm]: https://www.nasm.us/
-[Gnu Make]: https://www.gnu.org/software/make/
-[Gnu efi]: https://sourceforge.net/projects/gnu-efi/
+[GNU Make]: https://www.gnu.org/software/make/
+[GNU efi]: https://sourceforge.net/projects/gnu-efi/
 [mkbootimg]: https://gitlab.com/bztsrc/bootboot/-/tree/master/mkbootimg
 [Qemu]: https://www.qemu.org/
 [Edk2]: https://github.com/tianocore/edk2

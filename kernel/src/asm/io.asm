@@ -7,6 +7,15 @@ global as_outsw
 global as_outd
 global as_outsd
 
+global as_inb
+global as_insb
+
+global as_inw
+global as_insw
+
+global as_ind
+global as_insd
+
 section .text
 
 as_outb:
@@ -48,3 +57,38 @@ as_outsd:
   rep outsd
   ret
 
+as_inb:
+  mov rdx, rdi
+  in al, dx
+  ret
+
+as_insb:
+  cld
+  mov rcx, rdx
+  mov rdx, rdi
+  rep insb
+  ret
+
+as_inw:
+  mov rdx, rdi
+  in ax, dx
+  ret
+
+as_insw:
+  cld
+  mov rcx, rdx
+  mov rdx, rdi
+  rep insw
+  ret
+
+as_ind:
+  mov rdx, rdi
+  in eax, dx
+  ret
+
+as_insd:
+  cld
+  mov rcx, rdx
+  mov rdx, rdi
+  rep insd
+  ret

@@ -1,6 +1,6 @@
 FONT_NAME := tamsyn-font-1.11
 FONT_LINK := http://www.fial.com/~scott/tamsyn-font/download/$(FONT_NAME).tar.gz
-FONT_TYPE := Tamsyn10x20r
+FONT_TYPE := Tamsyn8x16r
 
 FONT_FILE := $(INITRD_SYSROOT)/sys/font.psf
 FONT_CACHE := $(CACHE_DIR)font.psf

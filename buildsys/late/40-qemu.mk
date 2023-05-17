@@ -7,7 +7,10 @@
 QEMU_CMD := $(QEMU_BIN) $(QEMU_FLAGS) \
 		-drive if=pflash,format=raw,unit=0,file=$(OVMF_CODE),readonly=on \
 		-drive if=pflash,format=raw,unit=1,file=$(OVMF_VARS) \
-		-drive format=raw,file=$(HELIUM_IMG) -debugcon stdio \
+		-drive id=sysimg,if=none,format=raw,file=$(HELIUM_IMG) \
+		-device ahci,id=ahci \
+		-device ide-hd,drive=sysimg,bus=ahci.0 \
+		-debugcon stdio \
 		-smp 4
 
 run-qemu: bootimg

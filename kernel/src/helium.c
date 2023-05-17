@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <kmod.h>
 #include <term.h>
+#include <pci.h>
 
 #include <fs/tar.h>
 
@@ -56,6 +57,8 @@ int kmain()
   );
   prompt("kernel", "initrd://sys/", 1);
   printf("\n");
+
+  pci_probe();
 
   return 0;
 }

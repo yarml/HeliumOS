@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <pci.h>
+#include <mem.h>
 
 #include <asm/io.h>
 
@@ -14,6 +15,14 @@ uint32_t pci_read_reg(size_t bus, size_t dev, size_t fn, size_t reg)
 
   as_outd(PCI_IO_CFG_ADR, adr.asint);
   return as_ind(PCI_IO_CFG_DATA);
+}
+
+void pci_read_regarray(
+  size_t bus, size_t dev, size_t fn,
+  size_t regstart, size_t n, uint32_t *buf
+) {
+  for(size_t i = 0; i < n; ++i)
+    buf[i] = pci_read_reg(bus, dev, fn, regstart + i);
 }
 
 uint16_t pci_vendorid(size_t bus, size_t dev, size_t fn)
@@ -84,6 +93,22 @@ void pci_probe()
             info.header_type,
             pci_class(info.class)
           );
+          if(info.class == 0x01 && info.subclass == 0x06 && info.progif == 0x01)
+          {
+            printf("\tSATA controller:\n");
+            uint32_t bars[5];
+            pci_read_regarray(bus, dev, fn, 4, 5, bars);
+            for(size_t i = 0; i < 5; ++i)
+              printf("\t\tBAR%lx: %x\n", i, bars[i]);
+            uint32_t abar = pci_read_reg(bus, dev, fn, 9);
+            printf("\t\tAHCI BAR: %x\n", abar);
+            void *vptr = KVMSPACE + (uint64_t) 1024 * 1024 * 1024 * 1024 + (uint64_t) 512 * 1024 * 1024 * 1024;
+            printf("\t\tVPTR: %p\n", vptr);
+            mem_vmap(vptr, (void *) (uintptr_t) abar, 0x1100, 0);
+            uint32_t *hba = (uint32_t *) vptr;
+            uint32_t cap = hba[0];
+            printf("CAP: %032b\n", cap);
+          }
         }
       }
 }

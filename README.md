@@ -14,6 +14,9 @@ all the nice features of other operating systems.
 Currently, the only supported platform is x86-64 UEFI, and I have little
 to no knowledge about other platforms, so they may never be supported.
 
+If you find issues with compiling the kernel checkout
+[Known Issues](#known-issues), or contact me(checkout [Contact](#contact))
+
 # Index
 - [HeliumOS](#heliumos)
 - [Index](#index)
@@ -35,6 +38,7 @@ to no knowledge about other platforms, so they may never be supported.
   - [cache/ (Build system generated)](#cache-build-system-generated)
 - [3rd Party tools](#3rd-party-tools)
 - [Resources](#resources)
+- [Known Issues](#known-issues)
 
 # Getting the sources
 As HeliumOS is hosted in github you can clone the sources with `git` using:
@@ -98,7 +102,7 @@ bug fixes(there exist many!), new features, or documentation.
 You can contact me in case you want more details about the project, or just
 wanna chat about anything.
 
-- Discord: yarm#1814
+- Discord: y_arml
 - Email: youssefharmal@gmail.com
 
 # Source directory structure
@@ -185,6 +189,12 @@ This project is only possible because of the following resources:
 * [Oracle's Linker and Libraries Guide]
 * [ELF Specification]
 * [ELF x86-64-ABI psABI]
+
+# Known Issues
+- In bootboot some `libc` functions require `const char *` parameters,
+but `unsigned char *` are passed instead, if build fails there, you might need
+to fix them manually (only 4 changes required) (Will be fixed when Helium
+Bootboot is implemented)
 
 <!-- Raw links  -->
 [buildsys/]: buildsys/

@@ -6,18 +6,19 @@
 
 uint32_t pci_read_reg(size_t bus, size_t dev, size_t fn, size_t reg) {
   pciadr adr;
-  adr.offset = reg * 4;
-  adr.fn = fn;
-  adr.dev = dev;
-  adr.bus = bus;
+  adr.offset  = reg * 4;
+  adr.fn      = fn;
+  adr.dev     = dev;
+  adr.bus     = bus;
   adr.enabled = 1;
 
   as_outd(PCI_IO_CFG_ADR, adr.asint);
   return as_ind(PCI_IO_CFG_DATA);
 }
 
-void pci_read_regarray(size_t bus, size_t dev, size_t fn, size_t regstart,
-                       size_t n, uint32_t *buf) {
+void pci_read_regarray(
+    size_t bus, size_t dev, size_t fn, size_t regstart, size_t n, uint32_t *buf
+) {
   for (size_t i = 0; i < n; ++i)
     buf[i] = pci_read_reg(bus, dev, fn, regstart + i);
 }
@@ -43,19 +44,19 @@ uint8_t pci_revid(size_t bus, size_t dev, size_t fn) {
 }
 
 pci_inf pci_info(size_t bus, size_t dev, size_t fn) {
-  pci_inf info;
+  pci_inf  info;
 
-  uint32_t r0 = pci_read_reg(bus, dev, fn, 0);
-  uint32_t r2 = pci_read_reg(bus, dev, fn, 2);
-  uint32_t r3 = pci_read_reg(bus, dev, fn, 3);
+  uint32_t r0      = pci_read_reg(bus, dev, fn, 0);
+  uint32_t r2      = pci_read_reg(bus, dev, fn, 2);
+  uint32_t r3      = pci_read_reg(bus, dev, fn, 3);
 
-  info.vendorid = r0 & 0x0000FFFF;
-  info.devid = (r0 & 0xFFFF0000) >> 16;
+  info.vendorid    = r0 & 0x0000FFFF;
+  info.devid       = (r0 & 0xFFFF0000) >> 16;
 
-  info.class = (r2 & 0xFF000000) >> 24;
-  info.subclass = (r2 & 0x00FF0000) >> 16;
-  info.progif = (r2 & 0x0000FF00) >> 8;
-  info.revid = (r2 & 0x000000FF);
+  info.class       = (r2 & 0xFF000000) >> 24;
+  info.subclass    = (r2 & 0x00FF0000) >> 16;
+  info.progif      = (r2 & 0x0000FF00) >> 8;
+  info.revid       = (r2 & 0x000000FF);
 
   info.header_type = (r3 & 0x00FF0000) >> 16;
 
@@ -74,9 +75,18 @@ void pci_probe() {
               "Class: %02x; Subclass: %02x; ProgIf: %02x; Rev: %02x; "
               "HType: %02x "
               "%s\n",
-              bus, dev, fn, info.vendorid, info.devid, info.class,
-              info.subclass, info.progif, info.revid, info.header_type,
-              pci_class(info.class));
+              bus,
+              dev,
+              fn,
+              info.vendorid,
+              info.devid,
+              info.class,
+              info.subclass,
+              info.progif,
+              info.revid,
+              info.header_type,
+              pci_class(info.class)
+          );
           if (info.class == 0x01 && info.subclass == 0x06 &&
               info.progif == 0x01) {
             printf("\tSATA controller:\n");
@@ -91,7 +101,7 @@ void pci_probe() {
             printf("\t\tVPTR: %p\n", vptr);
             mem_vmap(vptr, (void *)(uintptr_t)abar, 0x1100, 0);
             uint32_t *hba = (uint32_t *)vptr;
-            uint32_t cap = hba[0];
+            uint32_t  cap = hba[0];
             printf("\t\tCAP: %032b\n", cap);
           }
         }

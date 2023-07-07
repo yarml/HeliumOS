@@ -10,7 +10,7 @@
 
 hash_table *i_ksym_table = 0;
 
-int ksym_loadp(char const *path) {
+int         ksym_loadp(char const *path) {
   fsnode *f = fs_search(path);
   if (!f) return 1;
   int status = ksym_loadf(f);
@@ -21,10 +21,10 @@ int ksym_loadp(char const *path) {
 int ksym_loadf(fsnode *f) {
   size_t fsize = fs_tellsize(f);
   if (!fsize) return 1;
-  char buf[fsize];
+  char   buf[fsize];
   size_t read = 0;
   while (read < fsize) {
-    errno = 0;
+    errno     = 0;
     size_t cr = fs_read(f, read, buf + read, fsize - read);
     if (!cr && errno) return 1;
     read += cr;
@@ -33,17 +33,17 @@ int ksym_loadf(fsnode *f) {
 }
 
 int ksym_loadb(void *ksymf) {
-  elf64_header *eh = ksymf;
+  elf64_header      *eh = ksymf;
 
   elf64_sect_header *shstrtab_sh =
       ksymf + eh->shoff + eh->shstridx * eh->shent_size;
-  char const *shstrtab = ksymf + shstrtab_sh->offset;
-  char const *strtab = 0;
+  char const        *shstrtab  = ksymf + shstrtab_sh->offset;
+  char const        *strtab    = 0;
   elf64_sect_header *symtab_sh = 0;
 
   for (size_t i = 0; i < eh->sht_len; ++i) {
-    elf64_sect_header *sh = ksymf + eh->shoff + i * eh->shent_size;
-    char const *shname = shstrtab + sh->name;
+    elf64_sect_header *sh     = ksymf + eh->shoff + i * eh->shent_size;
+    char const        *shname = shstrtab + sh->name;
     if (!strcmp(shname, ".strtab")) strtab = ksymf + sh->offset;
     if (!strcmp(shname, ".symtab")) symtab_sh = sh;
     if (strtab && symtab_sh) break;

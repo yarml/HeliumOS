@@ -5,13 +5,13 @@
 #include <stddef.h>
 #include <stdint.h>
 
-typedef struct ELF64_ID elf64_id;
-typedef struct ELF64_FHEADER elf64_header;
+typedef struct ELF64_ID          elf64_id;
+typedef struct ELF64_FHEADER     elf64_header;
 typedef struct ELF64_PROG_HEADER elf64_prog_header;
 typedef struct ELF64_SECT_HEADER elf64_sect_header;
-typedef struct ELF64_SYM elf64_sym;
-typedef struct ELF64_RELA elf64_rela;
-typedef struct ELF64_DYN elf64_dyn;
+typedef struct ELF64_SYM         elf64_sym;
+typedef struct ELF64_RELA        elf64_rela;
+typedef struct ELF64_DYN         elf64_dyn;
 
 struct ELF64_ID {
   uint8_t magic[4];
@@ -66,8 +66,8 @@ struct ELF64_SECT_HEADER {
 
 struct ELF64_SYM {
   uint32_t name;
-  uint8_t info;
-  uint8_t other;
+  uint8_t  info;
+  uint8_t  other;
   uint16_t shidx;
   uint64_t value;
   uint64_t size;
@@ -76,7 +76,7 @@ struct ELF64_SYM {
 struct ELF64_RELA {
   uint64_t offset;
   uint64_t info;
-  int64_t addend;
+  int64_t  addend;
 };
 
 struct ELF64_DYN {

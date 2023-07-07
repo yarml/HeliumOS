@@ -20,8 +20,8 @@ filesys *fs_from_name(char const *name) {
 }
 
 fsnode *fs_open(char const *fsname, char const *names, size_t depth) {
-  filesys *fs;
-  fsnode *target;
+  filesys        *fs;
+  fsnode         *target;
 
   // Search for the filesystem
   filesys_llnode *cfsn = i_fs_head;
@@ -37,7 +37,7 @@ fsnode *fs_open(char const *fsname, char const *names, size_t depth) {
     return 0;
   }
 
-  fs = &cfsn->fs;
+  fs     = &cfsn->fs;
   target = fs->root;
 
   // Now look for node in the filesystem
@@ -49,7 +49,7 @@ fsnode *fs_open(char const *fsname, char const *names, size_t depth) {
     }
 
     // target is a dir, search its subnodes for the current name to resolve
-    size_t nameoff = i * FSNODE_NAMELEN;
+    size_t  nameoff = i * FSNODE_NAMELEN;
 
     fsnode *starget = target->dir.fchild;
 
@@ -77,8 +77,8 @@ fsnode *fs_open(char const *fsname, char const *names, size_t depth) {
 }
 
 fsnode *fs_search(char const *path) {
-  char fsname[FS_NAMELEN];
-  char *names = 0;
+  char   fsname[FS_NAMELEN];
+  char  *names = 0;
   size_t depth = 0;
 
   fs_pathtok(path, fsname, &names, &depth);
@@ -91,8 +91,8 @@ fsnode *fs_search(char const *path) {
 }
 
 fsnode *fs_dirof(char const *path) {
-  char fsname[FS_NAMELEN];
-  char *names = 0;
+  char   fsname[FS_NAMELEN];
+  char  *names = 0;
   size_t depth = 0;
 
   fs_pathtok(path, fsname, &names, &depth);

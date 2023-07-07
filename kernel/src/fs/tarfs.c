@@ -18,7 +18,7 @@ void tar_header_print(tar_header *header) {
 
 size_t tar_file_size(tar_header *header) { return stou(header->size, 0, 8); }
 
-char *tar_entry_type(tar_header *header) {
+char  *tar_entry_type(tar_header *header) {
   switch (header->type) {
     case TAR_ENTRY_TYPE_FILE:
       return "file";
@@ -39,10 +39,10 @@ void *tarfs_direct_access(fsnode *f) {
 
 // Implementation functions
 static size_t tar_file_read(fsnode *f, size_t off, char *buf, size_t size) {
-  tar_header *header = f->ext;
-  void *content = header + 1;
+  tar_header *header  = f->ext;
+  void       *content = header + 1;
 
-  size_t fsize = tar_file_size(header);
+  size_t      fsize   = tar_file_size(header);
 
   if (off > fsize) return 0;
 
@@ -66,23 +66,23 @@ filesys *tar_mkimfs(char *fsname, void *membuf, size_t size) {
   fsimpl tar_impl;
   memset(&tar_impl, 0, sizeof(tar_impl));
 
-  tar_impl.fs_file_read = tar_file_read;
+  tar_impl.fs_file_read     = tar_file_read;
   tar_impl.fs_file_tellsize = tar_file_tellsize;
 
-  filesys *fs = fs_mount(fsname);
+  filesys *fs               = fs_mount(fsname);
   if (!fs) return 0;
 
-  fs->file_cap = FSCAP_USED | FSCAP_FREAD | FSCAP_FTELLSIZE;
+  fs->file_cap               = FSCAP_USED | FSCAP_FREAD | FSCAP_FTELLSIZE;
   // Set fake dir capabilities to be able to build the immutable
   // tree, then remove these capabilities later
-  fs->dir_cap = FSCAP_USED | FSCAP_DCREAT;
+  fs->dir_cap                = FSCAP_USED | FSCAP_DCREAT;
 
-  fs->impl = tar_impl;
+  fs->impl                   = tar_impl;
 
-  size_t fsname_len = strlen(fsname);
+  size_t      fsname_len     = strlen(fsname);
 
-  char *path = 0;
-  size_t path_cap = 0;  // NULL termination not accounted for
+  char       *path           = 0;
+  size_t      path_cap       = 0;  // NULL termination not accounted for
 
   tar_header *current_header = membuf;
 
@@ -98,18 +98,24 @@ filesys *tar_mkimfs(char *fsname, void *membuf, size_t size) {
 
     size_t name1_len = strlen(current_header->name_pref);
     size_t name2_len = strlen(current_header->name);
-    size_t name_len = name1_len + name2_len;
+    size_t name_len  = name1_len + name2_len;
 
     // +3 for '://', +1 for NULL termination
-    size_t path_len = fsname_len + name_len + 3;
+    size_t path_len  = fsname_len + name_len + 3;
 
     if (path_len >= path_cap) {
-      path = realloc(path, path_len + 1);
+      path     = realloc(path, path_len + 1);
       path_cap = path_len + 1;
     }
 
-    snprintf(path, path_cap, "%s://%s%s", fsname, current_header->name_pref,
-             current_header->name);
+    snprintf(
+        path,
+        path_cap,
+        "%s://%s%s",
+        fsname,
+        current_header->name_pref,
+        current_header->name
+    );
 
     tar_header *ch = current_header;
 
@@ -122,7 +128,7 @@ filesys *tar_mkimfs(char *fsname, void *membuf, size_t size) {
 
     fsnode *dir = fs_dirof(path);
 
-    char node_name[FSNODE_NAMELEN];
+    char    node_name[FSNODE_NAMELEN];
     fs_basename(path, node_name);
 
     fsnode *cf;

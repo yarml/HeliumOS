@@ -96,7 +96,7 @@ FILE *fopen(char *path, char *mode) {
     return 0;
 
   file->fnode = fnode;
-  file->mode = imode;
+  file->mode  = imode;
 
   return file;
 }

@@ -11,11 +11,11 @@ typedef struct PCI_ADR pciadr;
 struct PCI_ADR {
   union {
     struct {
-      uint64_t offset : 8;
-      uint64_t fn : 3;
-      uint64_t dev : 5;
-      uint64_t bus : 8;
-      uint64_t res0 : 7;
+      uint64_t offset  : 8;
+      uint64_t fn      : 3;
+      uint64_t dev     : 5;
+      uint64_t bus     : 8;
+      uint64_t res0    : 7;
       uint64_t enabled : 1;
     } pack;
     uint32_t asint;
@@ -35,17 +35,17 @@ struct PCI_INF {
   uint8_t header_type;
 };
 
-uint32_t pci_read_reg(size_t bus, size_t dev, size_t fn, size_t reg);
-uint16_t pci_vendorid(size_t bus, size_t dev, size_t fn);
+uint32_t    pci_read_reg(size_t bus, size_t dev, size_t fn, size_t reg);
+uint16_t    pci_vendorid(size_t bus, size_t dev, size_t fn);
 
-uint8_t pci_classid(size_t bus, size_t dev, size_t fn);
-uint8_t pci_subclass(size_t bus, size_t dev, size_t fn);
-uint8_t pci_progif(size_t bus, size_t dev, size_t fn);
-uint8_t pci_revid(size_t bus, size_t dev, size_t fn);
+uint8_t     pci_classid(size_t bus, size_t dev, size_t fn);
+uint8_t     pci_subclass(size_t bus, size_t dev, size_t fn);
+uint8_t     pci_progif(size_t bus, size_t dev, size_t fn);
+uint8_t     pci_revid(size_t bus, size_t dev, size_t fn);
 
-pci_inf pci_info(size_t bus, size_t dev, size_t fn);
+pci_inf     pci_info(size_t bus, size_t dev, size_t fn);
 
-void pci_probe();
+void        pci_probe();
 
 char const *pci_class(uint16_t class_id);
 

@@ -5,9 +5,13 @@
 #include "vcache.h"
 
 static void s_alloc_substruct(mem_vpstruct_ptr *vs) {
-  mem_pallocation alloc =
-      mem_ppalloc(i_pmm_header, 512 * sizeof(mem_vpstruct_ptr), 0, true,
-                  (void *)((uintptr_t)16 * 1024 * 1024 * 1024));
+  mem_pallocation alloc = mem_ppalloc(
+      i_pmm_header,
+      512 * sizeof(mem_vpstruct_ptr),
+      0,
+      true,
+      (void *)((uintptr_t)16 * 1024 * 1024 * 1024)
+  );
 
   if (alloc.error)
     error_out_of_memory("Could not allocate memory while initializing VCache!");
@@ -18,7 +22,7 @@ static void s_alloc_substruct(mem_vpstruct_ptr *vs) {
   // Setup the parent entry
   memset(vs, 0, sizeof(*vs));
 
-  vs->write = 1;
+  vs->write   = 1;
   vs->ss_padr = (uintptr_t)alloc.padr >> 12;
   vs->present = 1;
 
@@ -28,8 +32,8 @@ static void s_alloc_substruct(mem_vpstruct_ptr *vs) {
 void vcache_init() {
   prtrace_begin("vcache_init", 0);
 
-  mem_pml4e *target_pml4e = i_pmlmax + ENTRY_IDX(3, VCACHE_PTR);
-  mem_pdpte_ref *target_pdpt = 0;
+  mem_pml4e     *target_pml4e = i_pmlmax + ENTRY_IDX(3, VCACHE_PTR);
+  mem_pdpte_ref *target_pdpt  = 0;
 
   // Chances are, this condition is always true
   if (!target_pml4e->present) s_alloc_substruct(target_pml4e);
@@ -80,15 +84,16 @@ void vcache_init() {
     if (vu.ptr != VCACHE_PTR + MEM_PS * i)
       error_inv_state(
           "Time to fix this ugly reliance on vcache_map behavior"
-          "(" __FILE__ ":" AS_STRING(__LINE__) ")");
+          "(" __FILE__ ":" AS_STRING(__LINE__) ")"
+      );
 
     if (i == 0) vpte = vu.ptr;
   }
-  i_vcache_pte = vpte;
+  i_vcache_pte         = vpte;
 
   vcache_unit pde_unit = vcache_map(i_vcache_pde);
   if (pde_unit.error) error_general("VCache init", "Could not map vcache PD");
-  i_vcache_pde = pde_unit.ptr;
+  i_vcache_pde            = pde_unit.ptr;
 
   // Last but not least, map i_ppmlmax into virtual memory
 
@@ -96,6 +101,7 @@ void vcache_init() {
   if (pmlmax_unit.error) error_general("VCache init", "Could not map PMLMAX");
   i_pmlmax = pmlmax_unit.ptr;
 
-  prtrace_end("vcache_init", "SUCCESS", "pde=%p,pte=%p", i_vcache_pde,
-              i_vcache_pte);
+  prtrace_end(
+      "vcache_init", "SUCCESS", "pde=%p,pte=%p", i_vcache_pde, i_vcache_pte
+  );
 }

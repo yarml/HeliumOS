@@ -4,7 +4,7 @@ static FILE *s_stdout = 0;
 static FILE *s_stderr = 0;
 static FILE *s_stddbg = 0;
 
-void __init_stdio() {
+void         __init_stdio() {
   s_stddbg = fopen("dbg://ostream", "a");
   s_stdout = fopen("term://stdout", "a");
   s_stderr = fopen("term://stderr", "a");

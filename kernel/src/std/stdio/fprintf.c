@@ -37,8 +37,9 @@ int prtrace_begin(char const *fname, char const *args, ...) {
   return r;
 }
 
-int prtrace_end(char const *fname, char const *status, char const *result,
-                ...) {
+int prtrace_end(
+    char const *fname, char const *status, char const *result, ...
+) {
   va_list va;
   va_start(va, result);
 

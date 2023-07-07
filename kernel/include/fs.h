@@ -8,8 +8,8 @@
 
 typedef enum FSNODE_TYPE fsnode_type;
 
-typedef uint64_t dircap;
-typedef uint64_t filecap;
+typedef uint64_t         dircap;
+typedef uint64_t         filecap;
 
 #define FSCAP_USED (1 << 0)
 
@@ -26,7 +26,7 @@ typedef uint64_t filecap;
 typedef struct FS_IMPL fsimpl;
 
 typedef struct FILESYS filesys;
-typedef struct FSNODE fsnode;
+typedef struct FSNODE  fsnode;
 
 #define FS_NAMELEN (16)
 #define FSNODE_NAMELEN (512)
@@ -48,10 +48,10 @@ struct FS_IMPL {
   size_t (*fs_file_pull)(fsnode *file, char *buf, size_t size);
 
   size_t (*fs_file_skip)(fsnode *file,
-                         size_t size);  // Default impl
+                         size_t  size);  // Default impl
 
-  size_t (*fs_file_write)(fsnode *file, size_t off, char const *buf,
-                          size_t size);
+  size_t (*fs_file_write
+  )(fsnode *file, size_t off, char const *buf, size_t size);
 
   size_t (*fs_file_append)(fsnode *file, char const *buf, size_t size);
 
@@ -60,55 +60,55 @@ struct FS_IMPL {
 
 // Structure that defines a filesystem
 struct FILESYS {
-  char name[FS_NAMELEN];
+  char    name[FS_NAMELEN];
 
   // default capabilities
-  dircap dir_cap;
+  dircap  dir_cap;
   filecap file_cap;
 
   fsnode *root;
 
-  fsimpl impl;
+  fsimpl  impl;
 
   // Filesystems can use this pointer as they please
-  void *ext;
+  void   *ext;
 };
 
 struct FSNODE {
-  char name[FSNODE_NAMELEN];
+  char        name[FSNODE_NAMELEN];
 
-  filesys *fs;
+  filesys    *fs;
   fsnode_type type;
 
-  fsnode *parent;  // can be NULL for a directory
-  fsnode *nsib;    // next sibling
-  fsnode *psib;    // prev sibling
+  fsnode     *parent;  // can be NULL for a directory
+  fsnode     *nsib;    // next sibling
+  fsnode     *psib;    // prev sibling
 
   // How many times the file has been open
   // This is used for files in large filesystems that
   // can cache their nodes into disk or something
   // when refcount is not zero, the node should not be cached
-  size_t refcount;
+  size_t      refcount;
 
   // Each filesystem is free to use this pointer as they wish
   // I imagine it can store info to where the data can be read/written to
   // info about cache if there is any etc etc
   // Filesystems are required to release any memory allocated for this pointer
   // through fsnode_detach
-  void *ext;
+  void       *ext;
 
   // The first node that is a link to this node
-  fsnode *flink;
+  fsnode     *flink;
 
   // Fields that only exist in file xor directories xor links
   union {
     struct {
       filecap cap;
-      size_t size;
+      size_t  size;
     } file;
 
     struct {
-      dircap cap;
+      dircap  cap;
       fsnode *fchild;
     } dir;
 
@@ -125,54 +125,54 @@ struct FSNODE {
 
 filesys *fs_mount(char const *name);
 filesys *fs_from_name(char const *name);
-void fs_umount(filesys *fs);
+void     fs_umount(filesys *fs);
 
 // name functions
-int fs_valid_sys_name(char const *name);
-int fs_valid_node_name(char const *name);
-int fs_valid_path(char const *path);
-void fs_makecanonical(char const *path, char *opath);
-void fs_pathtok(char const *path, char *fsname, char **nodes, size_t *len);
-void fs_basename(char const *path, char *name);
+int      fs_valid_sys_name(char const *name);
+int      fs_valid_node_name(char const *name);
+int      fs_valid_path(char const *path);
+void     fs_makecanonical(char const *path, char *opath);
+void     fs_pathtok(char const *path, char *fsname, char **nodes, size_t *len);
+void     fs_basename(char const *path, char *name);
 
 // TODO: when processes are implemented, al fs functions should also
 // get a pointer to the process making the request
-fsnode *fs_open(char const *fsname, char const *names, size_t depth);
-fsnode *fs_search(char const *path);
-fsnode *fs_dirof(char const *path);
+fsnode  *fs_open(char const *fsname, char const *names, size_t depth);
+fsnode  *fs_search(char const *path);
+fsnode  *fs_dirof(char const *path);
 
-void fs_close(fsnode *node);
+void     fs_close(fsnode *node);
 
-void fs_rm(fsnode *node);
+void     fs_rm(fsnode *node);
 
-fsnode *fs_mknode(fsnode *parent, char *name);
-fsnode *fs_mkdir(fsnode *parent, char *name);
-fsnode *fs_mkfile(fsnode *parent, char *name);
-fsnode *fs_mklink(fsnode *parent, char *name, fsnode *target);
+fsnode  *fs_mknode(fsnode *parent, char *name);
+fsnode  *fs_mkdir(fsnode *parent, char *name);
+fsnode  *fs_mkfile(fsnode *parent, char *name);
+fsnode  *fs_mklink(fsnode *parent, char *name, fsnode *target);
 
-fsnode *fs_nextnode(fsnode *dir, fsnode *current);
+fsnode  *fs_nextnode(fsnode *dir, fsnode *current);
 
-int fs_check_fcap(fsnode *node, int cap);
-int fs_check_dcap(fsnode *dir, int cap);
+int      fs_check_fcap(fsnode *node, int cap);
+int      fs_check_dcap(fsnode *dir, int cap);
 
 // FSCAP_FREAD
-size_t fs_read(fsnode *file, size_t off, char *buf, size_t size);
+size_t   fs_read(fsnode *file, size_t off, char *buf, size_t size);
 
 // FSCAP_FPULL
-size_t fs_pull(fsnode *file, char *buf, size_t size);
-size_t fs_skip(fsnode *file, size_t size);
+size_t   fs_pull(fsnode *file, char *buf, size_t size);
+size_t   fs_skip(fsnode *file, size_t size);
 
 // FSCAP_FWRITE
-size_t fs_write(fsnode *file, size_t off, char const *buf, size_t size);
+size_t   fs_write(fsnode *file, size_t off, char const *buf, size_t size);
 
 // FSCAP_FAPPEND
-size_t fs_append(fsnode *file, char const *buf, size_t size);
+size_t   fs_append(fsnode *file, char const *buf, size_t size);
 
 // FSCAP_FTELLSIZE
-size_t fs_tellsize(fsnode *file);
+size_t   fs_tellsize(fsnode *file);
 
-void fs_print(filesys *fs);
+void     fs_print(filesys *fs);
 
-void fs_init();
+void     fs_init();
 
 #endif

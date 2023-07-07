@@ -7,13 +7,19 @@
 
 static void exception_common_prologue(int_frame *frame, char *name) {
   fprintf(stddbg, "[EXCEPTION:%s]\n", name);
-  fprintf(stddbg,
-          "IP: %016lx\n"
-          "CS: %016lx\n"
-          "SS: %016lx\n"
-          "RF: %016lx\n"
-          "SP: %016lx\n",
-          frame->ip, frame->cs, frame->ss, frame->flags, frame->sp);
+  fprintf(
+      stddbg,
+      "IP: %016lx\n"
+      "CS: %016lx\n"
+      "SS: %016lx\n"
+      "RF: %016lx\n"
+      "SP: %016lx\n",
+      frame->ip,
+      frame->cs,
+      frame->ss,
+      frame->flags,
+      frame->sp
+  );
 }
 
 interrupt_handler void exception_div(int_frame *frame) {
@@ -25,18 +31,22 @@ interrupt_handler void exception_div(int_frame *frame) {
 interrupt_handler void exception_page_fault(int_frame *frame, uint64_t ec) {
   int_errcode_pf *err_code = (void *)&ec;
 
-  uint64_t adr = as_rcr2();
+  uint64_t        adr      = as_rcr2();
 
   exception_common_prologue(frame, "PAGE FAULT");
 
   char *operation = err_code->write ? "write" : "read";
-  char *priv = err_code->user ? "user" : "kernel";
+  char *priv      = err_code->user ? "user" : "kernel";
 
-  fprintf(stddbg,
-          "Memory violation while trying to %s.\n"
-          "Running code is %s.\n"
-          "At memory address %p\n",
-          operation, priv, adr);
+  fprintf(
+      stddbg,
+      "Memory violation while trying to %s.\n"
+      "Running code is %s.\n"
+      "At memory address %p\n",
+      operation,
+      priv,
+      adr
+  );
 
   if (!err_code->present)
     fprintf(stddbg, "Caused by structure without present flag.\n");

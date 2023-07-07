@@ -14,3 +14,21 @@ IncludeCategories:
     Priority: 3
   - Regex: '"[[:alnum:]./_]+"'
     Priority: 4
+
+AlignConsecutiveBitFields: AcrossEmptyLinesAndComments
+AlignConsecutiveAssignments: AcrossEmptyLinesAndComments
+AlignConsecutiveDeclarations: AcrossEmptyLinesAndComments
+
+AlignTrailingComments: true
+AllowAllArgumentsOnNextLine: true
+AlwaysBreakBeforeMultilineStrings: true
+AllowAllParametersOfDeclarationOnNextLine: true
+BinPackArguments: false
+BinPackParameters: false
+
+AlignOperands: AlignAfterOperator
+AlignAfterOpenBracket: BlockIndent
+AllowShortBlocksOnASingleLine: Empty
+
+AlignEscapedNewlines: Right
+AlignArrayOfStructures: Left

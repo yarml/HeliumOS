@@ -69,7 +69,7 @@ int fs_valid_path(char const *path) {
   size_t fsname_begin = head;
   while (lpath[head] && lpath[head] != ':' && !isspace(lpath[head])) ++head;
 
-  char s = lpath[head];
+  char s      = lpath[head];
   lpath[head] = 0;
   if (!fs_valid_sys_name(lpath + fsname_begin)) return 0;
   lpath[head] = s;
@@ -89,11 +89,11 @@ int fs_valid_path(char const *path) {
     // Backtrack to the previous non space
     while (isspace(lpath[head - 1])) --head;
 
-    s = lpath[head];
+    s           = lpath[head];
     lpath[head] = 0;
     if (!fs_valid_node_name(lpath + name_begin)) return 0;
     lpath[head] = s;
-    head = next_slash;
+    head        = next_slash;
   }
 
   return 1;
@@ -102,7 +102,7 @@ int fs_valid_path(char const *path) {
 // Warning; Functions assumes opath is at least as big as path
 // Also assumes path is valid even if non-canonical
 void fs_makecanonical(char const *path, char *opath) {
-  size_t head = 0;
+  size_t head  = 0;
   size_t ohead = 0;
 
   while (isspace(path[head])) ++head;
@@ -138,7 +138,7 @@ void fs_makecanonical(char const *path, char *opath) {
       while (path[head] == '/' || isspace(path[head])) ++head;
     }
 
-    size_t wb_head = head;
+    size_t wb_head  = head;
     size_t wb_ohead = ohead;
     while (path[head] && path[head] != '/') {
       opath[ohead] = path[head];
@@ -162,9 +162,9 @@ void fs_makecanonical(char const *path, char *opath) {
 }
 
 void fs_basename(char const *path, char *name) {
-  char *names = 0;
-  size_t n = 0;
-  char fsname[FS_NAMELEN];
+  char  *names = 0;
+  size_t n     = 0;
+  char   fsname[FS_NAMELEN];
   fs_pathtok(path, fsname, &names, &n);
 
   if (!n) {
@@ -181,12 +181,12 @@ void fs_basename(char const *path, char *name) {
 // *nodes needs to be free()d later
 void fs_pathtok(char const *path, char *fsname, char **nodes, size_t *len) {
   size_t path_len = strlen(path);
-  char canon_path[path_len + 1];
+  char   canon_path[path_len + 1];
 
   fs_makecanonical(path, canon_path);
 
   size_t canon_path_len = strlen(canon_path);
-  *len = 0;
+  *len                  = 0;
   for (size_t i = 0; i < canon_path_len; ++i) {
     if (canon_path[i] == '/') ++*len;
   }

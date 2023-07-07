@@ -21,7 +21,7 @@ static void prompt(char *user, char *pwd, int super) {
 }
 
 void __init_stdio();
-int kmain() {
+int  kmain() {
   if (ksym_loadp("initrd://sys/ksym"))
     error_inv_state("Could not load kernel symbols.");
 
@@ -32,7 +32,7 @@ int kmain() {
   fsnode *modit = fs_nextnode(moddir, 0);
   while (modit) {
     fsnode *current = modit;
-    modit = fs_nextnode(moddir, modit);
+    modit           = fs_nextnode(moddir, modit);
     if (current->type == FSNODE_LINK) current = current->link.target;
     if (!current)  // This condition can be reached if current node was a link
       continue;
@@ -44,11 +44,12 @@ int kmain() {
   term_setfg(255, 128, 0);
   printf(
       "##   ## ####### ##      ## ##    ## ###    ###  ######  #######\n"
-      "##   ## ##      ##      ## ##    ## ####  #### ##    ## ##     \n"
-      "####### #####   ##      ## ##    ## ## #### ## ##    ## #######\n"
-      "##   ## ##      ##      ## ##    ## ##  ##  ## ##    ##      ##\n"
-      "##   ## ####### ####### ##  ######  ##      ##  ######  #######\n"
-      "\n");
+       "##   ## ##      ##      ## ##    ## ####  #### ##    ## ##     \n"
+       "####### #####   ##      ## ##    ## ## #### ## ##    ## #######\n"
+       "##   ## ##      ##      ## ##    ## ##  ##  ## ##    ##      ##\n"
+       "##   ## ####### ####### ##  ######  ##      ##  ######  #######\n"
+       "\n"
+  );
   prompt("kernel", "initrd://sys/", 1);
   printf("\n");
 

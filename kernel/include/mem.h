@@ -17,16 +17,16 @@ struct MEM_PSEG_HEADER;
 typedef struct MEM_PSEG_HEADER mem_pseg_header;
 struct MEM_PSEG_HEADER {
   size_t magic;
-  void *padr;
+  void  *padr;
   size_t size;
 } pack;
 
 struct MEM_PALLOCATION;
 typedef struct MEM_PALLOCATION mem_pallocation;
 struct MEM_PALLOCATION {
-  void *padr;
-  size_t header_off;
-  size_t size;
+  void   *padr;
+  size_t  header_off;
+  size_t  size;
   errno_t error;
 };
 
@@ -35,8 +35,9 @@ void mem_init();
 /* mem_p* */
 
 #define PALLOC_STD_HEADER ((void *)UINTPTR_MAX)
-mem_pallocation mem_ppalloc(void *pheader, size_t size, size_t alignement,
-                            bool cont, void *below);
+mem_pallocation mem_ppalloc(
+    void *pheader, size_t size, size_t alignement, bool cont, void *below
+);
 void mem_ppfree(void *pheader, mem_pallocation alloc);
 
 /* mem_v* */
@@ -44,11 +45,11 @@ void mem_ppfree(void *pheader, mem_pallocation alloc);
 #define ERR_MEM_ALN (-1)          /* Alignment error */
 #define ERR_MEM_NO_PHY_SPACE (-2) /* No physical space */
 #define ERR_MEM_NULL_SIZE (-3)    /* Allocation/mapping of size 0 */
-#define ERR_MEM_INV_VADR                            \
-  (-4) /* Invalid virtual address(eg. non canonical \
+#define ERR_MEM_INV_VADR                                                       \
+  (-4) /* Invalid virtual address(eg. non canonical                            \
           address on systems that require it) */
-#define ERR_MEM_MANAGED                                                    \
-  (-5)                           /* Memory area to be mapped is managed by \
+#define ERR_MEM_MANAGED                                                        \
+  (-5)                           /* Memory area to be mapped is managed by     \
                                     another kernel system(eg; vcache) */
 #define ERR_MEM_NO_VC_SPACE (-6) /* Couldn't allocate a VCache page */
 
@@ -61,8 +62,8 @@ errno_t mem_vumap(void *vadr, size_t size);
 
 typedef struct MEM_VSEG mem_vseg;
 struct MEM_VSEG {
-  void *ptr;
-  size_t size;
+  void   *ptr;
+  size_t  size;
   errno_t error;
 };
 
@@ -75,15 +76,16 @@ mem_vseg mem_find_vsegment(size_t size, void *heap_start, size_t heap_size);
 /*
   Allocates a block of at least the requested size withing the specified heap
 */
-mem_vseg mem_alloc_vblock(size_t size, int flags, void *heap_start,
-                          size_t heap_size);
+mem_vseg mem_alloc_vblock(
+    size_t size, int flags, void *heap_start, size_t heap_size
+);
 
 // Kernel virtual space
-#define KVMSPACE \
+#define KVMSPACE                                                               \
   ((void *)(0xFFFF800000000000))  // not to be mistaken with
                                   // linux's kvm, this is
                                   // Kernel Virtual Memory
-#define PHEADER_VPTR \
+#define PHEADER_VPTR                                                           \
   ((void *)(0xFFFF804000000000))  // Virtual address of
                                   // physical memory header
 // KHEAP is 512 Gib in size, 1 PML4 page
@@ -103,9 +105,8 @@ mem_vseg mem_alloc_vblock(size_t size, int flags, void *heap_start,
 #define MAPF_G (1 << 6) /* Global page */
 
 // Pointer manipulation
-#define PTR_MAKE_CANONICAL(p)                        \
-  (void *)((uintptr_t)p & 0x0000800000000000         \
-               ? ((uintptr_t)p | 0xFFFF000000000000) \
-               : p)
+#define PTR_MAKE_CANONICAL(p)                                                  \
+  (void                                                                        \
+       *)((uintptr_t)p & 0x0000800000000000 ? ((uintptr_t)p | 0xFFFF000000000000) : p)
 
 #endif

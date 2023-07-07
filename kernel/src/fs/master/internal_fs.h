@@ -6,7 +6,7 @@
 typedef struct FILESYS_LLNODE filesys_llnode;
 
 struct FILESYS_LLNODE {
-  filesys fs;
+  filesys         fs;
 
   filesys_llnode *next;
   filesys_llnode *prev;

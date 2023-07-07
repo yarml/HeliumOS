@@ -16,13 +16,13 @@ typedef struct UNIT_HEADER unit_header;
 #define INITIAL_HEAP_SIZE (8 * 1024 * 1024)
 
 struct BLOCK_HEADER {
-  size_t magic;  // Verify that the pointer is indeed a block header
+  size_t        magic;  // Verify that the pointer is indeed a block header
 
-  size_t block_size;  // Block size, header counted
+  size_t        block_size;  // Block size, header counted
 
-  unit_header *ffunit;  // First free unit
-  unit_header *largest_free;
-  size_t largest_free_size;
+  unit_header  *ffunit;  // First free unit
+  unit_header  *largest_free;
+  size_t        largest_free_size;
 
   block_header *next;
   block_header *prev;
@@ -38,11 +38,11 @@ struct UNIT_HEADER {
 
   block_header *block;
 
-  unit_header *fnext;
-  unit_header *fprev;
+  unit_header  *fnext;
+  unit_header  *fprev;
 
-  unit_header *next;
-  unit_header *prev;
+  unit_header  *next;
+  unit_header  *prev;
 };
 
 #define UNITF_FREE (1 << 1)
@@ -59,11 +59,11 @@ struct UNIT_HEADER {
 // returned
 // This new block should be integrated in the linked list by the caller function
 // The block header is zeroed, and the magic number is placed
-block_header *i_stdlib_alloc_block(size_t size);
+block_header        *i_stdlib_alloc_block(size_t size);
 
 extern block_header *i_stdlib_heap_header;
 
 // Debug
-void i_stdlib_malloc_print_state();
+void                 i_stdlib_malloc_print_state();
 
 #endif

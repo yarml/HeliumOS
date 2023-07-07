@@ -14,16 +14,16 @@ mem_pde_ref *i_vcache_pde;
 
 // Pointer to the first PTE used by VCache. This PTE should be
 // followed by another 2047 PTE
-mem_pte *i_vcache_pte;
+mem_pte     *i_vcache_pte;
 
-vcache_unit vcache_map(void *padr) {
+vcache_unit  vcache_map(void *padr) {
   prtrace_begin("vcache_map", "padr=%p", padr);
 
   // First thing, look if there is a lazy page pointing to this
   // exact physical address
   for (size_t pdei = 0; pdei < PDE_COUNT; ++pdei) {
-    mem_pde_ref *pde = i_vcache_pde + pdei;
-    size_t lazy_count = pde_lazy_pages(pde);
+    mem_pde_ref *pde        = i_vcache_pde + pdei;
+    size_t       lazy_count = pde_lazy_pages(pde);
 
     if (!lazy_count) continue;
 
@@ -34,10 +34,10 @@ vcache_unit vcache_map(void *padr) {
         pde_set_lazy(pde, lazy_count - 1);
 
         vcache_unit u;
-        u.error = 0;
+        u.error   = 0;
         u.pde_idx = pdei;
         u.pte_idx = ptei;
-        u.ptr = VCACHE_PTR + MEM_PS * (pdei * 512 + ptei);
+        u.ptr     = VCACHE_PTR + MEM_PS * (pdei * 512 + ptei);
 
         return u;
       }
@@ -46,17 +46,17 @@ vcache_unit vcache_map(void *padr) {
 
   // Find a PDE which contains at least 1 free page
 
-  mem_pde_ref *target_pde = 0;
-  size_t pde_idx = 0;
-  size_t free_pages_count = 0;
+  mem_pde_ref *target_pde       = 0;
+  size_t       pde_idx          = 0;
+  size_t       free_pages_count = 0;
 
   // if 0, then no PDE has any lazy page
   // if not 0, then it is the number of lazy pages in the first PDE
   // that has any lazy page
-  size_t lazy_pages_count = 0;
+  size_t       lazy_pages_count = 0;
 
-  mem_pte *target_pte = 0;
-  size_t pte_idx = 0;
+  mem_pte     *target_pte       = 0;
+  size_t       pte_idx          = 0;
 
   for (size_t i = 0; i < PDE_COUNT; ++i) {
     if (!lazy_pages_count) lazy_pages_count = pde_lazy_pages(i_vcache_pde + i);
@@ -64,7 +64,7 @@ vcache_unit vcache_map(void *padr) {
     free_pages_count = pde_free_pages(i_vcache_pde + i);
     if (free_pages_count) {
       target_pde = i_vcache_pde + i;
-      pde_idx = i;
+      pde_idx    = i;
       break;
     }
   }
@@ -74,10 +74,10 @@ vcache_unit vcache_map(void *padr) {
       // No free pages were found, and no lazy pages could be freed either...
       // Return an error
       vcache_unit err;
-      err.ptr = 0;
+      err.ptr     = 0;
       err.pte_idx = 0;
       err.pde_idx = 0;
-      err.error = ERR_VCM_NPG_FOUND;
+      err.error   = ERR_VCM_NPG_FOUND;
 
       prtrace_end("vcache_map", "ERR_VCM_NPG_FOUND", 0);
       return err;
@@ -92,7 +92,7 @@ vcache_unit vcache_map(void *padr) {
         size_t lazy_found_count = 0;
         // Iterate through all PTEs until we found all the lazy pages and
         // marked them as free
-        target_pde = i_vcache_pde + i;
+        target_pde              = i_vcache_pde + i;
         for (size_t j = 0; j < 512; ++i) {
           // if we already found all the lazy pages, don't bother checking the
           // other ones, they are all used!
@@ -106,7 +106,7 @@ vcache_unit vcache_map(void *padr) {
             // also set target_pte to this, so that we don't need to look for it
             // again after the flush is done
             target_pte = pte;
-            pte_idx = j;
+            pte_idx    = j;
 
             ++lazy_found_count;
             pte_set_age(pte, 0);
@@ -139,7 +139,7 @@ vcache_unit vcache_map(void *padr) {
     for (size_t i = 0; i < 512; ++i) {
       if (!target_pte[i].present) {
         target_pte = target_pte + i;
-        pte_idx = i;
+        pte_idx    = i;
         break;
       }
     }
@@ -149,12 +149,12 @@ vcache_unit vcache_map(void *padr) {
   // Now that we have a PTE, we set it up
   memset(target_pte, 0, sizeof(*target_pte));
 
-  target_pte->write = 1;
-  target_pte->global = 1;
-  target_pte->padr = (uintptr_t)padr >> 12;
+  target_pte->write   = 1;
+  target_pte->global  = 1;
+  target_pte->padr    = (uintptr_t)padr >> 12;
   target_pte->present = 1;
 
-  void *ptr = VCACHE_PTR + MEM_PS * (pde_idx * 512 + pte_idx);
+  void *ptr           = VCACHE_PTR + MEM_PS * (pde_idx * 512 + pte_idx);
 
   as_invlpg((uint64_t)ptr);
 
@@ -162,11 +162,12 @@ vcache_unit vcache_map(void *padr) {
 
   unit.pde_idx = pde_idx;
   unit.pte_idx = pte_idx;
-  unit.ptr = ptr;
-  unit.error = 0;
+  unit.ptr     = ptr;
+  unit.error   = 0;
 
-  prtrace_end("vcache_map", "SUCCESS", "ptr=%p,pde=%lu,pte=%lu", ptr, pde_idx,
-              pte_idx);
+  prtrace_end(
+      "vcache_map", "SUCCESS", "ptr=%p,pde=%lu,pte=%lu", ptr, pde_idx, pte_idx
+  );
   return unit;
 }
 
@@ -189,12 +190,12 @@ void vcache_remap(vcache_unit unit, void *padr) {
   // Reconfigure the PTE from scratch
   memset(pte, 0, sizeof(*pte));
 
-  pte->write = 1;
-  pte->global = 1;
-  pte->padr = (uintptr_t)padr >> 12;
+  pte->write   = 1;
+  pte->global  = 1;
+  pte->padr    = (uintptr_t)padr >> 12;
   pte->present = 1;
 
-  void *ptr = VCACHE_PTR + MEM_PS * (unit.pde_idx * 512 + unit.pte_idx);
+  void *ptr    = VCACHE_PTR + MEM_PS * (unit.pde_idx * 512 + unit.pte_idx);
 
   as_invlpg((uint64_t)ptr);
 
@@ -202,26 +203,32 @@ void vcache_remap(vcache_unit unit, void *padr) {
 }
 
 void vcache_umap(vcache_unit unit, void *id) {
-  prtrace_begin("vcache_umap", "unit={ptr=%p,pde=%lu,pte=%lu}, id=%p", unit.ptr,
-                unit.pde_idx, unit.pte_idx, id);
+  prtrace_begin(
+      "vcache_umap",
+      "unit={ptr=%p,pde=%lu,pte=%lu}, id=%p",
+      unit.ptr,
+      unit.pde_idx,
+      unit.pte_idx,
+      id
+  );
 
   // First, check how many lazy pages the PDE has
   // If it is less than 127(the maximum), then the process is
   // straighforward. Mark this page as lazy with age 1, then return
-  mem_pde_ref *pde = i_vcache_pde + unit.pde_idx;
-  mem_pte *pte = i_vcache_pte + unit.pde_idx * 512 + unit.pte_idx;
+  mem_pde_ref *pde        = i_vcache_pde + unit.pde_idx;
+  mem_pte     *pte        = i_vcache_pte + unit.pde_idx * 512 + unit.pte_idx;
 
   // Pointer to the 512 PTEs pointed to by the PDE
-  mem_pte *pde_pt = i_vcache_pte + 512 * unit.pde_idx;
+  mem_pte     *pde_pt     = i_vcache_pte + 512 * unit.pde_idx;
 
-  size_t lazy_count = pde_lazy_pages(pde);
+  size_t       lazy_count = pde_lazy_pages(pde);
 
   // This should be the majority of the first cases
   if (lazy_count < 63) {
     // Increment the age of the other lazy pages
     for (size_t i = 0; i < 512; ++i) {
       mem_pte *current_pte = pde_pt + i;
-      size_t age = pte_age(current_pte);
+      size_t   age         = pte_age(current_pte);
       if (age && age < 1023) pte_set_age(current_pte, age + i);
     }
     if (id != VCACHE_NO_ID) pte->padr = (uintptr_t)id >> 12;
@@ -233,8 +240,8 @@ void vcache_umap(vcache_unit unit, void *id) {
   // If we already reached the maximum number of lazy pages
   // We need to free the oldest ones, also increasing the ages
   // of the ones that are still here
-  size_t age_sum = 0;
-  size_t oldest_age = 0;
+  size_t   age_sum    = 0;
+  size_t   oldest_age = 0;
   mem_pte *oldest_pte = 0;
 
   // We do a first run removing the oldest lazy PTE
@@ -255,7 +262,7 @@ void vcache_umap(vcache_unit unit, void *id) {
   age_sum -= oldest_age;
 
   // Now compute the average age among lazy pages
-  size_t av_age = age_sum / (lazy_count - 1);
+  size_t av_age        = age_sum / (lazy_count - 1);
 
   // number of lazy pages that will be marked free
   size_t removed_count = 0;
@@ -264,7 +271,7 @@ void vcache_umap(vcache_unit unit, void *id) {
   // and incrementing the ages of the ones that will stay
   for (size_t i = 0; i < 512; ++i) {
     mem_pte *current_pte = pde_pt + i;
-    size_t age = pte_age(current_pte);
+    size_t   age         = pte_age(current_pte);
 
     // Make sure this is a lazy page not used/free
     if (age) {

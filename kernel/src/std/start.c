@@ -7,7 +7,7 @@
 
 void __init_stdlib();
 void __init_stdio();
-int kmain();
+int  kmain();
 
 // Initialize C stdlib then call kmain()
 void _start() {

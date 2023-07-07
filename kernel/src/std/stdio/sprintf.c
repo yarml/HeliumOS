@@ -7,7 +7,7 @@
 #include <string.h>
 #include <utils.h>
 
-#define PRINTF_BUF_SIZE \
+#define PRINTF_BUF_SIZE                                                        \
   (68)  // This buffer is enough if we are printing
         // anything other than a string
 
@@ -19,8 +19,9 @@ int snprintf(char *s, size_t size, char const *template, ...) {
   return ret;
 }
 
-static inline char *__print_num(char *buf, int base, bool sign, bool pref,
-                                bool usign, uint64_t v) {
+static inline char *__print_num(
+    char *buf, int base, bool sign, bool pref, bool usign, uint64_t v
+) {
   char *result = 0;
 
   if (usign)
@@ -33,9 +34,9 @@ static inline char *__print_num(char *buf, int base, bool sign, bool pref,
     result -= 2;
     result[0] = '0';
     switch (base) {
-#define PN_PFX_BASE(n, c) \
-  case n:                 \
-    result[1] = c;        \
+#define PN_PFX_BASE(n, c)                                                      \
+  case n:                                                                      \
+    result[1] = c;                                                             \
     break
       PN_PFX_BASE(10, 'd');
       PN_PFX_BASE(2, 'b');
@@ -51,31 +52,31 @@ static inline char *__print_num(char *buf, int base, bool sign, bool pref,
   return result;
 }
 
-#define print_num(buf, base, sign, pref, lmode, usign, va) \
-  ({                                                       \
-    uint64_t v;                                            \
-    if (lmode)                                             \
-      v = va_arg(va, uint64_t);                            \
-    else                                                   \
-      v = va_arg(va, uint32_t);                            \
-    __print_num(buf, base, sign, pref, usign, v);          \
+#define print_num(buf, base, sign, pref, lmode, usign, va)                     \
+  ({                                                                           \
+    uint64_t v;                                                                \
+    if (lmode)                                                                 \
+      v = va_arg(va, uint64_t);                                                \
+    else                                                                       \
+      v = va_arg(va, uint32_t);                                                \
+    __print_num(buf, base, sign, pref, usign, v);                              \
   })
 
 int vsnprintf(char *s, size_t size, char const *template, va_list va) {
   size_t total_chars = 0;
   while (*template) {
-    char buf[PRINTF_BUF_SIZE];
+    char        buf[PRINTF_BUF_SIZE];
     char const *to_print = buf;
-    int max = INT32_MAX;
-    int min = 0;
-    bool pad0 = false;
+    int         max      = INT32_MAX;
+    int         min      = 0;
+    bool        pad0     = false;
     if (*template == '%')  // do something fancy
     {
       ++template;
 
       bool lmode = false;
-      bool sign = false;
-      bool pref = false;
+      bool sign  = false;
+      bool pref  = false;
       // read flags if found
       while (*template == '#' || *template == '+' || *template == '0') {
         if (*template == '#' && !pref)
@@ -129,13 +130,13 @@ int vsnprintf(char *s, size_t size, char const *template, va_list va) {
           break;
         case 'p':
           if (!min) min = sizeof(uintptr_t) * 2;
-          pad0 = true;
+          pad0     = true;
           to_print = print_num(buf, 16, sign, pref, true, true, va);
           break;
         case 'z': {
-          char *tail = buf + PRINTF_BUF_SIZE - 1;
+          char  *tail       = buf + PRINTF_BUF_SIZE - 1;
           size_t unit_order = 0;
-          size_t denom = 1;
+          size_t denom      = 1;
           size_t num;
           if (lmode)
             num = va_arg(va, uint64_t);
@@ -144,14 +145,14 @@ int vsnprintf(char *s, size_t size, char const *template, va_list va) {
           *tail = 0;
           --tail;
           if (num == 0) {
-            *tail = '0';
+            *tail    = '0';
             to_print = tail;
             break;
           }
           while (unit_order < UNITS_COUNT) {
             if (num / denom % 1024) {
               *tail = g_units_sign[unit_order];
-              tail = utos(num / denom % 1024, 10, tail) - 1;
+              tail  = utos(num / denom % 1024, 10, tail) - 1;
             }
             denom *= 1024;
             ++unit_order;
@@ -169,8 +170,8 @@ int vsnprintf(char *s, size_t size, char const *template, va_list va) {
           break;
         case 'e':
           to_print = "Not implemented";
-          max = INT32_MAX;
-          min = 0;
+          max      = INT32_MAX;
+          min      = 0;
           break;
         case '%':
           buf[0] = '%';
@@ -187,8 +188,8 @@ int vsnprintf(char *s, size_t size, char const *template, va_list va) {
     }
     // After this line, template is supposed to be pointing at the next
     // character
-    int printed = 0;  // printed in this loop;
-    size_t tplen;     // to_print len
+    int    printed = 0;  // printed in this loop;
+    size_t tplen;        // to_print len
     if (max == INT32_MAX)
       tplen = strlen(to_print);
     else

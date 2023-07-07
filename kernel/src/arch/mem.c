@@ -10,7 +10,7 @@ void mem_vpstruct_ptr_set_meta(mem_vpstruct_ptr *s, uint16_t meta) {
 }
 
 uint16_t mem_vpstruct_meta(mem_vpstruct *s) { return s->free0 | s->free1 >> 3; }
-void mem_vpstruct_set_meta(mem_vpstruct *s, uint16_t meta) {
+void     mem_vpstruct_set_meta(mem_vpstruct *s, uint16_t meta) {
   s->free0 = meta & 0x7;
   s->free1 = meta >> 3 & 0x7f;
 }

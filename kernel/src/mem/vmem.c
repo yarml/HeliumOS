@@ -11,8 +11,14 @@
 #include "vcache/vcache.h"
 
 errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags) {
-  prtrace_begin("mem_vmap", "vadr=%p,padr=%p,size=%lu,flags=%032b", vadr, padr,
-                size, flags);
+  prtrace_begin(
+      "mem_vmap",
+      "vadr=%p,padr=%p,size=%lu,flags=%032b",
+      vadr,
+      padr,
+      size,
+      flags
+  );
 
   if (!size) return ERR_MEM_NULL_SIZE;
 
@@ -44,17 +50,17 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags) {
   }
 
   // Align size with page size
-  size = ALIGN_UP(size, i_order_ps[target_order]);
+  size              = ALIGN_UP(size, i_order_ps[target_order]);
 
   // number of bytes mapped so far
-  size_t mapped = 0;
+  size_t mapped     = 0;
 
   // update the virtual tables using invlpg if:
   //  - the mapping is explicitly global
   //  - OR the mapping is in kernel space(implicitly global)
   //  - OR the total number of pages to map is less than the rlcr3
   //       threshold.
-  int use_invlpg = flags & MAPF_G || vadr >= KVMSPACE ||
+  int    use_invlpg = flags & MAPF_G || vadr >= KVMSPACE ||
                    size / i_order_ps[target_order] < RLCR3_THRESHOLD;
 
   // Allocate two pages in VCache that will be used to map substructures
@@ -77,7 +83,7 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags) {
   }
 
   while (mapped < size) {
-    int order = MAX_ORDER;
+    int               order        = MAX_ORDER;
     mem_vpstruct_ptr *target_entry = i_pmlmax + ENTRY_IDX(order, vadr);
 
     while (order > target_order) {
@@ -85,7 +91,8 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags) {
       // for it's substruct
       if (!target_entry->present) {
         mem_pallocation alloc = mem_ppalloc(
-            i_pmm_header, 512 * sizeof(mem_vpstruct_ptr), 0, true, 0);
+            i_pmm_header, 512 * sizeof(mem_vpstruct_ptr), 0, true, 0
+        );
 
         if (alloc.error) {
           prtrace_end("mem_vmap", "ERR_MEM_NO_PHY_SPACE", 0);
@@ -148,20 +155,20 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags) {
     {
       // retype target_entry, l_entry for large_entry
       mem_vpstruct *l_entry = (mem_vpstruct *)target_entry;
-      l_entry->ps = 1;  // Mark this page as a map page not ref page
-      l_entry->write = (flags & MAPF_W) != 0;
+      l_entry->ps           = 1;  // Mark this page as a map page not ref page
+      l_entry->write        = (flags & MAPF_W) != 0;
       if (vadr < KVMSPACE) l_entry->user = (flags & MAPF_U) != 0;
-      l_entry->global = vadr >= KVMSPACE || (flags & MAPF_G) != 0;
-      l_entry->padr = (uintptr_t)padr >> 13;  // there is a reserved bit
+      l_entry->global  = vadr >= KVMSPACE || (flags & MAPF_G) != 0;
+      l_entry->padr    = (uintptr_t)padr >> 13;  // there is a reserved bit
 
       l_entry->present = 1;
     } else  // target is PTE
     {
       mem_pte *pte = (mem_pte *)target_entry;
-      pte->write = (flags & MAPF_W) != 0;
+      pte->write   = (flags & MAPF_W) != 0;
       if (vadr < KVMSPACE) pte->user = (flags & MAPF_U) != 0;
-      pte->global = vadr >= KVMSPACE || (flags & MAPF_G) != 0;
-      pte->padr = (uintptr_t)padr >> 12;
+      pte->global  = vadr >= KVMSPACE || (flags & MAPF_G) != 0;
+      pte->padr    = (uintptr_t)padr >> 12;
       pte->present = 1;
     }
 
@@ -180,8 +187,15 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags) {
   // Reload mappings using rlcr3 if we didnt do so using invlpg
   if (!use_invlpg) as_rlcr3();
 
-  prtrace_end("mem_vmap", "SUCCESS", "vadr=%p,padr=%p,size=%lu,flags=%032b",
-              vadr, padr, size, flags);
+  prtrace_end(
+      "mem_vmap",
+      "SUCCESS",
+      "vadr=%p,padr=%p,size=%lu,flags=%032b",
+      vadr,
+      padr,
+      size,
+      flags
+  );
   return 0;
 }
 
@@ -198,17 +212,23 @@ errno_t mem_vumap(void *vadr, size_t size) {
   return 0;
 }
 
-static void recursive_find_vseg(size_t req, vcache_unit *cache,
-                                mem_vpstruct_ptr *base, int order,
-                                void **seg_ptr, size_t *seg_size,
-                                size_t *indices, size_t *eindices) {
+static void recursive_find_vseg(
+    size_t            req,
+    vcache_unit      *cache,
+    mem_vpstruct_ptr *base,
+    int               order,
+    void            **seg_ptr,
+    size_t           *seg_size,
+    size_t           *indices,
+    size_t           *eindices
+) {
   if (order)  // PML4E, PDPTE, PDE
   {
-    size_t *pidx = indices + order;
-    size_t *peidx = eindices + order;
-    int fentry = 1;
+    size_t *pidx   = indices + order;
+    size_t *peidx  = eindices + order;
+    int     fentry = 1;
     for (; *pidx <= *peidx && (fentry || *pidx % 512); ++*pidx) {
-      fentry = 0;
+      fentry                   = 0;
       mem_vpstruct_ptr *centry = base + *pidx % 512;
       if (!centry->present) {
         if (!*seg_ptr)
@@ -217,8 +237,16 @@ static void recursive_find_vseg(size_t req, vcache_unit *cache,
         if (*seg_size >= req) return;
       } else {
         vcache_remap(cache[order - 1], SS_PADR(centry));
-        recursive_find_vseg(req, cache, cache[order - 1].ptr, order - 1,
-                            seg_ptr, seg_size, indices, eindices);
+        recursive_find_vseg(
+            req,
+            cache,
+            cache[order - 1].ptr,
+            order - 1,
+            seg_ptr,
+            seg_size,
+            indices,
+            eindices
+        );
         if (*seg_size >= req) return;
       }
     }
@@ -231,14 +259,14 @@ static void recursive_find_vseg(size_t req, vcache_unit *cache,
       if (*seg_size >= req) return;
     } else  // This PTE is a disappointment
     {
-      *seg_ptr = 0;
+      *seg_ptr  = 0;
       *seg_size = 0;
     }
   }
 }
 
 mem_vseg mem_find_vsegment(size_t size, void *heap_start, size_t heap_size) {
-  size = ALIGN_UP(size, MEM_PS);
+  size      = ALIGN_UP(size, MEM_PS);
   heap_size = ALIGN_DN(heap_size, MEM_PS);
 
   if (!size || !heap_size) return (mem_vseg){0, 0, MEM_VSEG_ERROR_INVALID};
@@ -253,26 +281,27 @@ mem_vseg mem_find_vsegment(size_t size, void *heap_start, size_t heap_size) {
     }
   }
 
-  void *heap_end = heap_start + heap_size - 1;
+  void  *heap_end = heap_start + heap_size - 1;
 
   size_t indices[ORDER_COUNT];
   size_t eindices[ORDER_COUNT];
 
   for (int order = MAX_ORDER; order >= 0; --order) {
     if (order != MAX_ORDER) {
-      indices[order] = 512 * indices[order + 1] + ENTRY_IDX(order, heap_start);
+      indices[order]  = 512 * indices[order + 1] + ENTRY_IDX(order, heap_start);
       eindices[order] = 512 * eindices[order + 1] + ENTRY_IDX(order, heap_end);
     } else {
-      indices[MAX_ORDER] = ENTRY_IDX(MAX_ORDER, heap_start);
+      indices[MAX_ORDER]  = ENTRY_IDX(MAX_ORDER, heap_start);
       eindices[MAX_ORDER] = ENTRY_IDX(MAX_ORDER, heap_end);
     }
   }
 
-  void *seg_ptr = 0;
+  void  *seg_ptr  = 0;
   size_t seg_size = 0;
 
-  recursive_find_vseg(size, cache, i_pmlmax, MAX_ORDER, &seg_ptr, &seg_size,
-                      indices, eindices);
+  recursive_find_vseg(
+      size, cache, i_pmlmax, MAX_ORDER, &seg_ptr, &seg_size, indices, eindices
+  );
 
   for (size_t i = 0; i < 3; ++i) vcache_umap(cache[i], 0);
 
@@ -281,9 +310,10 @@ mem_vseg mem_find_vsegment(size_t size, void *heap_start, size_t heap_size) {
   return (mem_vseg){seg_ptr, seg_size, 0};
 }
 
-mem_vseg mem_alloc_vblock(size_t size, int flags, void *heap_start,
-                          size_t heap_size) {
-  size = ALIGN_UP(size, MEM_PS);
+mem_vseg mem_alloc_vblock(
+    size_t size, int flags, void *heap_start, size_t heap_size
+) {
+  size         = ALIGN_UP(size, MEM_PS);
 
   mem_vseg seg = mem_find_vsegment(size, heap_start, heap_size);
 
@@ -299,7 +329,8 @@ mem_vseg mem_alloc_vblock(size_t size, int flags, void *heap_start,
       // all the allocated phyical pages and return 0
       error_out_of_memory(
           "Could not allocate physical memory while "
-          "trying to allocate kernel heap space!");
+          "trying to allocate kernel heap space!"
+      );
     }
 
     // Map the newly allocated physical pages to their place in the heap

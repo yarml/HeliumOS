@@ -18,7 +18,7 @@ void free(void *ptr) {
 
   if (target_unit->magic != UNIT_MAGIC) printd("free(): Pointer invalid\n");
 
-  target_unit->fprev = 0;
+  target_unit->fprev        = 0;
 
   // Go backwards until we find a free unit
   unit_header *current_unit = target_unit->prev;
@@ -33,11 +33,11 @@ void free(void *ptr) {
   // If we didn't find any free unit before this, then this is the new first
   // free unit now, update block
   if (!target_unit->fprev) {
-    target_unit->fnext = target_unit->block->ffunit;
+    target_unit->fnext         = target_unit->block->ffunit;
     target_unit->block->ffunit = target_unit;
   } else  // Otherwise, we get fnext from fprev
   {
-    target_unit->fnext = target_unit->fprev->fnext;
+    target_unit->fnext        = target_unit->fprev->fnext;
     target_unit->fprev->fnext = target_unit;
   }
 
@@ -48,8 +48,8 @@ void free(void *ptr) {
   if (target_unit->next && target_unit->fnext == target_unit->next) {
     target_unit->size += sizeof(unit_header) + target_unit->next->size;
     target_unit->next->magic = 0;  // Just in case
-    target_unit->next = target_unit->next->next;
-    target_unit->fnext = target_unit->fnext->fnext;
+    target_unit->next        = target_unit->next->next;
+    target_unit->fnext       = target_unit->fnext->fnext;
   }
 
   // Merge with previous unit if it is free
@@ -57,18 +57,18 @@ void free(void *ptr) {
     unit_header *prev_unit = target_unit->prev;
 
     prev_unit->size += sizeof(unit_header) + target_unit->size;
-    prev_unit->next = target_unit->next;
-    prev_unit->fnext = target_unit->fnext;
+    prev_unit->next    = target_unit->next;
+    prev_unit->fnext   = target_unit->fnext;
     target_unit->magic = 0;
 
-    target_unit = prev_unit;
+    target_unit        = prev_unit;
   }
 
   // Now check if the target unit, now free and merged with it's neighbours
   // is larger than the largest unit in the block, if so, update the block data
   if (target_unit->size > target_unit->block->largest_free_size) {
     target_unit->block->largest_free_size = target_unit->size;
-    target_unit->block->largest_free = target_unit;
+    target_unit->block->largest_free      = target_unit;
   }
 
   // Finally, add the free flag to the target unit

@@ -6,7 +6,7 @@
 
 size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
   if (stream->mode & MODE_R) {
-    errno = 0;
+    errno       = 0;
     size_t read = fs_read(stream->fnode, stream->cur, ptr, size * nmemb);
 
     if (!read) {
@@ -27,7 +27,7 @@ size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream) {
 
 size_t fpull(void *ptr, size_t size, size_t nmemb, FILE *stream) {
   if (stream->mode & MODE_P) {
-    errno = 0;
+    errno       = 0;
     size_t read = fs_pull(stream->fnode, ptr, size * nmemb);
 
     if (!read) {

@@ -10,7 +10,7 @@
  * \param power
  * \return \a base to the power of \a power.
  */
-intmax_t powi(intmax_t base, uintmax_t power);
+intmax_t  powi(intmax_t base, uintmax_t power);
 
 /**
  * \brief Calculates 10 to the power of \a power.

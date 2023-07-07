@@ -9,16 +9,16 @@
 struct VCACHE_UNIT;
 typedef struct VCACHE_UNIT vcache_unit;
 struct VCACHE_UNIT {
-  void *ptr;
-  size_t pde_idx;
-  size_t pte_idx;
+  void   *ptr;
+  size_t  pde_idx;
+  size_t  pte_idx;
   errno_t error;
 };
 
 #define ERR_VCM_NPG_FOUND (-1)
 
 vcache_unit vcache_map(void *padr);
-void vcache_remap(vcache_unit unit, void *padr);
+void        vcache_remap(vcache_unit unit, void *padr);
 
 #define VCACHE_NO_ID ((void *)UINTPTR_MAX)
 void vcache_umap(vcache_unit unit, void *id);
@@ -40,6 +40,6 @@ extern mem_pde_ref *i_vcache_pde;
 
 // Pointer to the first PTE used by VCache. This PTE should be
 // followed by another 2047 PTE
-extern mem_pte *i_vcache_pte;
+extern mem_pte     *i_vcache_pte;
 
 #endif

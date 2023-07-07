@@ -24,7 +24,7 @@
 typedef struct PSF2_HEADER psf2_header;
 
 struct PSF2_HEADER {
-  uint8_t magic[4];
+  uint8_t  magic[4];
   uint32_t version;
   uint32_t headersize; /* offset of bitmaps in file */
   uint32_t flags;

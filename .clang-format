@@ -1,0 +1,16 @@
+Language: Cpp
+
+BasedOnStyle: Google
+
+IndentWidth: 2
+
+IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: "<[[:alnum:]._]+>"
+    Priority: 1
+  - Regex: "<[[:alnum:]./_]+>"
+    Priority: 2
+  - Regex: '"[[:alnum:]._]+"'
+    Priority: 3
+  - Regex: '"[[:alnum:]./_]+"'
+    Priority: 4

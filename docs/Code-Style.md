@@ -1,6 +1,7 @@
 
 # Index
 - [Index](#index)
+- [Clang Format](#clang-format)
 - [Code structure](#code-structure)
   - [Indentation](#indentation)
   - [Line limit](#line-limit)
@@ -21,6 +22,13 @@
 - [Assembly](#assembly)
 - [Debug printing](#debug-printing)
   - [Value printing format](#value-printing-format)
+
+# Clang Format
+A [.clang-format] file is available with the configuration matching the
+conventions used in HeliumOS.
+
+Extensions can be used in your code editor to automatically format code using
+the configuration file provided.
 
 # Code structure
 ## Indentation
@@ -82,8 +90,8 @@ source code is `everything_lowecase`.
 Use `#include <%>` instead of `#include "%"` whenever possible.
 
 ## Order
-Include statement have to be ordered following their categories first, then from
-the longest to the shortest include
+Include statement have to be ordered following their categories first,
+then alphabetically
 
 ## Categories
 Include statement come in three categories that must be separated by empty
@@ -116,4 +124,4 @@ When an internal value of the system is to be displayed out, the format
 the format `message.\n` is to be used.
 
 [mem.c]: ../kernel/src/mem/mem.c
-
+[.clang-format]: ../.clang-format

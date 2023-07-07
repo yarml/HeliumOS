@@ -12,7 +12,6 @@
 
 #define unused [[maybe_unused]]
 
-
 #define AS_STRING_IMPL(x) #x
 #define AS_STRING(x) AS_STRING_IMPL(x)
 

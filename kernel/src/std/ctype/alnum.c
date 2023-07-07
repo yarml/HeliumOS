@@ -1,7 +1,5 @@
-int isalnum(int c)
-{
-  switch(c)
-  {
+int isalnum(int c) {
+  switch (c) {
     case 'A' ... 'Z':
     case 'a' ... 'z':
     case '0' ... '9':
@@ -11,10 +9,8 @@ int isalnum(int c)
   }
 }
 
-int isnalnum(int c)
-{
-  switch(c)
-  {
+int isnalnum(int c) {
+  switch (c) {
     case 'A' ... 'Z':
     case 'a' ... 'z':
     case '0' ... '9':

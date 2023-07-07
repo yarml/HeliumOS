@@ -1,9 +1,9 @@
 #ifndef HELIUM_BOOTINFO_H
 #define HELIUM_BOOTINFO_H
 
-#include <stdint.h>
 #include <bootboot.h>
 #include <mem.h>
+#include <stdint.h>
 
 extern char environment[MEM_PS];
 

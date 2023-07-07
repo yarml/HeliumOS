@@ -1,27 +1,26 @@
 #ifndef CSTD_STDIO_H
 #define CSTD_STDIO_H
 
-#include <stddef.h>
-#include <stdarg.h>
 #include <fs.h>
+#include <stdarg.h>
+#include <stddef.h>
 
 #define EOF (int)(-1)
 
 typedef struct STDIO_FILE FILE;
-struct STDIO_FILE
-{
+struct STDIO_FILE {
   fsnode *fnode;
 
   int mode;
 
-  size_t cur; // cursor
+  size_t cur;  // cursor
 
   int eof;
   int err;
 };
 
-extern FILE* stdout;
-extern FILE* stderr;
+extern FILE *stdout;
+extern FILE *stderr;
 
 // Prints to debug console
 int printd(char const *template, ...);
@@ -31,8 +30,8 @@ int vprintd(char const *template, va_list va);
 int printf(char const *template, ...);
 int vprintf(char const *template, va_list va);
 
-int fprintf(FILE* stream, char const *template, ...);
-int vfprintf(FILE* stream, char const *template, va_list va);
+int fprintf(FILE *stream, char const *template, ...);
+int vfprintf(FILE *stream, char const *template, va_list va);
 
 int snprintf(char *s, size_t size, char const *template, ...);
 int vsnprintf(char *s, size_t size, char const *template, va_list va);
@@ -69,35 +68,15 @@ int tpf(char const *template, ...);
 FILE *fopen(char *path, char *mode);
 int fclose(FILE *stream);
 
-size_t fread(
-  void *ptr,
-  size_t size,
-  size_t nmemb,
-  FILE *stream
-);
+size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream);
 
 // Non standard
-size_t fpull(
-  void *ptr,
-  size_t size,
-  size_t nmemb,
-  FILE *stream
-);
+size_t fpull(void *ptr, size_t size, size_t nmemb, FILE *stream);
 
-size_t fwrite(
-  void const *ptr,
-  size_t size,
-  size_t nmemb,
-  FILE *stream
-);
+size_t fwrite(void const *ptr, size_t size, size_t nmemb, FILE *stream);
 
 // Non standard
-size_t fappend(
-  void const *ptr,
-  size_t size,
-  size_t nmemb,
-  FILE *stream
-);
+size_t fappend(void const *ptr, size_t size, size_t nmemb, FILE *stream);
 
 FILE *__get_stdout();
 FILE *__get_stderr();

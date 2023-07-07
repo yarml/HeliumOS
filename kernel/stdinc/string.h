@@ -1,12 +1,12 @@
 #ifndef CSTD_STRING_H
 #define CSTD_STRING_H
 
-#include <stddef.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <stdint.h>
 
-typedef int(*fpt_chr_predicate     )(int     );
-typedef int(*fpt_chr_predicate_args)(int, ...);
+typedef int (*fpt_chr_predicate)(int);
+typedef int (*fpt_chr_predicate_args)(int, ...);
 
 // str* functions
 
@@ -22,7 +22,7 @@ size_t strlen(char const *s);
  * \param s: The string to look in
  * \param c: The character to look for
  * \return A pointer to the character if found, otherwise NULL
-**/
+ **/
 char *strchr(char const *s, int c);
 
 int strcmp(char const *s1, char const *s2);
@@ -36,8 +36,8 @@ char *strcpy(char *to, char const *from);
  * \param pred: The condition to verify
  * \return A pointer to the first character c that verifies pred(c),
  *         unless the null termination is reached, in which case NULL
-**/
-char* strpred(char const *s, fpt_chr_predicate pred);
+ **/
+char *strpred(char const *s, fpt_chr_predicate pred);
 
 // mem* functions
 
@@ -50,9 +50,9 @@ char* strpred(char const *s, fpt_chr_predicate pred);
  * \return If found, a pointer to the first occurence of \a,
  *         otherwise returns \a NULL.
  */
-void* memchr (void const *block, int c, size_t size);
+void *memchr(void const *block, int c, size_t size);
 
-void* memnchr (void const *block, int c, size_t size);
+void *memnchr(void const *block, int c, size_t size);
 
 /**
  * \brief Compares the blocks of memory \a b1 and \a b2 of size.
@@ -62,7 +62,7 @@ void* memnchr (void const *block, int c, size_t size);
  * \return The differecne between the first different bytes of \a b1
  *         and \a b2, 0 if they are qual until \a size.
  */
-int memcmp (void const *b1, void const *b2, size_t size);
+int memcmp(void const *b1, void const *b2, size_t size);
 
 /**
  * \brief Sets \a size bytes after \a block to \a c.
@@ -71,7 +71,7 @@ int memcmp (void const *b1, void const *b2, size_t size);
  * \param size
  * \return \a block
  */
-void* memset(void *block, int c, size_t size);
+void *memset(void *block, int c, size_t size);
 /**
  * \brief Copies \a size bytes from \a from to \a to
  * \param to
@@ -79,7 +79,7 @@ void* memset(void *block, int c, size_t size);
  * \param size
  * \return \a to
  */
-void* memcpy(void *to, void const *from, size_t size);
+void *memcpy(void *to, void const *from, size_t size);
 
 /**
  * \brief Moves \a size bytes from \a from to \a to, and those areas
@@ -89,7 +89,7 @@ void* memcpy(void *to, void const *from, size_t size);
  * \param size
  * \return \a to
  */
-void* memmove(void *to, void const *from, size_t size);
+void *memmove(void *to, void const *from, size_t size);
 
 /**
  * \brief Calculates the 8-bit sum of \a size signed bytes after \a block

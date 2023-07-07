@@ -1,11 +1,10 @@
-#include <stdio.h>
-#include <pci.h>
 #include <mem.h>
+#include <pci.h>
+#include <stdio.h>
 
 #include <asm/io.h>
 
-uint32_t pci_read_reg(size_t bus, size_t dev, size_t fn, size_t reg)
-{
+uint32_t pci_read_reg(size_t bus, size_t dev, size_t fn, size_t reg) {
   pciadr adr;
   adr.offset = reg * 4;
   adr.fn = fn;
@@ -17,42 +16,33 @@ uint32_t pci_read_reg(size_t bus, size_t dev, size_t fn, size_t reg)
   return as_ind(PCI_IO_CFG_DATA);
 }
 
-void pci_read_regarray(
-  size_t bus, size_t dev, size_t fn,
-  size_t regstart, size_t n, uint32_t *buf
-) {
-  for(size_t i = 0; i < n; ++i)
+void pci_read_regarray(size_t bus, size_t dev, size_t fn, size_t regstart,
+                       size_t n, uint32_t *buf) {
+  for (size_t i = 0; i < n; ++i)
     buf[i] = pci_read_reg(bus, dev, fn, regstart + i);
 }
 
-uint16_t pci_vendorid(size_t bus, size_t dev, size_t fn)
-{
+uint16_t pci_vendorid(size_t bus, size_t dev, size_t fn) {
   return pci_read_reg(bus, dev, fn, 0) & 0x0000FFFF;
 }
-uint16_t pci_devid(size_t bus, size_t dev, size_t fn)
-{
+uint16_t pci_devid(size_t bus, size_t dev, size_t fn) {
   return (pci_read_reg(bus, dev, fn, 0) & 0xFFFF0000) >> 16;
 }
 
-uint8_t pci_classid(size_t bus, size_t dev, size_t fn)
-{
+uint8_t pci_classid(size_t bus, size_t dev, size_t fn) {
   return (pci_read_reg(bus, dev, fn, 2) & 0xFF000000) >> 24;
 }
-uint8_t pci_subclass(size_t bus, size_t dev, size_t fn)
-{
+uint8_t pci_subclass(size_t bus, size_t dev, size_t fn) {
   return (pci_read_reg(dev, bus, fn, 2) & 0x00FF0000) >> 16;
 }
-uint8_t pci_progif(size_t bus, size_t dev, size_t fn)
-{
+uint8_t pci_progif(size_t bus, size_t dev, size_t fn) {
   return (pci_read_reg(bus, dev, fn, 2) & 0x0000FF00) >> 8;
 }
-uint8_t pci_revid(size_t bus, size_t dev, size_t fn)
-{
+uint8_t pci_revid(size_t bus, size_t dev, size_t fn) {
   return (pci_read_reg(bus, dev, fn, 2) & 0x000000FF);
 }
 
-pci_inf pci_info(size_t bus, size_t dev, size_t fn)
-{
+pci_inf pci_info(size_t bus, size_t dev, size_t fn) {
   pci_inf info;
 
   uint32_t r0 = pci_read_reg(bus, dev, fn, 0);
@@ -72,92 +62,85 @@ pci_inf pci_info(size_t bus, size_t dev, size_t fn)
   return info;
 }
 
-void pci_probe()
-{
-  for(size_t bus = 0; bus < 256; ++bus)
-    for(size_t dev = 0; dev < 32; ++dev)
-      for(size_t fn = 0; fn < 8; ++fn)
-      {
-        if(pci_vendorid(bus, dev, fn) != 0xFFFF)
-        {
+void pci_probe() {
+  for (size_t bus = 0; bus < 256; ++bus)
+    for (size_t dev = 0; dev < 32; ++dev)
+      for (size_t fn = 0; fn < 8; ++fn) {
+        if (pci_vendorid(bus, dev, fn) != 0xFFFF) {
           pci_inf info = pci_info(bus, dev, fn);
           printf(
-            "%03d:%02d:%01d "
-            "VendorId: %04x; DevId: %04x; "
-            "Class: %02x; Subclass: %02x; ProgIf: %02x; Rev: %02x; "
-            "HType: %02x "
-            "%s\n",
-            bus, dev, fn,
-            info.vendorid, info.devid,
-            info.class, info.subclass, info.progif, info.revid,
-            info.header_type,
-            pci_class(info.class)
-          );
-          if(info.class == 0x01 && info.subclass == 0x06 && info.progif == 0x01)
-          {
+              "%03d:%02d:%01d "
+              "VendorId: %04x; DevId: %04x; "
+              "Class: %02x; Subclass: %02x; ProgIf: %02x; Rev: %02x; "
+              "HType: %02x "
+              "%s\n",
+              bus, dev, fn, info.vendorid, info.devid, info.class,
+              info.subclass, info.progif, info.revid, info.header_type,
+              pci_class(info.class));
+          if (info.class == 0x01 && info.subclass == 0x06 &&
+              info.progif == 0x01) {
             printf("\tSATA controller:\n");
             uint32_t bars[5];
             pci_read_regarray(bus, dev, fn, 4, 5, bars);
-            for(size_t i = 0; i < 5; ++i)
+            for (size_t i = 0; i < 5; ++i)
               printf("\t\tBAR%lx: %x\n", i, bars[i]);
             uint32_t abar = pci_read_reg(bus, dev, fn, 9);
             printf("\t\tAHCI BAR: %x\n", abar);
-            void *vptr = KVMSPACE + (uint64_t) 1024 * 1024 * 1024 * 1024 + (uint64_t) 512 * 1024 * 1024 * 1024;
+            void *vptr = KVMSPACE + (uint64_t)1024 * 1024 * 1024 * 1024 +
+                         (uint64_t)512 * 1024 * 1024 * 1024;
             printf("\t\tVPTR: %p\n", vptr);
-            mem_vmap(vptr, (void *) (uintptr_t) abar, 0x1100, 0);
-            uint32_t *hba = (uint32_t *) vptr;
+            mem_vmap(vptr, (void *)(uintptr_t)abar, 0x1100, 0);
+            uint32_t *hba = (uint32_t *)vptr;
             uint32_t cap = hba[0];
-            printf("CAP: %032b\n", cap);
+            printf("\t\tCAP: %032b\n", cap);
           }
         }
       }
 }
 
-char const *pci_class(uint16_t class_id)
-{
-  switch (class_id)
-  {
-  case PCI_CLASS_MASS_STORAGE:
-    return "MASS_STORAGE";
-  case PCI_CLASS_NET_CTL:
-    return "NET_CTL";
-  case PCI_CLASS_DISP_CTL:
-    return "DISP_CTL";
-  case PCI_CLASS_MMDEV:
-    return "MMDEV";
-  case PCI_CLASS_MEM_CTL:
-    return "MEM_CTL";
-  case PCI_CLASS_BRIDGE:
-    return "BRIDGE";
-  case PCI_CLASS_SIMPL_COM_CTL:
-    return "SIMPL_COM_CTL";
-  case PCI_CLASS_BSYS_PER:
-    return "BSYS_PER";
-  case PCI_CLASS_INDEV:
-    return "INDEV";
-  case PCI_CLASS_DOCK_ST:
-    return "DOCK_ST";
-  case PCI_CLASS__PROC:
-    return "_PROC";
-  case PCI_CLASS_SERIALB_CTL:
-    return "SERIALB_CTL";
-  case PCI_CLASS_WL_CTL:
-    return "WL_CTL";
-  case PCI_CLASS_IIO_CTL:
-    return "IIO_CTL";
-  case PCI_CLASS_SAT_COM_CTL:
-    return "SAT_COM_CTL";
-  case PCI_CLASS_ENC_CTL:
-    return "ENC_CTL";
-  case PCI_CLASS_DATACQ_SIGPROC_CTL:
-    return "DATACQ_SIGPROC_CTL";
-  case PCI_CLASS_PROC_ACCEL:
-    return "PROC_ACCEL";
-  case PCI_CLASS_NON_ESSENTIAL:
-    return "NON_ESSENTIAL";
-  case PCI_CLASS_UNDEF:
-    return "UNDEF";
-  default:
-    return "UNK";
+char const *pci_class(uint16_t class_id) {
+  switch (class_id) {
+    case PCI_CLASS_MASS_STORAGE:
+      return "MASS_STORAGE";
+    case PCI_CLASS_NET_CTL:
+      return "NET_CTL";
+    case PCI_CLASS_DISP_CTL:
+      return "DISP_CTL";
+    case PCI_CLASS_MMDEV:
+      return "MMDEV";
+    case PCI_CLASS_MEM_CTL:
+      return "MEM_CTL";
+    case PCI_CLASS_BRIDGE:
+      return "BRIDGE";
+    case PCI_CLASS_SIMPL_COM_CTL:
+      return "SIMPL_COM_CTL";
+    case PCI_CLASS_BSYS_PER:
+      return "BSYS_PER";
+    case PCI_CLASS_INDEV:
+      return "INDEV";
+    case PCI_CLASS_DOCK_ST:
+      return "DOCK_ST";
+    case PCI_CLASS__PROC:
+      return "_PROC";
+    case PCI_CLASS_SERIALB_CTL:
+      return "SERIALB_CTL";
+    case PCI_CLASS_WL_CTL:
+      return "WL_CTL";
+    case PCI_CLASS_IIO_CTL:
+      return "IIO_CTL";
+    case PCI_CLASS_SAT_COM_CTL:
+      return "SAT_COM_CTL";
+    case PCI_CLASS_ENC_CTL:
+      return "ENC_CTL";
+    case PCI_CLASS_DATACQ_SIGPROC_CTL:
+      return "DATACQ_SIGPROC_CTL";
+    case PCI_CLASS_PROC_ACCEL:
+      return "PROC_ACCEL";
+    case PCI_CLASS_NON_ESSENTIAL:
+      return "NON_ESSENTIAL";
+    case PCI_CLASS_UNDEF:
+      return "UNDEF";
+    default:
+      return "UNK";
   }
 }

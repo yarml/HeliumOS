@@ -11,17 +11,17 @@ typedef enum FSNODE_TYPE fsnode_type;
 typedef uint64_t dircap;
 typedef uint64_t filecap;
 
-#define FSCAP_USED      (1<<0)
+#define FSCAP_USED (1 << 0)
 
-#define FSCAP_FREAD     (1<<1)
-#define FSCAP_FWRITE    (1<<2)
-#define FSCAP_FAPPEND   (1<<3)
-#define FSCAP_FPULL     (1<<4)
-#define FSCAP_FTELLSIZE (1<<5)
+#define FSCAP_FREAD (1 << 1)
+#define FSCAP_FWRITE (1 << 2)
+#define FSCAP_FAPPEND (1 << 3)
+#define FSCAP_FPULL (1 << 4)
+#define FSCAP_FTELLSIZE (1 << 5)
 
-#define FSCAP_DLIST     (1<<1)
-#define FSCAP_DTELLSIZE (1<<2)
-#define FSCAP_DCREAT    (1<<3)
+#define FSCAP_DLIST (1 << 1)
+#define FSCAP_DTELLSIZE (1 << 2)
+#define FSCAP_DCREAT (1 << 3)
 
 typedef struct FS_IMPL fsimpl;
 
@@ -32,62 +32,34 @@ typedef struct FSNODE fsnode;
 #define FSNODE_NAMELEN (512)
 
 // Types of FS nodes
-enum FSNODE_TYPE
-{
-  FSNODE_FILE,
-  FSNODE_DIR,
-  FSNODE_LINK
-};
+enum FSNODE_TYPE { FSNODE_FILE, FSNODE_DIR, FSNODE_LINK };
 
 // If a file system cannot write/append to all files, and cannot mknode
 // and rmnode from all dirs, then it is called immutable
 
 // Structur containing function pointers to filesystem operations
-struct FS_IMPL
-{
+struct FS_IMPL {
   // Release any data in fs->ext
   void (*fs_release)(filesys *fs);
 
   // Read `size` bytes of data from file, returns number of bytes read
-  size_t (*fs_file_read)(
-    fsnode *file,
-    size_t off,
-    char *buf,
-    size_t size
-  );
+  size_t (*fs_file_read)(fsnode *file, size_t off, char *buf, size_t size);
 
-  size_t (*fs_file_pull)(
-    fsnode *file,
-    char *buf,
-    size_t size
-  );
+  size_t (*fs_file_pull)(fsnode *file, char *buf, size_t size);
 
-  size_t (*fs_file_skip)(
-    fsnode *file,
-    size_t size
-  ); // Default impl
+  size_t (*fs_file_skip)(fsnode *file,
+                         size_t size);  // Default impl
 
-  size_t (*fs_file_write)(
-    fsnode *file,
-    size_t off,
-    char const *buf,
-    size_t size
-  );
+  size_t (*fs_file_write)(fsnode *file, size_t off, char const *buf,
+                          size_t size);
 
-  size_t (*fs_file_append)(
-    fsnode *file,
-    char const *buf,
-    size_t size
-  );
+  size_t (*fs_file_append)(fsnode *file, char const *buf, size_t size);
 
-  size_t (*fs_file_tellsize)(
-    fsnode *file
-  );
+  size_t (*fs_file_tellsize)(fsnode *file);
 };
 
 // Structure that defines a filesystem
-struct FILESYS
-{
+struct FILESYS {
   char name[FS_NAMELEN];
 
   // default capabilities
@@ -102,16 +74,15 @@ struct FILESYS
   void *ext;
 };
 
-struct FSNODE
-{
+struct FSNODE {
   char name[FSNODE_NAMELEN];
 
   filesys *fs;
   fsnode_type type;
 
-  fsnode *parent; // can be NULL for a directory
-  fsnode *nsib; // next sibling
-  fsnode *psib; // prev sibling
+  fsnode *parent;  // can be NULL for a directory
+  fsnode *nsib;    // next sibling
+  fsnode *psib;    // prev sibling
 
   // How many times the file has been open
   // This is used for files in large filesystems that
@@ -130,22 +101,18 @@ struct FSNODE
   fsnode *flink;
 
   // Fields that only exist in file xor directories xor links
-  union
-  {
-    struct
-    {
+  union {
+    struct {
       filecap cap;
       size_t size;
     } file;
 
-    struct
-    {
+    struct {
       dircap cap;
       fsnode *fchild;
     } dir;
 
-    struct
-    {
+    struct {
       // The node this node is a link to
       fsnode *target;
 

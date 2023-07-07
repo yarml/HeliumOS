@@ -1,7 +1,5 @@
-int isupper(int c)
-{
-  switch(c)
-  {
+int isupper(int c) {
+  switch (c) {
     case 'A' ... 'Z':
       return 1;
     default:
@@ -9,10 +7,8 @@ int isupper(int c)
   }
 }
 
-int isnupper(int c)
-{
-  switch(c)
-  {
+int isnupper(int c) {
+  switch (c) {
     case 'A' ... 'Z':
       return 0;
     default:
@@ -20,11 +16,8 @@ int isnupper(int c)
   }
 }
 
-
-int islower(int c)
-{
-  switch(c)
-  {
+int islower(int c) {
+  switch (c) {
     case 'a' ... 'z':
       return 1;
     default:
@@ -32,10 +25,8 @@ int islower(int c)
   }
 }
 
-int isnlower(int c)
-{
-  switch(c)
-  {
+int isnlower(int c) {
+  switch (c) {
     case 'a' ... 'z':
       return 0;
     default:
@@ -43,11 +34,8 @@ int isnlower(int c)
   }
 }
 
-
-int isalpha(int c)
-{
-  switch(c)
-  {
+int isalpha(int c) {
+  switch (c) {
     case 'A' ... 'Z':
     case 'a' ... 'z':
       return 1;
@@ -56,10 +44,8 @@ int isalpha(int c)
   }
 }
 
-int isnalpha(int c)
-{
-  switch(c)
-  {
+int isnalpha(int c) {
+  switch (c) {
     case 'A' ... 'Z':
     case 'a' ... 'z':
       return 0;

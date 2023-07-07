@@ -5,14 +5,13 @@
 #include <stdint.h>
 
 #define HASH_TABLE_DEFAULT_MAX_COLLISIONS (8)
-#define HASH_TABLE_DEFAULT_INIT_BUCKETS   (32)
+#define HASH_TABLE_DEFAULT_INIT_BUCKETS (32)
 
 typedef struct HASH_TABLE hash_table;
 typedef struct HT_NODE ht_node;
-typedef uint64_t(*hash_func_t)(char const *key);
+typedef uint64_t (*hash_func_t)(char const *key);
 
-struct HASH_TABLE
-{
+struct HASH_TABLE {
   size_t nbuckets;
   ht_node **buckets;
 
@@ -23,22 +22,16 @@ struct HASH_TABLE
   hash_func_t hf;
 };
 
-
-struct HT_NODE
-{
+struct HT_NODE {
   ht_node *next;
   size_t keyoff;
   size_t len;
-  size_t pad; // Size needs to be multiple of 16
+  size_t pad;  // Size needs to be multiple of 16
 };
 
 hash_table *hash_table_create(size_t default_elsize);
-hash_table *hash_table_create_extra(
-  size_t default_elsize,
-  hash_func_t hf,
-  size_t max_collisions,
-  size_t init_buckets
-);
+hash_table *hash_table_create_extra(size_t default_elsize, hash_func_t hf,
+                                    size_t max_collisions, size_t init_buckets);
 void hash_table_destroy(hash_table *ht);
 
 void *hash_table_addkey(hash_table *ht, char const *key);

@@ -25,8 +25,7 @@ uintmax_t exp10i(uintmax_t power);
  */
 uintmax_t abs(intmax_t i);
 
-#define MAX(a,b) ((a) > (b) ? (a) : (b))
-#define MIN(a,b) ((a) < (b) ? (a) : (b))
-
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 
 #endif

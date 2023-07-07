@@ -11,9 +11,7 @@ typedef struct TAR_HEADER tar_header;
 #define TAR_ENTRY_TYPE_SLINK ('2')
 #define TAR_ENTRY_TYPE_DIR ('5')
 
-
-struct TAR_HEADER
-{
+struct TAR_HEADER {
   char name[100];
   char mode[8];
   char user[8];

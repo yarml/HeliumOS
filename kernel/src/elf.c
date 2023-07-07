@@ -1,9 +1,7 @@
 #include <elf.h>
 
-char const *elf_etstr(uint16_t type)
-{
-  switch(type)
-  {
+char const *elf_etstr(uint16_t type) {
+  switch (type) {
     case ET_NONE:
       return "ET_NONE";
     case ET_REL:
@@ -19,10 +17,8 @@ char const *elf_etstr(uint16_t type)
   }
 }
 
-char const *elf_ptstr(uint32_t type)
-{
-  switch(type)
-  {
+char const *elf_ptstr(uint32_t type) {
+  switch (type) {
     case PT_NULL:
       return "PT_NULL";
     case PT_LOAD:
@@ -44,10 +40,8 @@ char const *elf_ptstr(uint32_t type)
   }
 }
 
-char const *elf_dtstr(uint64_t tag)
-{
-  switch(tag)
-  {
+char const *elf_dtstr(uint64_t tag) {
+  switch (tag) {
     case DT_NULL:
       return "DT_NULL";
     case DT_NEEDED:
@@ -171,10 +165,8 @@ char const *elf_dtstr(uint64_t tag)
   }
 }
 
-char const *elf_rtstr(uint32_t type)
-{
-  switch(type)
-  {
+char const *elf_rtstr(uint32_t type) {
+  switch (type) {
     case R_AMD64_NONE:
       return "R_AMD64_NONE";
     case R_AMD64_64:
@@ -222,10 +214,8 @@ char const *elf_rtstr(uint32_t type)
   }
 }
 
-char const *elf_shnstr(uint16_t idx)
-{
-  switch(idx)
-  {
+char const *elf_shnstr(uint16_t idx) {
+  switch (idx) {
     case SHN_UNDEF:
       return "SHN_UNDEF";
     case SHN_AMD64_LCOMMON:
@@ -241,10 +231,8 @@ char const *elf_shnstr(uint16_t idx)
   }
 }
 
-char const *elf_shtstr(uint32_t type)
-{
-  switch(type)
-  {
+char const *elf_shtstr(uint32_t type) {
+  switch (type) {
     case SHT_NULL:
       return "SHT_NULL";
     case SHT_PROGBITS:

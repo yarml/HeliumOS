@@ -1,9 +1,9 @@
-#include <interrupts.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include <error.h>
+#include <interrupts.h>
 #include <mem.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys.h>
 
 #include <asm/idt.h>
@@ -16,8 +16,7 @@
 // to the processor's structure
 typedef struct IDT_ENTRY_INFO idt_entry_info;
 
-struct IDT_ENTRY_INFO
-{
+struct IDT_ENTRY_INFO {
   void *handler;
   uint16_t seg_sel;
   uint16_t dpl;
@@ -25,35 +24,27 @@ struct IDT_ENTRY_INFO
 };
 
 static idt_entry_info kernel_idt_image[256] = {
-  [0] = {
-    .handler = exception_div,
-    .seg_sel = MEM_KERNEL_CODE_DESC,
-    .dpl = 0,
-    .type = IDT_TYPE_INT
-  },
-  [14] = {
-    .handler = exception_page_fault,
-    .seg_sel = MEM_KERNEL_CODE_DESC,
-    .dpl = 0,
-    .type = IDT_TYPE_INT
-  }
-};
+    [0] = {.handler = exception_div,
+           .seg_sel = MEM_KERNEL_CODE_DESC,
+           .dpl = 0,
+           .type = IDT_TYPE_INT},
+    [14] = {.handler = exception_page_fault,
+            .seg_sel = MEM_KERNEL_CODE_DESC,
+            .dpl = 0,
+            .type = IDT_TYPE_INT}};
 
 static idt_entry kernel_idt[256];
 
-void int_init()
-{
+void int_init() {
   memset(kernel_idt, 0, sizeof(kernel_idt));
 
-  for(size_t i = 0; i < 256; ++i)
-  {
+  for (size_t i = 0; i < 256; ++i) {
     idt_entry_info *info = kernel_idt_image + i;
 
-    if(!info->handler)
-      continue;
+    if (!info->handler) continue;
 
-    kernel_idt[i].offset0 = (uintptr_t) info->handler & 0xFFFF;
-    kernel_idt[i].offset1 = (uintptr_t) info->handler >> 16;
+    kernel_idt[i].offset0 = (uintptr_t)info->handler & 0xFFFF;
+    kernel_idt[i].offset1 = (uintptr_t)info->handler >> 16;
 
     kernel_idt[i].seg_sel = info->seg_sel;
 

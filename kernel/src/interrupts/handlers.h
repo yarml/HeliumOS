@@ -5,6 +5,6 @@
 #include <stdint.h>
 
 void exception_div(int_frame* frame);
-void exception_page_fault(int_frame *frame, int_errcode_pf err_code);
+void exception_page_fault(int_frame* frame, int_errcode_pf err_code);
 
 #endif

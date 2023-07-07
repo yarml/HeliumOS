@@ -1,20 +1,17 @@
-#include <stdlib.h>
-#include <string.h>
 #include <ctype.h>
 #include <errno.h>
-#include <stdio.h>
 #include <fs.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "internal_fs.h"
 
-filesys *fs_from_name(char const *name)
-{
+filesys *fs_from_name(char const *name) {
   filesys_llnode *cfsn = i_fs_head;
 
-  while(cfsn)
-  {
-    if(!strcmp(cfsn->fs.name, name))
-      return &cfsn->fs;
+  while (cfsn) {
+    if (!strcmp(cfsn->fs.name, name)) return &cfsn->fs;
     cfsn = cfsn->next;
   }
 
@@ -22,24 +19,20 @@ filesys *fs_from_name(char const *name)
   return 0;
 }
 
-fsnode *fs_open(char const *fsname, char const *names, size_t depth)
-{
+fsnode *fs_open(char const *fsname, char const *names, size_t depth) {
   filesys *fs;
   fsnode *target;
 
   // Search for the filesystem
   filesys_llnode *cfsn = i_fs_head;
 
-  while(cfsn)
-  {
-    if(!strcmp(cfsn->fs.name, fsname))
-      break;
+  while (cfsn) {
+    if (!strcmp(cfsn->fs.name, fsname)) break;
     cfsn = cfsn->next;
   }
 
   // File system not found
-  if(!cfsn)
-  {
+  if (!cfsn) {
     errno = ENOFS;
     return 0;
   }
@@ -48,12 +41,9 @@ fsnode *fs_open(char const *fsname, char const *names, size_t depth)
   target = fs->root;
 
   // Now look for node in the filesystem
-  for(size_t i = 0; i < depth; ++i)
-  {
-
+  for (size_t i = 0; i < depth; ++i) {
     // target cannot be file if we still have a name to resolve
-    if(target->type != FSNODE_DIR)
-    {
+    if (target->type != FSNODE_DIR) {
       errno = ENOTDIR;
       return 0;
     }
@@ -63,16 +53,13 @@ fsnode *fs_open(char const *fsname, char const *names, size_t depth)
 
     fsnode *starget = target->dir.fchild;
 
-    while(starget)
-    {
-      if(!strcmp(starget->name, names+nameoff))
-        break;
+    while (starget) {
+      if (!strcmp(starget->name, names + nameoff)) break;
       starget = starget->nsib;
     }
 
     // No subnode of target had the name to resolve
-    if(!starget)
-    {
+    if (!starget) {
       errno = ENOENT;
       return 0;
     }
@@ -81,8 +68,7 @@ fsnode *fs_open(char const *fsname, char const *names, size_t depth)
     target = starget;
 
     // If current target is a link, resolve the link
-    while(target->type == FSNODE_LINK)
-      target = target->link.target;
+    while (target->type == FSNODE_LINK) target = target->link.target;
   }
 
   ++target->refcount;
@@ -90,8 +76,7 @@ fsnode *fs_open(char const *fsname, char const *names, size_t depth)
   return target;
 }
 
-fsnode *fs_search(char const *path)
-{
+fsnode *fs_search(char const *path) {
   char fsname[FS_NAMELEN];
   char *names = 0;
   size_t depth = 0;
@@ -105,8 +90,7 @@ fsnode *fs_search(char const *path)
   return target;
 }
 
-fsnode *fs_dirof(char const *path)
-{
+fsnode *fs_dirof(char const *path) {
   char fsname[FS_NAMELEN];
   char *names = 0;
   size_t depth = 0;
@@ -114,14 +98,13 @@ fsnode *fs_dirof(char const *path)
   fs_pathtok(path, fsname, &names, &depth);
 
   // root dir does not support dirof()
-  if(!depth)
-  {
+  if (!depth) {
     free(names);
     errno = EINVAL;
     return 0;
   }
 
-  fsnode *target = fs_open(fsname, names, depth-1);
+  fsnode *target = fs_open(fsname, names, depth - 1);
 
   free(names);
 

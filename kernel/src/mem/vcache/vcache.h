@@ -8,8 +8,7 @@
 
 struct VCACHE_UNIT;
 typedef struct VCACHE_UNIT vcache_unit;
-struct VCACHE_UNIT
-{
+struct VCACHE_UNIT {
   void *ptr;
   size_t pde_idx;
   size_t pte_idx;
@@ -21,9 +20,8 @@ struct VCACHE_UNIT
 vcache_unit vcache_map(void *padr);
 void vcache_remap(vcache_unit unit, void *padr);
 
-#define VCACHE_NO_ID ((void *) UINTPTR_MAX)
+#define VCACHE_NO_ID ((void *)UINTPTR_MAX)
 void vcache_umap(vcache_unit unit, void *id);
-
 
 #define VCACHE_PTR (KVMSPACE)
 #define VCACHE_LEN (2048)
@@ -35,7 +33,6 @@ void vcache_umap(vcache_unit unit, void *id);
 #define PDPTE_IDX (ENTRY_IDX(2, VCACHE_PTR))
 
 #define PDE_COUNT (VCACHE_LEN / 512)
-
 
 // This pointer, after memory initialization, should point
 // to 4 consecutive PDEs that are used for VCache

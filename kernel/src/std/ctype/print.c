@@ -1,7 +1,5 @@
-int isprint(int c)
-{
-  switch(c)
-  {
+int isprint(int c) {
+  switch (c) {
     case '0' ... '9':
     case 'A' ... 'Z':
     case 'a' ... 'z':
@@ -44,10 +42,8 @@ int isprint(int c)
   }
 }
 
-int isspace(int c)
-{
-  switch(c)
-  {
+int isspace(int c) {
+  switch (c) {
     case ' ':
     case '\f':
     case '\n':

@@ -1,12 +1,11 @@
 #ifndef HELIUM_INT_MEM_H
 #define HELIUM_INT_MEM_H
 
-#include <stddef.h>
 #include <math.h>
 #include <mem.h>
+#include <stddef.h>
 
 #include <arch/mem.h>
-
 
 // TODO: find optimal value
 // Threshold, if a virtual mapping needs to modify more than this much pages
@@ -15,18 +14,20 @@
 
 #define BITMAP_SIZE(seg_size) (ALIGN_UP((seg_size) / MEM_PS, 64) / 8)
 
-#define ADR_MASK(n)  (uintptr_t) ((uintptr_t) 0x1FF << (12 + 9 * (n)))
-#define ADR_SHIFT(n) (size_t) (12 + 9 * (n))
+#define ADR_MASK(n) (uintptr_t)((uintptr_t)0x1FF << (12 + 9 * (n)))
+#define ADR_SHIFT(n) (size_t)(12 + 9 * (n))
 
 // Gives the index of the entry in the parent structure of order n
 // that leads to pointing out to ptr
 #define ENTRY_IDX(n, ptr) \
-    (size_t) (((uintptr_t) (ptr) & ADR_MASK(n)) >> ADR_SHIFT(n))
+  (size_t)(((uintptr_t)(ptr)&ADR_MASK(n)) >> ADR_SHIFT(n))
+
+char const *mmap_type(uint8_t type);
 
 // TODO: when porting to other architectures, this should be considered
 // I'll probably never port, struggling enough with x86-64 lol
 #define ORDER_COUNT (4)
-#define MAX_ORDER   (ORDER_COUNT - 1)
+#define MAX_ORDER (ORDER_COUNT - 1)
 
 #define ORDER_PS(n) (i_order_ps[n])
 

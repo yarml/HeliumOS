@@ -3,5 +3,4 @@
 
 extern hash_table *i_ksym_table;
 
-
 #endif

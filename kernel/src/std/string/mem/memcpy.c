@@ -7,7 +7,7 @@
 #include "../internal_string.h"
 
 void *memcpy(void *to, void const *from, size_t size) {
-  void  *oto           = to;
+  void *oto = to;
 
   // TODO: Maybe max_alignment can be calculated in constant time
   size_t max_alignment = 1;

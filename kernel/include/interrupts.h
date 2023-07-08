@@ -4,13 +4,13 @@
 #include <attributes.h>
 #include <stdint.h>
 
-typedef struct INT_FRAME      int_frame;
+typedef struct INT_FRAME int_frame;
 
 typedef struct INT_ERRCODE    int_errcode;
 typedef struct INT_ERRCODE_PF int_errcode_pf;
 
-typedef struct IDT            idt;
-typedef struct IDT_ENTRY      idt_entry;
+typedef struct IDT       idt;
+typedef struct IDT_ENTRY idt_entry;
 
 struct INT_FRAME {
   uint64_t ip;

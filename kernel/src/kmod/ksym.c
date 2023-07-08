@@ -10,7 +10,7 @@
 
 hash_table *i_ksym_table = 0;
 
-int         ksym_loadp(char const *path) {
+int ksym_loadp(char const *path) {
   fsnode *f = fs_search(path);
   if (!f) {
     return 1;
@@ -39,7 +39,7 @@ int ksym_loadf(fsnode *f) {
 }
 
 int ksym_loadb(void *ksymf) {
-  elf64_header      *eh = ksymf;
+  elf64_header *eh = ksymf;
 
   elf64_sect_header *shstrtab_sh =
       ksymf + eh->shoff + eh->shstridx * eh->shent_size;

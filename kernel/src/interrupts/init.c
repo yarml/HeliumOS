@@ -38,7 +38,7 @@ static idt_entry_info kernel_idt_image[256] = {
 
 static idt_entry kernel_idt[256];
 
-void             int_init() {
+void int_init() {
   memset(kernel_idt, 0, sizeof(kernel_idt));
 
   for (size_t i = 0; i < 256; ++i) {
@@ -53,9 +53,9 @@ void             int_init() {
 
     kernel_idt[i].seg_sel = info->seg_sel;
 
-    kernel_idt[i].ist     = 0;
-    kernel_idt[i].dpl     = 0;
-    kernel_idt[i].type    = IDT_TYPE_INT;
+    kernel_idt[i].ist  = 0;
+    kernel_idt[i].dpl  = 0;
+    kernel_idt[i].type = IDT_TYPE_INT;
 
     kernel_idt[i].present = 1;
   }

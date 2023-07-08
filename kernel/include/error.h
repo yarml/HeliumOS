@@ -3,7 +3,7 @@
 
 #include <attributes.h>
 
-typedef int   errno_t;
+typedef int errno_t;
 
 noreturn void error_general(char *prefix, char *details);
 noreturn void error_out_of_memory(char *details);

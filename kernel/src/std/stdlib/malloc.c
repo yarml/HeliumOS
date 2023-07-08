@@ -29,7 +29,7 @@ void *malloc(size_t size) {
   }
 
   // Second thing second, round size to be a multiple of 16
-  size                        = ALIGN_UP(size, 16);
+  size = ALIGN_UP(size, 16);
 
   block_header *current_block = i_stdlib_heap_header;
   block_header *target_block  = 0;
@@ -43,8 +43,8 @@ void *malloc(size_t size) {
       continue;
     }
 
-    unit_header *best_unit    = cb->largest_free;
-    size_t       best_delta   = cb->largest_free_size - size;
+    unit_header *best_unit  = cb->largest_free;
+    size_t       best_delta = cb->largest_free_size - size;
     // Go through all the free units in this block until
     // we find the block that has the closest size to the request
 
@@ -104,8 +104,8 @@ void *malloc(size_t size) {
     i_stdlib_heap_header       = new_block;
 
     // Now the target unit is the first unit of this newly allocated block
-    target_unit                = i_stdlib_heap_header->ffunit;
-    target_block               = i_stdlib_heap_header;
+    target_unit  = i_stdlib_heap_header->ffunit;
+    target_block = i_stdlib_heap_header;
   }
 
   // Original size of target unit, before any potential splitting
@@ -120,17 +120,17 @@ void *malloc(size_t size) {
     unit_header *new_unit = (void *)(target_unit + 1) + size;
     memset(new_unit, 0, sizeof(*new_unit));
 
-    new_unit->magic    = UNIT_MAGIC;
-    new_unit->size     = target_unit->size - size - sizeof(unit_header);
-    new_unit->block    = target_block;
-    new_unit->flags    = UNITF_FREE;
+    new_unit->magic = UNIT_MAGIC;
+    new_unit->size  = target_unit->size - size - sizeof(unit_header);
+    new_unit->block = target_block;
+    new_unit->flags = UNITF_FREE;
 
     // Insert new_unit into the free linked list & all linked list
-    new_unit->next     = target_unit->next;
-    new_unit->prev     = target_unit;
+    new_unit->next = target_unit->next;
+    new_unit->prev = target_unit;
 
-    new_unit->fnext    = target_unit->fnext;
-    new_unit->fprev    = target_unit;
+    new_unit->fnext = target_unit->fnext;
+    new_unit->fprev = target_unit;
 
     target_unit->next  = new_unit;
     target_unit->fnext = new_unit;

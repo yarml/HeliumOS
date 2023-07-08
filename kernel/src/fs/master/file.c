@@ -5,8 +5,8 @@ int fs_check_fcap(fsnode *file, int cap) {
   int fsu = (file->fs->file_cap & FSCAP_USED) != 0;
   int fsc = (file->fs->file_cap & cap) != 0;
 
-  int fu  = (file->file.cap & FSCAP_USED) != 0;
-  int fc  = (file->file.cap & cap) != 0;
+  int fu = (file->file.cap & FSCAP_USED) != 0;
+  int fc = (file->file.cap & cap) != 0;
 
   return ((fsc & fc) | (~fsu & fu & fc) | (fsu & fsc) | (fsc & ~fu)) & 1;
 }

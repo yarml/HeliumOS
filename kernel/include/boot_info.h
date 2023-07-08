@@ -5,10 +5,10 @@
 #include <mem.h>
 #include <stdint.h>
 
-extern char     environment[MEM_PS];
+extern char environment[MEM_PS];
 
 extern BOOTBOOT bootboot;
 
-extern uint8_t  fb;
+extern uint8_t fb;
 
 #endif

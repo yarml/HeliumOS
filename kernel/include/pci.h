@@ -35,17 +35,17 @@ struct PCI_INF {
   uint8_t header_type;
 };
 
-uint32_t    pci_read_reg(size_t bus, size_t dev, size_t fn, size_t reg);
-uint16_t    pci_vendorid(size_t bus, size_t dev, size_t fn);
+uint32_t pci_read_reg(size_t bus, size_t dev, size_t fn, size_t reg);
+uint16_t pci_vendorid(size_t bus, size_t dev, size_t fn);
 
-uint8_t     pci_classid(size_t bus, size_t dev, size_t fn);
-uint8_t     pci_subclass(size_t bus, size_t dev, size_t fn);
-uint8_t     pci_progif(size_t bus, size_t dev, size_t fn);
-uint8_t     pci_revid(size_t bus, size_t dev, size_t fn);
+uint8_t pci_classid(size_t bus, size_t dev, size_t fn);
+uint8_t pci_subclass(size_t bus, size_t dev, size_t fn);
+uint8_t pci_progif(size_t bus, size_t dev, size_t fn);
+uint8_t pci_revid(size_t bus, size_t dev, size_t fn);
 
-pci_inf     pci_info(size_t bus, size_t dev, size_t fn);
+pci_inf pci_info(size_t bus, size_t dev, size_t fn);
 
-void        pci_probe();
+void pci_probe();
 
 char const *pci_class(uint16_t class_id);
 

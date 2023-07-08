@@ -7,7 +7,7 @@
 
 filesys_llnode *i_fs_head;
 
-filesys        *fs_mount(char const *name) {
+filesys *fs_mount(char const *name) {
   if (!fs_valid_sys_name(name)) {
     errno = EINVAL;
     return 0;
@@ -22,7 +22,7 @@ filesys        *fs_mount(char const *name) {
 
   // Allocate root node
   // Not using fs_mkdir because it can complain about empty name
-  fsnode  *root  = calloc(1, sizeof(fsnode));
+  fsnode *root = calloc(1, sizeof(fsnode));
   if (!root) {
     // free() does not pollute errno as set by calloc
     free(newnode);
@@ -35,7 +35,7 @@ filesys        *fs_mount(char const *name) {
 
   // Setup filesystem
   strcpy(newfs->name, name);
-  newfs->root   = root;
+  newfs->root = root;
 
   newnode->next = i_fs_head;
   if (i_fs_head) {

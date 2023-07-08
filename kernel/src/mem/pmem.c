@@ -21,7 +21,7 @@
     bugs in the kernel may start appearing(which should be good i guess)
 */
 
-static mutex    pmm_lock;
+static mutex pmm_lock;
 
 mem_pallocation mem_ppalloc(
     void *pheader, size_t size, size_t alignment, bool cont, void *below
@@ -60,7 +60,7 @@ mem_pallocation mem_ppalloc(
 
   mutex_lock(&pmm_lock);
 
-  size_t alignment_p    = alignment / MEM_PS;
+  size_t alignment_p = alignment / MEM_PS;
 
   size_t pmm_header_off = 0;
   for (size_t i = 0; i < i_mmap_usable_len; ++i) {

@@ -101,13 +101,13 @@ void vcache_init() {
       vpte = vu.ptr;
     }
   }
-  i_vcache_pte         = vpte;
+  i_vcache_pte = vpte;
 
   vcache_unit pde_unit = vcache_map(i_vcache_pde);
   if (pde_unit.error) {
     error_general("VCache init", "Could not map vcache PD");
   }
-  i_vcache_pde            = pde_unit.ptr;
+  i_vcache_pde = pde_unit.ptr;
 
   // Last but not least, map i_ppmlmax into virtual memory
 

@@ -38,7 +38,7 @@ unused static void pde_set_lazy(mem_pde_ref *pde, uint16_t lazy) {
 
 unused static uint16_t pte_age(mem_pte *pte) { return mem_vpstruct2_meta(pte); }
 
-unused static void     pte_set_age(mem_pte *pte, uint16_t age) {
+unused static void pte_set_age(mem_pte *pte, uint16_t age) {
   mem_vpstruct2_set_meta(pte, age);
 }
 

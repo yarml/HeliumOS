@@ -15,15 +15,15 @@
 #include "vcache/vcache.h"
 
 // Physical memory
-void      *i_pmm_header            = 0;
-void      *i_ppmm_header           = 0;
-size_t     i_mmap_usable_len       = 0;
+void  *i_pmm_header      = 0;
+void  *i_ppmm_header     = 0;
+size_t i_mmap_usable_len = 0;
 
 // Virtual memory
-mem_pml4e *i_pmlmax                = 0;
-mem_pml4e *i_ppmlmax               = 0;
+mem_pml4e *i_pmlmax  = 0;
+mem_pml4e *i_ppmlmax = 0;
 
-size_t     i_order_ps[ORDER_COUNT] = {
+size_t i_order_ps[ORDER_COUNT] = {
     [0] = (size_t)MEM_PS,
     [1] = (size_t)512 * MEM_PS,
     [2] = (size_t)512 * 512 * MEM_PS,
@@ -33,7 +33,7 @@ static gdt_entry kernel_gdt[3];  // 3 GDT entries, one for the NULL entry
                                  // one for code segment
                                  // one for data segment
 
-void             mem_init() {
+void mem_init() {
   prtrace_begin("mem_init", 0);
   /* Initializing memory is a long process, it should go this way
       - Setup our own gdt, do not rely on Bootboot's
@@ -71,9 +71,9 @@ void             mem_init() {
 
   mem_pseg_header mmap_usable[mmap_len];
 
-  size_t          pmm_header_total_size = 0;
+  size_t pmm_header_total_size = 0;
 
-  MMapEnt        *mmap                  = &(bootboot.mmap);
+  MMapEnt *mmap = &(bootboot.mmap);
 
   /* Insert the regions backward, so that the PMM would prefer allocating
      pages with higher physical adresses and leave the lower addresses for

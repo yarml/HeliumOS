@@ -22,7 +22,7 @@ void free(void *ptr) {
     printd("free(): Pointer invalid\n");
   }
 
-  target_unit->fprev        = 0;
+  target_unit->fprev = 0;
 
   // Go backwards until we find a free unit
   unit_header *current_unit = target_unit->prev;
@@ -67,7 +67,7 @@ void free(void *ptr) {
     prev_unit->fnext   = target_unit->fnext;
     target_unit->magic = 0;
 
-    target_unit        = prev_unit;
+    target_unit = prev_unit;
   }
 
   // Now check if the target unit, now free and merged with it's neighbours

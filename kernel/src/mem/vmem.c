@@ -53,17 +53,17 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags) {
   }
 
   // Align size with page size
-  size              = ALIGN_UP(size, i_order_ps[target_order]);
+  size = ALIGN_UP(size, i_order_ps[target_order]);
 
   // number of bytes mapped so far
-  size_t mapped     = 0;
+  size_t mapped = 0;
 
   // update the virtual tables using invlpg if:
   //  - the mapping is explicitly global
   //  - OR the mapping is in kernel space(implicitly global)
   //  - OR the total number of pages to map is less than the rlcr3
   //       threshold.
-  int    use_invlpg = flags & MAPF_G || vadr >= KVMSPACE ||
+  int use_invlpg = flags & MAPF_G || vadr >= KVMSPACE ||
                    size / i_order_ps[target_order] < RLCR3_THRESHOLD;
 
   // Allocate two pages in VCache that will be used to map substructures
@@ -169,8 +169,8 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags) {
       if (vadr < KVMSPACE) {
         l_entry->user = (flags & MAPF_U) != 0;
       }
-      l_entry->global  = vadr >= KVMSPACE || (flags & MAPF_G) != 0;
-      l_entry->padr    = (uintptr_t)padr >> 13;  // there is a reserved bit
+      l_entry->global = vadr >= KVMSPACE || (flags & MAPF_G) != 0;
+      l_entry->padr   = (uintptr_t)padr >> 13;  // there is a reserved bit
 
       l_entry->present = 1;
     } else  // target is PTE
@@ -311,7 +311,7 @@ mem_vseg mem_find_vsegment(size_t size, void *heap_start, size_t heap_size) {
     }
   }
 
-  void  *heap_end = heap_start + heap_size - 1;
+  void *heap_end = heap_start + heap_size - 1;
 
   size_t indices[ORDER_COUNT];
   size_t eindices[ORDER_COUNT];
@@ -347,7 +347,7 @@ mem_vseg mem_find_vsegment(size_t size, void *heap_start, size_t heap_size) {
 mem_vseg mem_alloc_vblock(
     size_t size, int flags, void *heap_start, size_t heap_size
 ) {
-  size         = ALIGN_UP(size, MEM_PS);
+  size = ALIGN_UP(size, MEM_PS);
 
   mem_vseg seg = mem_find_vsegment(size, heap_start, heap_size);
 

@@ -7,8 +7,8 @@ int fs_check_dcap(fsnode *dir, int cap) {
   int fsu = (dir->fs->dir_cap & FSCAP_USED) != 0;
   int fsc = (dir->fs->dir_cap & cap) != 0;
 
-  int du  = (dir->dir.cap & FSCAP_USED) != 0;
-  int dc  = (dir->dir.cap & cap) != 0;
+  int du = (dir->dir.cap & FSCAP_USED) != 0;
+  int dc = (dir->dir.cap & cap) != 0;
 
   return ((fsc & dc) | (~fsu & du & dc) | (fsu & fsc) | (fsc & ~du)) & 1;
 }
@@ -30,11 +30,11 @@ fsnode *fs_mknode(fsnode *parent, char *name) {
   }
 
   strcpy(n->name, name);
-  n->fs     = parent->fs;
+  n->fs = parent->fs;
 
   n->parent = parent;
 
-  n->nsib   = parent->dir.fchild;
+  n->nsib = parent->dir.fchild;
   if (parent->dir.fchild) {
     parent->dir.fchild->psib = n;
   }
@@ -65,7 +65,7 @@ fsnode *fs_mklink(fsnode *parent, char *name, fsnode *target) {
   if (!link) {
     return 0;
   }
-  link->type        = FSNODE_LINK;
+  link->type = FSNODE_LINK;
 
   link->link.target = target;
 

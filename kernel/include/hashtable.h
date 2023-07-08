@@ -12,12 +12,12 @@ typedef struct HT_NODE    ht_node;
 typedef uint64_t (*hash_func_t)(char const *key);
 
 struct HASH_TABLE {
-  size_t      nbuckets;
-  ht_node   **buckets;
+  size_t    nbuckets;
+  ht_node **buckets;
 
-  size_t      max_collisions;
-  size_t      default_elsize;
-  size_t      length;
+  size_t max_collisions;
+  size_t default_elsize;
+  size_t length;
 
   hash_func_t hf;
 };
@@ -36,14 +36,14 @@ hash_table *hash_table_create_extra(
     size_t      max_collisions,
     size_t      init_buckets
 );
-void  hash_table_destroy(hash_table *ht);
+void hash_table_destroy(hash_table *ht);
 
 void *hash_table_addkey(hash_table *ht, char const *key);
 void *hash_table_addkey_extra(hash_table *ht, char const *key, size_t elsize);
 
 void *hash_table_search(hash_table *ht, char const *key);
 
-void  hash_table_resize_buckets(hash_table *ht, size_t nnbuckets);
+void hash_table_resize_buckets(hash_table *ht, size_t nnbuckets);
 
 uint64_t hash_table_calc_hash(hash_table *ht, char const *key);
 

@@ -40,6 +40,6 @@ extern mem_pde_ref *i_vcache_pde;
 
 // Pointer to the first PTE used by VCache. This PTE should be
 // followed by another 2047 PTE
-extern mem_pte     *i_vcache_pte;
+extern mem_pte *i_vcache_pte;
 
 #endif

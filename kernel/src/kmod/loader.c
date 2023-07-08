@@ -43,7 +43,7 @@ kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN]) {
   elf64_header              *eh  = kmodf;
   elf64_prog_header         *ph  = kmodf + eh->phoff;
   elf64_kmod_loader_command *cmd = kmodf + ph->offset;
-  size_t   cmd_count = ph->file_size / sizeof(elf64_kmod_loader_command);
+  size_t cmd_count = ph->file_size / sizeof(elf64_kmod_loader_command);
 
   mem_vseg kmod_vseg = mem_alloc_vblock(
       ph->mem_size,
@@ -59,7 +59,7 @@ kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN]) {
   kmod *mod = calloc(1, sizeof(kmod));
 
   strcpy(mod->name, name);
-  mod->vseg          = kmod_vseg;
+  mod->vseg = kmod_vseg;
 
   void       *base   = kmod_vseg.ptr;
   char const *symtab = 0;

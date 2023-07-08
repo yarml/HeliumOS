@@ -51,13 +51,13 @@ void *realloc(void *ptr, size_t size) {
     unit_header *new_unit = (void *)(target_unit + 1) + size;
     memset(new_unit, 0, sizeof(*new_unit));
 
-    new_unit->magic   = UNIT_MAGIC;
-    new_unit->size    = target_unit->size - size - sizeof(unit_header);
-    new_unit->block   = target_unit->block;
-    new_unit->flags   = UNITF_FREE;
+    new_unit->magic = UNIT_MAGIC;
+    new_unit->size  = target_unit->size - size - sizeof(unit_header);
+    new_unit->block = target_unit->block;
+    new_unit->flags = UNITF_FREE;
 
     // Insert new_unit into the free linked list & all linked list
-    new_unit->next    = target_unit->next;
+    new_unit->next = target_unit->next;
 
     new_unit->prev    = target_unit;
     target_unit->next = new_unit;
@@ -66,7 +66,7 @@ void *realloc(void *ptr, size_t size) {
       new_unit->next->prev = new_unit;
     }
 
-    target_unit->size         = size;
+    target_unit->size = size;
 
     // Search for previous free unit
     unit_header *current_unit = target_unit->prev;
@@ -194,11 +194,11 @@ void *realloc(void *ptr, size_t size) {
   // This makes it so that when we eat from the next unit, the unit headers
   // are never overlapping
 
-  unit_header *next     = target_unit->next;
+  unit_header *next = target_unit->next;
 
   // Save a copy of the old header in stack, because if delta is small
   // enough, the new next header can be overlapping the old header
-  unit_header  snext    = *next;
+  unit_header snext = *next;
 
   unit_header *new_next = (void *)next + delta;
   memset(new_next, 0, sizeof(*new_next));
@@ -219,8 +219,8 @@ void *realloc(void *ptr, size_t size) {
   new_next->prev    = target_unit;
   target_unit->next = new_next;
 
-  new_next->fnext   = snext.next;
-  new_next->fprev   = snext.fprev;
+  new_next->fnext = snext.next;
+  new_next->fprev = snext.fprev;
 
   if (new_next->next) {
     new_next->next->prev = new_next;
@@ -238,7 +238,7 @@ void *realloc(void *ptr, size_t size) {
 
   // Update block data if the unit eaten was the largest one
   if (target_unit->block->largest_free == next) {
-    unit_header *current_unit          = new_next->block->ffunit;
+    unit_header *current_unit = new_next->block->ffunit;
 
     size_t       new_largest_free_size = 0;
     unit_header *new_largest           = 0;

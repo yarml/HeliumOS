@@ -15,9 +15,9 @@ IncludeCategories:
   - Regex: '"[[:alnum:]./_]+"'
     Priority: 4
 
-AlignConsecutiveBitFields: AcrossEmptyLinesAndComments
-AlignConsecutiveAssignments: AcrossEmptyLinesAndComments
-AlignConsecutiveDeclarations: AcrossEmptyLinesAndComments
+AlignConsecutiveBitFields: Consecutive
+AlignConsecutiveAssignments: Consecutive
+AlignConsecutiveDeclarations: Consecutive
 
 AlignTrailingComments: true
 AllowAllArgumentsOnNextLine: true

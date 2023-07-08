@@ -45,19 +45,19 @@ uint8_t pci_revid(size_t bus, size_t dev, size_t fn) {
 }
 
 pci_inf pci_info(size_t bus, size_t dev, size_t fn) {
-  pci_inf  info;
+  pci_inf info;
 
-  uint32_t r0      = pci_read_reg(bus, dev, fn, 0);
-  uint32_t r2      = pci_read_reg(bus, dev, fn, 2);
-  uint32_t r3      = pci_read_reg(bus, dev, fn, 3);
+  uint32_t r0 = pci_read_reg(bus, dev, fn, 0);
+  uint32_t r2 = pci_read_reg(bus, dev, fn, 2);
+  uint32_t r3 = pci_read_reg(bus, dev, fn, 3);
 
-  info.vendorid    = r0 & 0x0000FFFF;
-  info.devid       = (r0 & 0xFFFF0000) >> 16;
+  info.vendorid = r0 & 0x0000FFFF;
+  info.devid    = (r0 & 0xFFFF0000) >> 16;
 
-  info.class       = (r2 & 0xFF000000) >> 24;
-  info.subclass    = (r2 & 0x00FF0000) >> 16;
-  info.progif      = (r2 & 0x0000FF00) >> 8;
-  info.revid       = (r2 & 0x000000FF);
+  info.class    = (r2 & 0xFF000000) >> 24;
+  info.subclass = (r2 & 0x00FF0000) >> 16;
+  info.progif   = (r2 & 0x0000FF00) >> 8;
+  info.revid    = (r2 & 0x000000FF);
 
   info.header_type = (r3 & 0x00FF0000) >> 16;
 

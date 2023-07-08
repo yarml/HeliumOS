@@ -36,6 +36,6 @@
 
 extern char g_units_sign[UNITS_COUNT];
 
-void        hexdump(void const *mem, size_t size);
+void hexdump(void const *mem, size_t size);
 
 #endif

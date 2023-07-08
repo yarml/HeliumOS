@@ -31,7 +31,7 @@ interrupt_handler void exception_div(int_frame *frame) {
 interrupt_handler void exception_page_fault(int_frame *frame, uint64_t ec) {
   int_errcode_pf *err_code = (void *)&ec;
 
-  uint64_t        adr      = as_rcr2();
+  uint64_t adr = as_rcr2();
 
   exception_common_prologue(frame, "PAGE FAULT");
 

@@ -14,9 +14,9 @@ mem_pde_ref *i_vcache_pde;
 
 // Pointer to the first PTE used by VCache. This PTE should be
 // followed by another 2047 PTE
-mem_pte     *i_vcache_pte;
+mem_pte *i_vcache_pte;
 
-vcache_unit  vcache_map(void *padr) {
+vcache_unit vcache_map(void *padr) {
   prtrace_begin("vcache_map", "padr=%p", padr);
 
   // First thing, look if there is a lazy page pointing to this
@@ -55,10 +55,10 @@ vcache_unit  vcache_map(void *padr) {
   // if 0, then no PDE has any lazy page
   // if not 0, then it is the number of lazy pages in the first PDE
   // that has any lazy page
-  size_t       lazy_pages_count = 0;
+  size_t lazy_pages_count = 0;
 
-  mem_pte     *target_pte       = 0;
-  size_t       pte_idx          = 0;
+  mem_pte *target_pte = 0;
+  size_t   pte_idx    = 0;
 
   for (size_t i = 0; i < PDE_COUNT; ++i) {
     if (!lazy_pages_count) {
@@ -96,7 +96,7 @@ vcache_unit  vcache_map(void *padr) {
         size_t lazy_found_count = 0;
         // Iterate through all PTEs until we found all the lazy pages and
         // marked them as free
-        target_pde              = i_vcache_pde + i;
+        target_pde = i_vcache_pde + i;
         for (size_t j = 0; j < 512; ++i) {
           // if we already found all the lazy pages, don't bother checking the
           // other ones, they are all used!
@@ -158,7 +158,7 @@ vcache_unit  vcache_map(void *padr) {
   target_pte->padr    = (uintptr_t)padr >> 12;
   target_pte->present = 1;
 
-  void *ptr           = VCACHE_PTR + MEM_PS * (pde_idx * 512 + pte_idx);
+  void *ptr = VCACHE_PTR + MEM_PS * (pde_idx * 512 + pte_idx);
 
   as_invlpg((uint64_t)ptr);
 
@@ -199,7 +199,7 @@ void vcache_remap(vcache_unit unit, void *padr) {
   pte->padr    = (uintptr_t)padr >> 12;
   pte->present = 1;
 
-  void *ptr    = VCACHE_PTR + MEM_PS * (unit.pde_idx * 512 + unit.pte_idx);
+  void *ptr = VCACHE_PTR + MEM_PS * (unit.pde_idx * 512 + unit.pte_idx);
 
   as_invlpg((uint64_t)ptr);
 
@@ -219,13 +219,13 @@ void vcache_umap(vcache_unit unit, void *id) {
   // First, check how many lazy pages the PDE has
   // If it is less than 127(the maximum), then the process is
   // straighforward. Mark this page as lazy with age 1, then return
-  mem_pde_ref *pde        = i_vcache_pde + unit.pde_idx;
-  mem_pte     *pte        = i_vcache_pte + unit.pde_idx * 512 + unit.pte_idx;
+  mem_pde_ref *pde = i_vcache_pde + unit.pde_idx;
+  mem_pte     *pte = i_vcache_pte + unit.pde_idx * 512 + unit.pte_idx;
 
   // Pointer to the 512 PTEs pointed to by the PDE
-  mem_pte     *pde_pt     = i_vcache_pte + 512 * unit.pde_idx;
+  mem_pte *pde_pt = i_vcache_pte + 512 * unit.pde_idx;
 
-  size_t       lazy_count = pde_lazy_pages(pde);
+  size_t lazy_count = pde_lazy_pages(pde);
 
   // This should be the majority of the first cases
   if (lazy_count < 63) {
@@ -270,7 +270,7 @@ void vcache_umap(vcache_unit unit, void *id) {
   age_sum -= oldest_age;
 
   // Now compute the average age among lazy pages
-  size_t av_age        = age_sum / (lazy_count - 1);
+  size_t av_age = age_sum / (lazy_count - 1);
 
   // number of lazy pages that will be marked free
   size_t removed_count = 0;

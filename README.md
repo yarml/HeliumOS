@@ -78,12 +78,13 @@ what I want to work on.
   * [X] Kernel terminal filesystem
 * [X] Kernel modules
   * [X] Make kernel terminal a module
+* [ ] APIC
+* [ ] Multiprocessing
 * [ ] Rework filesystem API.
 * [ ] Disk
 * [ ] Basic device drivers (Keyboard, Mouse, etc)
 * [ ] System calls
 * [ ] User space processes
-* [ ] Multiprocessing
 * [ ] Power Management
 
 # Documentation

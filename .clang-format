@@ -19,6 +19,7 @@ AlignConsecutiveBitFields: Consecutive
 AlignConsecutiveAssignments: Consecutive
 AlignConsecutiveDeclarations: Consecutive
 
+AllowShortLoopsOnASingleLine: true
 AlignTrailingComments: true
 AllowAllArgumentsOnNextLine: true
 AlwaysBreakBeforeMultilineStrings: true
@@ -26,6 +27,7 @@ AllowAllParametersOfDeclarationOnNextLine: true
 BinPackArguments: false
 BinPackParameters: false
 InsertBraces: true
+SpaceInEmptyBlock: true
 
 InsertTrailingCommas: Wrapped
 

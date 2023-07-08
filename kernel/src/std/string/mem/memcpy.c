@@ -12,12 +12,13 @@ void *memcpy(void *to, void const *from, size_t size) {
   // TODO: Maybe max_alignment can be calculated in constant time
   size_t max_alignment = 1;
 
-  if ((uintptr_t)to % 8 == (uintptr_t)from % 8)
+  if ((uintptr_t)to % 8 == (uintptr_t)from % 8) {
     max_alignment = 8;
-  else if ((uintptr_t)to % 4 == (uintptr_t)from % 4)
+  } else if ((uintptr_t)to % 4 == (uintptr_t)from % 4) {
     max_alignment = 4;
-  else if ((uintptr_t)to % 2 == (uintptr_t)from % 2)
+  } else if ((uintptr_t)to % 2 == (uintptr_t)from % 2) {
     max_alignment = 2;
+  }
 
   // copy individual bytes until both from and to are aligned to max_alignment
   // at worst case, it should individually copy 7 bytes

@@ -35,7 +35,9 @@ mem_pallocation mem_ppalloc(
       cont,
       below
   );
-  if (pheader == PALLOC_STD_HEADER) pheader = i_pmm_header;
+  if (pheader == PALLOC_STD_HEADER) {
+    pheader = i_pmm_header;
+  }
 
   // We check the validity of the arguments first before acquiring the lock
   mem_pallocation alloc;
@@ -49,9 +51,9 @@ mem_pallocation mem_ppalloc(
     return alloc;
   }
 
-  if (!alignment)
+  if (!alignment) {
     alignment = MEM_PS;
-  else if (alignment % MEM_PS) {
+  } else if (alignment % MEM_PS) {
     alloc.error = ERR_MEM_ALN;
     return alloc;
   }
@@ -64,8 +66,9 @@ mem_pallocation mem_ppalloc(
   for (size_t i = 0; i < i_mmap_usable_len; ++i) {
     mem_pseg_header *h = pheader + pmm_header_off;
 
-    if (h->magic != MEM_PSEG_MAGIC)
+    if (h->magic != MEM_PSEG_MAGIC) {
       error_inv_state("Corrupted physical memory header");
+    }
 
     size_t bitmap_size = BITMAP_SIZE(h->size);
 
@@ -96,8 +99,9 @@ mem_pallocation mem_ppalloc(
                     )                                    /* respecting below */
                  && ((pg_idx - fpg_idx) * MEM_PS < size) /* didn't reach size */
                  && !BIT(bitmap[pg_idx / 64], pg_idx % 64) /* page is clear */
-          )
+          ) {
             pg_idx += alignment_p;
+          }
 
           size_t lpg_idx  = pg_idx - 1;
           size_t pg_count = lpg_idx - fpg_idx + 1;
@@ -108,10 +112,10 @@ mem_pallocation mem_ppalloc(
             // the older implementation
             if (lpg_idx - fpg_idx + 1 < 64)  // only one/two u64 to change
             {
-              if (ALIGN_DN(lpg_idx, 64) != ALIGN_DN(fpg_idx, 64))  // one u64
+              if (ALIGN_DN(lpg_idx, 64) != ALIGN_DN(fpg_idx, 64)) {  // one u64
                 bitmap[fpg_idx / 64] |=
                     BITRANGE(fpg_idx % 64, lpg_idx % 64 + 1);
-              else  // two u64 to change
+              } else  // two u64 to change
               {
                 bitmap[fpg_idx / 64] |= BITRANGE(fpg_idx % 64, 64);
                 bitmap[lpg_idx / 64] |= BITRANGE(0, lpg_idx % 64 + 1);
@@ -161,14 +165,16 @@ mem_pallocation mem_ppalloc(
                                       bitmap_size / 8 - (pg_idx / 64 + 1)
                                   );
 
-            if (bitmap[first_found_idx] == UINT64_MAX)
+            if (bitmap[first_found_idx] == UINT64_MAX) {
               break;  // no more clear pages in this entry,
                       // go to the next one(next for loop)
+            }
 
             ffs    = FFS(~bitmap[first_found_idx]);
             pg_idx = 64 * first_found_idx + ffs;
-          } else
+          } else {
             pg_idx = ALIGN_DN(pg_idx, 64) + ffs;
+          }
         }
       }
     }

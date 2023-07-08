@@ -19,8 +19,9 @@ uint32_t pci_read_reg(size_t bus, size_t dev, size_t fn, size_t reg) {
 void pci_read_regarray(
     size_t bus, size_t dev, size_t fn, size_t regstart, size_t n, uint32_t *buf
 ) {
-  for (size_t i = 0; i < n; ++i)
+  for (size_t i = 0; i < n; ++i) {
     buf[i] = pci_read_reg(bus, dev, fn, regstart + i);
+  }
 }
 
 uint16_t pci_vendorid(size_t bus, size_t dev, size_t fn) {
@@ -64,8 +65,8 @@ pci_inf pci_info(size_t bus, size_t dev, size_t fn) {
 }
 
 void pci_probe() {
-  for (size_t bus = 0; bus < 256; ++bus)
-    for (size_t dev = 0; dev < 32; ++dev)
+  for (size_t bus = 0; bus < 256; ++bus) {
+    for (size_t dev = 0; dev < 32; ++dev) {
       for (size_t fn = 0; fn < 8; ++fn) {
         if (pci_vendorid(bus, dev, fn) != 0xFFFF) {
           pci_inf info = pci_info(bus, dev, fn);
@@ -92,8 +93,9 @@ void pci_probe() {
             printf("\tSATA controller:\n");
             uint32_t bars[5];
             pci_read_regarray(bus, dev, fn, 4, 5, bars);
-            for (size_t i = 0; i < 5; ++i)
+            for (size_t i = 0; i < 5; ++i) {
               printf("\t\tBAR%lx: %x\n", i, bars[i]);
+            }
             uint32_t abar = pci_read_reg(bus, dev, fn, 9);
             printf("\t\tAHCI BAR: %x\n", abar);
             void *vptr = KVMSPACE + (uint64_t)1024 * 1024 * 1024 * 1024 +
@@ -106,6 +108,8 @@ void pci_probe() {
           }
         }
       }
+    }
+  }
 }
 
 char const *pci_class(uint16_t class_id) {

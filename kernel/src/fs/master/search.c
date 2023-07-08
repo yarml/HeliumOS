@@ -11,7 +11,9 @@ filesys *fs_from_name(char const *name) {
   filesys_llnode *cfsn = i_fs_head;
 
   while (cfsn) {
-    if (!strcmp(cfsn->fs.name, name)) return &cfsn->fs;
+    if (!strcmp(cfsn->fs.name, name)) {
+      return &cfsn->fs;
+    }
     cfsn = cfsn->next;
   }
 
@@ -27,7 +29,9 @@ fsnode *fs_open(char const *fsname, char const *names, size_t depth) {
   filesys_llnode *cfsn = i_fs_head;
 
   while (cfsn) {
-    if (!strcmp(cfsn->fs.name, fsname)) break;
+    if (!strcmp(cfsn->fs.name, fsname)) {
+      break;
+    }
     cfsn = cfsn->next;
   }
 
@@ -54,7 +58,9 @@ fsnode *fs_open(char const *fsname, char const *names, size_t depth) {
     fsnode *starget = target->dir.fchild;
 
     while (starget) {
-      if (!strcmp(starget->name, names + nameoff)) break;
+      if (!strcmp(starget->name, names + nameoff)) {
+        break;
+      }
       starget = starget->nsib;
     }
 
@@ -68,7 +74,9 @@ fsnode *fs_open(char const *fsname, char const *names, size_t depth) {
     target = starget;
 
     // If current target is a link, resolve the link
-    while (target->type == FSNODE_LINK) target = target->link.target;
+    while (target->type == FSNODE_LINK) {
+      target = target->link.target;
+    }
   }
 
   ++target->refcount;

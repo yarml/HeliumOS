@@ -7,21 +7,32 @@
 int fs_valid_sys_name(char const *name) {
   size_t name_len = strlen(name);
 
-  if (!name_len || name_len >= FS_NAMELEN) return 0;
+  if (!name_len || name_len >= FS_NAMELEN) {
+    return 0;
+  }
 
   // Cannot start or end with '-' or '_'
-  if (!isalnum(name[0])) return 0;
-  if (!isalnum(name[name_len - 1])) return 0;
+  if (!isalnum(name[0])) {
+    return 0;
+  }
+  if (!isalnum(name[name_len - 1])) {
+    return 0;
+  }
 
-  for (size_t i = 1; i < name_len - 1; ++i)
-    if (!isalnum(name[i]) && name[i] != '-' && name[i] != '_') return 0;
+  for (size_t i = 1; i < name_len - 1; ++i) {
+    if (!isalnum(name[i]) && name[i] != '-' && name[i] != '_') {
+      return 0;
+    }
+  }
   return 1;
 }
 
 int fs_valid_node_name(char const *name) {
   size_t name_len = strlen(name);
 
-  if (!name_len || name_len >= FSNODE_NAMELEN) return 0;
+  if (!name_len || name_len >= FSNODE_NAMELEN) {
+    return 0;
+  }
 
   // Cannot being with '-$%#> '
   switch (name[0]) {
@@ -44,7 +55,9 @@ int fs_valid_node_name(char const *name) {
   for (size_t i = 0; i < name_len; ++i) {
     char c = name[i];
     // All names should be printable
-    if (!isprint(c)) return 0;
+    if (!isprint(c)) {
+      return 0;
+    }
     // Even within prints, there are more restrictions
     switch (c) {
       case ':':   // Used in a path to denote filesystem
@@ -64,34 +77,53 @@ int fs_valid_path(char const *path) {
   strcpy(lpath, path);
 
   size_t head = 0;
-  while (isspace(lpath[head])) ++head;
+  while (isspace(lpath[head])) {
+    ++head;
+  }
 
   size_t fsname_begin = head;
-  while (lpath[head] && lpath[head] != ':' && !isspace(lpath[head])) ++head;
+  while (lpath[head] && lpath[head] != ':' && !isspace(lpath[head])) {
+    ++head;
+  }
 
   char s      = lpath[head];
   lpath[head] = 0;
-  if (!fs_valid_sys_name(lpath + fsname_begin)) return 0;
+  if (!fs_valid_sys_name(lpath + fsname_begin)) {
+    return 0;
+  }
   lpath[head] = s;
 
-  while (isspace(lpath[head])) ++head;
+  while (isspace(lpath[head])) {
+    ++head;
+  }
 
-  if (lpath[head] != ':' || lpath[head + 1] != '/' || lpath[head + 2] != '/')
+  if (lpath[head] != ':' || lpath[head + 1] != '/' || lpath[head + 2] != '/') {
     return 0;
+  }
   head += 3;
 
   while (lpath[head]) {
-    while (isspace(lpath[head]) || lpath[head] == '/') ++head;
-    if (!lpath[head]) return 1;
+    while (isspace(lpath[head]) || lpath[head] == '/') {
+      ++head;
+    }
+    if (!lpath[head]) {
+      return 1;
+    }
     size_t name_begin = head;
-    while (lpath[head] && lpath[head] != '/') ++head;
+    while (lpath[head] && lpath[head] != '/') {
+      ++head;
+    }
     size_t next_slash = head;
     // Backtrack to the previous non space
-    while (isspace(lpath[head - 1])) --head;
+    while (isspace(lpath[head - 1])) {
+      --head;
+    }
 
     s           = lpath[head];
     lpath[head] = 0;
-    if (!fs_valid_node_name(lpath + name_begin)) return 0;
+    if (!fs_valid_node_name(lpath + name_begin)) {
+      return 0;
+    }
     lpath[head] = s;
     head        = next_slash;
   }
@@ -105,7 +137,9 @@ void fs_makecanonical(char const *path, char *opath) {
   size_t head  = 0;
   size_t ohead = 0;
 
-  while (isspace(path[head])) ++head;
+  while (isspace(path[head])) {
+    ++head;
+  }
 
   while (path[head] && path[head] != ':' && !isspace(path[head])) {
     opath[ohead] = path[head];
@@ -114,7 +148,9 @@ void fs_makecanonical(char const *path, char *opath) {
   }
 
   // Skip all whitespaces after filesystem name
-  while (isspace(path[head])) ++head;
+  while (isspace(path[head])) {
+    ++head;
+  }
 
   // Now path[head] = ':'
   opath[ohead++] = ':';
@@ -125,7 +161,9 @@ void fs_makecanonical(char const *path, char *opath) {
   // Now path[head] is the second / of the path
   while (path[head]) {
     // skip all whitespaces
-    while (isspace(path[head])) ++head;
+    while (isspace(path[head])) {
+      ++head;
+    }
 
     // If we find a '/' after the whitespace, then add a '/' to output, and skip
     // all following '/' and spaces until first word or end of path
@@ -135,7 +173,9 @@ void fs_makecanonical(char const *path, char *opath) {
         ++ohead;
       }
       ++head;
-      while (path[head] == '/' || isspace(path[head])) ++head;
+      while (path[head] == '/' || isspace(path[head])) {
+        ++head;
+      }
     }
 
     size_t wb_head  = head;
@@ -146,17 +186,23 @@ void fs_makecanonical(char const *path, char *opath) {
       ++head;
     }
     // track back the last sequence of spaces
-    while (isspace(opath[ohead - 1])) --ohead;
+    while (isspace(opath[ohead - 1])) {
+      --ohead;
+    }
 
     // If this was a '..', then we roll back to
     // just after the second previous '/'
     if (head - wb_head == 2 && path[wb_head] == '.' && path[wb_head] == '.') {
       ohead -= 4;
-      while (opath[ohead - 1] != '/') --ohead;
+      while (opath[ohead - 1] != '/') {
+        --ohead;
+      }
     }
 
     // If this was a '.'
-    if (head - wb_head == 1 && path[wb_head] == '.') ohead = wb_ohead;
+    if (head - wb_head == 1 && path[wb_head] == '.') {
+      ohead = wb_ohead;
+    }
   }
   opath[ohead] = 0;
 }
@@ -188,11 +234,15 @@ void fs_pathtok(char const *path, char *fsname, char **nodes, size_t *len) {
   size_t canon_path_len = strlen(canon_path);
   *len                  = 0;
   for (size_t i = 0; i < canon_path_len; ++i) {
-    if (canon_path[i] == '/') ++*len;
+    if (canon_path[i] == '/') {
+      ++*len;
+    }
   }
 
   --*len;
-  if (canon_path[canon_path_len - 1] == '/') --*len;
+  if (canon_path[canon_path_len - 1] == '/') {
+    --*len;
+  }
 
   size_t head = 0;
   while (canon_path[head] != ':') {
@@ -226,9 +276,13 @@ void fs_pathtok(char const *path, char *fsname, char **nodes, size_t *len) {
 }
 
 static void fsnode_print_rscv(fsnode *node, size_t level) {
-  if (!node) return;
+  if (!node) {
+    return;
+  }
 
-  for (size_t i = 0; i < level; ++i) printd(" ");
+  for (size_t i = 0; i < level; ++i) {
+    printd(" ");
+  }
 
   printd("%s", node->name);
 
@@ -239,10 +293,11 @@ static void fsnode_print_rscv(fsnode *node, size_t level) {
       break;
     case FSNODE_LINK:
       printd(" ->");
-      if (node->link.target)
+      if (node->link.target) {
         printd("%s\n", node->link.target->name);
-      else
+      } else {
         printd("-\n");
+      }
       break;
     case FSNODE_FILE:
       printd("\n");

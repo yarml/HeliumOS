@@ -24,7 +24,9 @@ void *malloc(size_t size) {
   // stripped down to the requested size
 
   // First thing first, return 0 if they asked for nothing
-  if (!size) return 0;
+  if (!size) {
+    return 0;
+  }
 
   // Second thing second, round size to be a multiple of 16
   size                        = ALIGN_UP(size, 16);
@@ -37,7 +39,9 @@ void *malloc(size_t size) {
     block_header *cb = current_block;
     current_block    = current_block->next;
 
-    if (cb->largest_free_size < size) continue;
+    if (cb->largest_free_size < size) {
+      continue;
+    }
 
     unit_header *best_unit    = cb->largest_free;
     size_t       best_delta   = cb->largest_free_size - size;
@@ -50,7 +54,9 @@ void *malloc(size_t size) {
       unit_header *cu = current_unit;
       current_unit    = current_unit->fnext;
 
-      if (cu->size < size) continue;
+      if (cu->size < size) {
+        continue;
+      }
       size_t this_delta = cu->size - size;
       if (this_delta < best_delta) {
         best_delta = this_delta;
@@ -77,12 +83,13 @@ void *malloc(size_t size) {
 
     block_header *new_block;
     size_t        alloc_size = 0;
-    if (size < INITIAL_HEAP_SIZE)
+    if (size < INITIAL_HEAP_SIZE) {
       alloc_size = INITIAL_HEAP_SIZE;
-    else if (size < 64 * 1024 * 1024)
+    } else if (size < 64 * 1024 * 1024) {
       alloc_size = 2 * size;
-    else
+    } else {
       alloc_size = size + sizeof(unit_header);
+    }
 
     new_block = i_stdlib_alloc_block(alloc_size);
 
@@ -128,8 +135,12 @@ void *malloc(size_t size) {
     target_unit->next  = new_unit;
     target_unit->fnext = new_unit;
 
-    if (new_unit->next) new_unit->next->prev = new_unit;
-    if (new_unit->fnext) new_unit->fnext->fprev = new_unit;
+    if (new_unit->next) {
+      new_unit->next->prev = new_unit;
+    }
+    if (new_unit->fnext) {
+      new_unit->fnext->fprev = new_unit;
+    }
 
     target_unit->size = size;
   }
@@ -144,7 +155,9 @@ void *malloc(size_t size) {
       unit_header *cu = current_unit;
       current_unit    = current_unit->fnext;
 
-      if (cu == target_unit) continue;
+      if (cu == target_unit) {
+        continue;
+      }
 
       // If we find another free unit that has the same size, then
       // we don't need to check other units, that means there were more
@@ -170,14 +183,17 @@ void *malloc(size_t size) {
   // or if bigger, then not bigger enough to be split
   target_unit->flags &= ~UNITF_FREE;
 
-  if (target_unit->fnext) target_unit->fnext->fprev = target_unit->fprev;
+  if (target_unit->fnext) {
+    target_unit->fnext->fprev = target_unit->fprev;
+  }
 
   // Setting the previous unit's next is special
   // because if there is no fprev, then we should set the block's ffunit
-  if (target_unit->fprev)
+  if (target_unit->fprev) {
     target_unit->fprev->fnext = target_unit->fnext;
-  else
+  } else {
     target_block->ffunit = target_unit->fnext;
+  }
 
   return UNIT_PTR(target_unit);
 }

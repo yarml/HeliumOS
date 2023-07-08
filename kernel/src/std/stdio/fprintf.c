@@ -30,7 +30,9 @@ int prtrace_begin(char const *fname, char const *args, ...) {
   int r = 0;
 #ifdef PRINT_FUNC_TRACE
   r += printd("begin %s(", fname);
-  if (args) r += vprintf(args, va);
+  if (args) {
+    r += vprintf(args, va);
+  }
   r += printd(")\n");
 #endif
   va_end(va);
@@ -46,7 +48,9 @@ int prtrace_end(
   int r = 0;
 #ifdef PRINT_FUNC_TRACE
   r += printd("end %s()", fname);
-  if (status) printd(" -> %s", status);
+  if (status) {
+    printd(" -> %s", status);
+  }
   if (result) {
     printd("{");
     vprintf(result, va);
@@ -107,14 +111,16 @@ int vfprintf(FILE *stream, char const *template, va_list va) {
   int ret;
 
   if (stream) {
-    if (stream->mode & MODE_W)
+    if (stream->mode & MODE_W) {
       fwrite(buf, sizeof(char), len, stream);
-    else
+    } else {
       fappend(buf, sizeof(char), len, stream);
-  } else
+    }
+  } else {
     // If stream is NULL; This is undefined behavior in libc, but in Helium
     // we will assume we want to print to debug console for emulators
     ret = dbg_write_string(buf);
+  }
 
   return ret ? ret : len;
 }

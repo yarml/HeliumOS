@@ -34,14 +34,18 @@ void *realloc(void *ptr, size_t size) {
     return 0;
   }
   // Case 0: ptr is NULL, this is an alloc, not realloc
-  if (!ptr) return malloc(size);
+  if (!ptr) {
+    return malloc(size);
+  }
 
   unit_header *target_unit = PTR_UNIT(ptr);
 
   if (size < target_unit->size) {
     // Check for case I
     size_t delta = target_unit->size - size;
-    if (delta < UNIT_SPLIT_DELTA) return ptr;  // Case I
+    if (delta < UNIT_SPLIT_DELTA) {
+      return ptr;  // Case I
+    }
 
     // Case II
     unit_header *new_unit = (void *)(target_unit + 1) + size;
@@ -58,7 +62,9 @@ void *realloc(void *ptr, size_t size) {
     new_unit->prev    = target_unit;
     target_unit->next = new_unit;
 
-    if (new_unit->next) new_unit->next->prev = new_unit;
+    if (new_unit->next) {
+      new_unit->next->prev = new_unit;
+    }
 
     target_unit->size         = size;
 
@@ -84,7 +90,9 @@ void *realloc(void *ptr, size_t size) {
       new_unit->fnext        = new_unit->fprev->fnext;
       new_unit->fprev->fnext = new_unit;
     }
-    if (new_unit->fnext) new_unit->fnext->fprev = new_unit;
+    if (new_unit->fnext) {
+      new_unit->fnext->fprev = new_unit;
+    }
 
     // Merge the new split unit with the next one if possible
     if (new_unit->next && new_unit->next == new_unit->fnext) {
@@ -115,7 +123,9 @@ void *realloc(void *ptr, size_t size) {
     // is not free
     // or too small
     void *new_ptr = malloc(size);
-    if (!new_ptr) return 0;
+    if (!new_ptr) {
+      return 0;
+    }
     memcpy(new_ptr, ptr, target_unit->size);
     free(ptr);
     return new_ptr;
@@ -129,8 +139,12 @@ void *realloc(void *ptr, size_t size) {
     // We can merge the two units
     unit_header *next = target_unit->next;
     // Remove the unit that will be merged from the free linked list
-    if (next->fprev) next->fprev->fnext = next->fnext;
-    if (next->fnext) next->fnext->fprev = next->fprev;
+    if (next->fprev) {
+      next->fprev->fnext = next->fnext;
+    }
+    if (next->fnext) {
+      next->fnext->fprev = next->fprev;
+    }
 
     // If the unit that will be merged was the largest, then we need to find
     // the new largest one
@@ -143,7 +157,9 @@ void *realloc(void *ptr, size_t size) {
         current_unit    = current_unit->fnext;
 
         // Skip the unit we are merging
-        if (cu == next) continue;
+        if (cu == next) {
+          continue;
+        }
 
         // We found another unit that had the same size as the largest one
         if (cu->size == target_unit->block->largest_free_size) {
@@ -163,7 +179,9 @@ void *realloc(void *ptr, size_t size) {
 
     // Remove next from the all units linked list
     target_unit->next = next->next;
-    if (next->next) next->next->prev = target_unit;
+    if (next->next) {
+      next->next->prev = target_unit;
+    }
 
     next->magic = 0;  // No longer has the magic of a unit header
     target_unit->size += sizeof(unit_header) + next->size;
@@ -191,8 +209,9 @@ void *realloc(void *ptr, size_t size) {
   new_next->flags = UNITF_FREE;
 
   // Remove the magic if it is not in the overlapping area
-  if (delta > offsetof(unit_header, magic) + sizeof(next->magic))
+  if (delta > offsetof(unit_header, magic) + sizeof(next->magic)) {
     next->magic = 0;
+  }
 
   target_unit->size += delta;
 
@@ -203,14 +222,19 @@ void *realloc(void *ptr, size_t size) {
   new_next->fnext   = snext.next;
   new_next->fprev   = snext.fprev;
 
-  if (new_next->next) new_next->next->prev = new_next;
+  if (new_next->next) {
+    new_next->next->prev = new_next;
+  }
 
-  if (new_next->fnext) new_next->fnext->fprev = new_next;
+  if (new_next->fnext) {
+    new_next->fnext->fprev = new_next;
+  }
 
-  if (new_next->fprev)
+  if (new_next->fprev) {
     new_next->fprev->fnext = new_next;
-  else
+  } else {
     new_next->block->ffunit = new_next;
+  }
 
   // Update block data if the unit eaten was the largest one
   if (target_unit->block->largest_free == next) {

@@ -12,11 +12,15 @@ void free(void *ptr) {
   // If after the merge, the new size of larger than the largest unit in the
   // block, update block data.
 
-  if (!ptr) return;
+  if (!ptr) {
+    return;
+  }
 
   unit_header *target_unit = PTR_UNIT(ptr);
 
-  if (target_unit->magic != UNIT_MAGIC) printd("free(): Pointer invalid\n");
+  if (target_unit->magic != UNIT_MAGIC) {
+    printd("free(): Pointer invalid\n");
+  }
 
   target_unit->fprev        = 0;
 
@@ -42,7 +46,9 @@ void free(void *ptr) {
   }
 
   // Set the previous of the next free unit to be this unit
-  if (target_unit->fnext) target_unit->fnext->fprev = target_unit;
+  if (target_unit->fnext) {
+    target_unit->fnext->fprev = target_unit;
+  }
 
   // Merge with next unit if it is free
   if (target_unit->next && target_unit->fnext == target_unit->next) {

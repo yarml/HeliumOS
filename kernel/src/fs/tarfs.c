@@ -11,8 +11,9 @@
 void tar_header_print(tar_header *header) {
   printd("Name: %s%s\n", header->name_pref, header->name);
   printd("Type: %c\n", header->type);
-  if (header->type == '1' || header->type == '2')
+  if (header->type == '1' || header->type == '2') {
     printd("Link to: %s", header->link_name);
+  }
   printd("Size: %lu\n", tar_file_size(header));
 }
 
@@ -44,14 +45,17 @@ static size_t tar_file_read(fsnode *f, size_t off, char *buf, size_t size) {
 
   size_t      fsize   = tar_file_size(header);
 
-  if (off > fsize) return 0;
+  if (off > fsize) {
+    return 0;
+  }
 
   size_t acsize;  // actual size
 
-  if (fsize - off < size)
+  if (fsize - off < size) {
     acsize = fsize - off;
-  else
+  } else {
     acsize = size;
+  }
 
   memcpy(buf, content, acsize);
   return acsize;
@@ -70,7 +74,9 @@ filesys *tar_mkimfs(char *fsname, void *membuf, size_t size) {
   tar_impl.fs_file_tellsize = tar_file_tellsize;
 
   filesys *fs               = fs_mount(fsname);
-  if (!fs) return 0;
+  if (!fs) {
+    return 0;
+  }
 
   fs->file_cap               = FSCAP_USED | FSCAP_FREAD | FSCAP_FTELLSIZE;
   // Set fake dir capabilities to be able to build the immutable
@@ -93,8 +99,9 @@ filesys *tar_mkimfs(char *fsname, void *membuf, size_t size) {
   while (1) {
     if ((uintptr_t)current_header + sizeof(tar_header) >
             (uintptr_t)membuf + size ||
-        memcmp(current_header->ustar, "ustar  ", 8))
+        memcmp(current_header->ustar, "ustar  ", 8)) {
       break;
+    }
 
     size_t name1_len = strlen(current_header->name_pref);
     size_t name2_len = strlen(current_header->name);
@@ -124,7 +131,9 @@ filesys *tar_mkimfs(char *fsname, void *membuf, size_t size) {
                      ALIGN_UP(tar_file_size(current_header), 512);
 
     // Duplicate entry, this probably means we got a .. or something
-    if (fs_search(path)) continue;
+    if (fs_search(path)) {
+      continue;
+    }
 
     fsnode *dir = fs_dirof(path);
 

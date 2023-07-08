@@ -15,7 +15,9 @@ block_header *i_stdlib_alloc_block(size_t size) {
 
   mem_vseg seg = mem_alloc_vblock(size, MAPF_R | MAPF_W, KHEAP, KHEAP_SIZE);
 
-  if (seg.error) return 0;
+  if (seg.error) {
+    return 0;
+  }
 
   void         *vptr   = seg.ptr;
 

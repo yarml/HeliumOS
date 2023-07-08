@@ -24,10 +24,11 @@ static inline char *__print_num(
 ) {
   char *result = 0;
 
-  if (usign)
+  if (usign) {
     result = utos(v, base, buf + PRINTF_BUF_SIZE - 1);
-  else
+  } else {
     result = ntos(v, base, buf + PRINTF_BUF_SIZE - 1);
+  }
 
   buf[PRINTF_BUF_SIZE - 1] = 0;
   if (pref) {
@@ -48,7 +49,9 @@ static inline char *__print_num(
         break;
     }
   }
-  if (sign && isdigit(result[1]) && base == 10) *--result = '+';
+  if (sign && isdigit(result[1]) && base == 10) {
+    *--result = '+';
+  }
   return result;
 }
 
@@ -79,30 +82,33 @@ int vsnprintf(char *s, size_t size, char const *template, va_list va) {
       bool pref  = false;
       // read flags if found
       while (*template == '#' || *template == '+' || *template == '0') {
-        if (*template == '#' && !pref)
+        if (*template == '#' && !pref) {
           pref = true;
-        else if (*template == '+' && !sign)
+        } else if (*template == '+' && !sign) {
           sign = true;
-        else if (*template == '0' && !pad0)
+        } else if (*template == '0' && !pad0) {
           pad0 = true;
-        else      // some flag was duplicated
+        } else {  // some flag was duplicated
           break;  // break without incrementing template, subsequent
                   // code will deal with it
+        }
         ++template;
       }
       // read min if found
       if (*template == '*') {
         min = va_arg(va, int);
         ++template;
-      } else
+      } else {
         min = stou(template, &template, 10);
+      }
       // read max if found
       if (*template == '.') {
         if (*++template == '*') {
           max = va_arg(va, int);
           ++template;
-        } else
+        } else {
           max = stou(template, &template, 10);
+        }
       }
       // read type
       if (*template == 'l') {
@@ -129,7 +135,9 @@ int vsnprintf(char *s, size_t size, char const *template, va_list va) {
           to_print = print_num(buf, 16, sign, pref, lmode, true, va);
           break;
         case 'p':
-          if (!min) min = sizeof(uintptr_t) * 2;
+          if (!min) {
+            min = sizeof(uintptr_t) * 2;
+          }
           pad0     = true;
           to_print = print_num(buf, 16, sign, pref, true, true, va);
           break;
@@ -138,10 +146,11 @@ int vsnprintf(char *s, size_t size, char const *template, va_list va) {
           size_t unit_order = 0;
           size_t denom      = 1;
           size_t num;
-          if (lmode)
+          if (lmode) {
             num = va_arg(va, uint64_t);
-          else
+          } else {
             num = va_arg(va, uint32_t);
+          }
           *tail = 0;
           --tail;
           if (num == 0) {
@@ -190,26 +199,33 @@ int vsnprintf(char *s, size_t size, char const *template, va_list va) {
     // character
     int    printed = 0;  // printed in this loop;
     size_t tplen;        // to_print len
-    if (max == INT32_MAX)
+    if (max == INT32_MAX) {
       tplen = strlen(to_print);
-    else
+    } else {
       tplen = max;
+    }
     min -= tplen;
 
     // print leading spaces/0s
     while (min >= 1) {
       ++total_chars;
-      if (total_chars < size && s) *s++ = pad0 ? '0' : ' ';
+      if (total_chars < size && s) {
+        *s++ = pad0 ? '0' : ' ';
+      }
       --min;
     }
     // print *to_print
     while (to_print && *to_print && printed < max) {
       ++total_chars;
       ++printed;
-      if (total_chars < size && s) *s++ = *to_print;
+      if (total_chars < size && s) {
+        *s++ = *to_print;
+      }
       ++to_print;
     }
   }
-  if (s) *s = 0;
+  if (s) {
+    *s = 0;
+  }
   return total_chars;
 }

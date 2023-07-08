@@ -45,8 +45,9 @@ FILE *fopen(char *path, char *mode) {
     // If mode is append or write, we create file
     // if readonly, we return with error
 
-    if (!(imode & MODE_W) && !(imode & MODE_A))
+    if (!(imode & MODE_W) && !(imode & MODE_A)) {
       return 0;  // errno set by fs_search
+    }
 
     fsnode *fdir = fs_dirof(path);
 
@@ -58,7 +59,9 @@ FILE *fopen(char *path, char *mode) {
     fs_basename(path, fname);
     fnode = fs_mkfile(fdir, fname);
     fs_close(fdir);
-    if (!fnode) return 0;  // errno set by fs_mkfile
+    if (!fnode) {
+      return 0;  // errno set by fs_mkfile
+    }
   }
 
   if (fnode->type == FSNODE_DIR) {
@@ -92,8 +95,9 @@ FILE *fopen(char *path, char *mode) {
   }
 
   FILE *file = calloc(1, sizeof(FILE));
-  if (!file)  // errno set by calloc
+  if (!file) {  // errno set by calloc
     return 0;
+  }
 
   file->fnode = fnode;
   file->mode  = imode;

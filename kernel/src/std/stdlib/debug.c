@@ -27,8 +27,12 @@ void i_stdlib_malloc_print_state() {
             " F[fprev=%p,fnext=%p]", current_unit->fprev, current_unit->fnext
         );
       }
-      if (current_unit->size == current_block->largest_free_size) printd(" X");
-      if (current_unit == current_block->largest_free) printd(" U");
+      if (current_unit->size == current_block->largest_free_size) {
+        printd(" X");
+      }
+      if (current_unit == current_block->largest_free) {
+        printd(" U");
+      }
 
       printd("\n");
       ++unit_count;

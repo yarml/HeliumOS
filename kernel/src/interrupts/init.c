@@ -44,7 +44,9 @@ void             int_init() {
   for (size_t i = 0; i < 256; ++i) {
     idt_entry_info *info = kernel_idt_image + i;
 
-    if (!info->handler) continue;
+    if (!info->handler) {
+      continue;
+    }
 
     kernel_idt[i].offset0 = (uintptr_t)info->handler & 0xFFFF;
     kernel_idt[i].offset1 = (uintptr_t)info->handler >> 16;

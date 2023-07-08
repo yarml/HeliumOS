@@ -25,6 +25,9 @@ AlwaysBreakBeforeMultilineStrings: true
 AllowAllParametersOfDeclarationOnNextLine: true
 BinPackArguments: false
 BinPackParameters: false
+InsertBraces: true
+
+InsertTrailingCommas: Wrapped
 
 AlignOperands: AlignAfterOperator
 AlignAfterOpenBracket: BlockIndent

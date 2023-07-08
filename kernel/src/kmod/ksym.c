@@ -12,7 +12,9 @@ hash_table *i_ksym_table = 0;
 
 int         ksym_loadp(char const *path) {
   fsnode *f = fs_search(path);
-  if (!f) return 1;
+  if (!f) {
+    return 1;
+  }
   int status = ksym_loadf(f);
   fs_close(f);
   return status;
@@ -20,13 +22,17 @@ int         ksym_loadp(char const *path) {
 
 int ksym_loadf(fsnode *f) {
   size_t fsize = fs_tellsize(f);
-  if (!fsize) return 1;
+  if (!fsize) {
+    return 1;
+  }
   char   buf[fsize];
   size_t read = 0;
   while (read < fsize) {
     errno     = 0;
     size_t cr = fs_read(f, read, buf + read, fsize - read);
-    if (!cr && errno) return 1;
+    if (!cr && errno) {
+      return 1;
+    }
     read += cr;
   }
   return ksym_loadb(buf);
@@ -44,9 +50,15 @@ int ksym_loadb(void *ksymf) {
   for (size_t i = 0; i < eh->sht_len; ++i) {
     elf64_sect_header *sh     = ksymf + eh->shoff + i * eh->shent_size;
     char const        *shname = shstrtab + sh->name;
-    if (!strcmp(shname, ".strtab")) strtab = ksymf + sh->offset;
-    if (!strcmp(shname, ".symtab")) symtab_sh = sh;
-    if (strtab && symtab_sh) break;
+    if (!strcmp(shname, ".strtab")) {
+      strtab = ksymf + sh->offset;
+    }
+    if (!strcmp(shname, ".symtab")) {
+      symtab_sh = sh;
+    }
+    if (strtab && symtab_sh) {
+      break;
+    }
   }
 
   if (!strtab || !symtab_sh) {
@@ -55,12 +67,16 @@ int ksym_loadb(void *ksymf) {
   }
 
   hash_table *new_ksym_table = hash_table_create(sizeof(uint64_t));
-  if (!new_ksym_table) return 1;
+  if (!new_ksym_table) {
+    return 1;
+  }
 
   size_t sym_count = symtab_sh->size / symtab_sh->ent_size;
   for (size_t i = 0; i < sym_count; ++i) {
     elf64_sym *sym = ksymf + symtab_sh->offset + i * symtab_sh->ent_size;
-    if (!strlen(strtab + sym->name)) continue;
+    if (!strlen(strtab + sym->name)) {
+      continue;
+    }
     uint64_t *val = hash_table_addkey(new_ksym_table, strtab + sym->name);
     if (!val) {
       hash_table_destroy(new_ksym_table);
@@ -69,7 +85,9 @@ int ksym_loadb(void *ksymf) {
     *val = sym->value;
   }
 
-  if (i_ksym_table) hash_table_destroy(i_ksym_table);
+  if (i_ksym_table) {
+    hash_table_destroy(i_ksym_table);
+  }
   i_ksym_table = new_ksym_table;
 
   return 0;

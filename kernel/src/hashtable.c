@@ -17,7 +17,9 @@ hash_table *hash_table_create_extra(
     size_t      init_buckets
 ) {
   hash_table *ht = calloc(1, sizeof(hash_table));
-  if (!ht) return 0;
+  if (!ht) {
+    return 0;
+  }
   ht->nbuckets = init_buckets;
   ht->buckets  = calloc(init_buckets, sizeof(ht_node *));
   if (!ht->buckets) {
@@ -48,7 +50,9 @@ void *hash_table_addkey_extra(hash_table *ht, char const *key, size_t elsize) {
   uint64_t  hash    = hash_table_calc_hash(ht, key);
   ht_node  *newnode = calloc(1, sizeof(ht_node) + elsize + keylen + 1);
   ht_node **bucket  = ht->buckets + hash % ht->nbuckets;
-  if (!newnode) return 0;
+  if (!newnode) {
+    return 0;
+  }
   if ((*bucket) && (*bucket)->len >= ht->max_collisions) {
     hash_table_resize_buckets(ht, 2 * ht->nbuckets);
     bucket = ht->buckets + hash % ht->nbuckets;
@@ -66,16 +70,22 @@ void *hash_table_search(hash_table *ht, char const *key) {
   ht_node *current = ht->buckets[hash % ht->nbuckets];
   while (current) {
     char const *ckey = (void *)current + current->keyoff;
-    if (!strcmp(key, ckey)) return (void *)(current + 1);
+    if (!strcmp(key, ckey)) {
+      return (void *)(current + 1);
+    }
     current = current->next;
   }
   return 0;
 }
 
 void hash_table_resize_buckets(hash_table *ht, size_t nnbuckets) {
-  if (!nnbuckets) return;
+  if (!nnbuckets) {
+    return;
+  }
   ht_node **newbuckets = calloc(nnbuckets, sizeof(ht_node *));
-  if (!newbuckets) return;
+  if (!newbuckets) {
+    return;
+  }
   for (size_t i = 0; i < ht->nbuckets; ++i) {
     ht_node *current = ht->buckets[i];
     while (current) {
@@ -94,7 +104,9 @@ void hash_table_resize_buckets(hash_table *ht, size_t nnbuckets) {
 }
 
 uint64_t hash_table_calc_hash(hash_table *ht, char const *key) {
-  if (ht->hf) return ht->hf(key);
+  if (ht->hf) {
+    return ht->hf(key);
+  }
   return hash_table_std_strhash(key);
 }
 

@@ -48,24 +48,33 @@ interrupt_handler void exception_page_fault(int_frame *frame, uint64_t ec) {
       adr
   );
 
-  if (!err_code->present)
+  if (!err_code->present) {
     fprintf(stddbg, "Caused by structure without present flag.\n");
-  else if (err_code->rsvd)
+  } else if (err_code->rsvd) {
     fprintf(stddbg, "Caused by reserved bit set to 1.\n");
-  else
+  } else {
     fprintf(stddbg, "Caused by page level protection.\n");
+  }
 
-  if (err_code->pk_violation)
+  if (err_code->pk_violation) {
     fprintf(stddbg, "Caused by protection-key violation.\n");
+  }
 
-  if (err_code->shadow_stack) fprintf(stddbg, "Caused by shadow stack.\n");
+  if (err_code->shadow_stack) {
+    fprintf(stddbg, "Caused by shadow stack.\n");
+  }
 
-  if (err_code->ins_fetch)
+  if (err_code->ins_fetch) {
     fprintf(stddbg, "While trying to fetch instruction.\n");
+  }
 
-  if (err_code->hlat) fprintf(stddbg, "HLAT.\n");
+  if (err_code->hlat) {
+    fprintf(stddbg, "HLAT.\n");
+  }
 
-  if (err_code->sgx) fprintf(stddbg, "SGX.\n");
+  if (err_code->sgx) {
+    fprintf(stddbg, "SGX.\n");
+  }
 
   // For the far far far far far far far future, implement swapping here
   stop();

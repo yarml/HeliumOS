@@ -25,8 +25,9 @@ fsnode *fs_mknode(fsnode *parent, char *name) {
   }
 
   fsnode *n = calloc(1, sizeof(fsnode));
-  if (!n)  // errno set by calloc
+  if (!n) {  // errno set by calloc
     return 0;
+  }
 
   strcpy(n->name, name);
   n->fs     = parent->fs;
@@ -34,7 +35,9 @@ fsnode *fs_mknode(fsnode *parent, char *name) {
   n->parent = parent;
 
   n->nsib   = parent->dir.fchild;
-  if (parent->dir.fchild) parent->dir.fchild->psib = n;
+  if (parent->dir.fchild) {
+    parent->dir.fchild->psib = n;
+  }
 
   parent->dir.fchild = n;
 
@@ -42,27 +45,35 @@ fsnode *fs_mknode(fsnode *parent, char *name) {
 }
 fsnode *fs_mkdir(fsnode *parent, char *name) {
   fsnode *dir = fs_mknode(parent, name);
-  if (!dir) return 0;
+  if (!dir) {
+    return 0;
+  }
 
   dir->type = FSNODE_DIR;
   return dir;
 }
 fsnode *fs_mkfile(fsnode *parent, char *name) {
   fsnode *file = fs_mknode(parent, name);
-  if (!file) return 0;
+  if (!file) {
+    return 0;
+  }
   file->type = FSNODE_FILE;
   return file;
 }
 fsnode *fs_mklink(fsnode *parent, char *name, fsnode *target) {
   fsnode *link = fs_mknode(parent, name);
-  if (!link) return 0;
+  if (!link) {
+    return 0;
+  }
   link->type        = FSNODE_LINK;
 
   link->link.target = target;
 
   if (target) {
     link->link.nlink = target->flink;
-    if (target->flink) target->flink->link.plink = link;
+    if (target->flink) {
+      target->flink->link.plink = link;
+    }
     target->flink = link;
   }
 
@@ -77,7 +88,11 @@ fsnode *fs_nextnode(fsnode *dir, fsnode *current) {
     errno = EOPNOTSUPP;
     return 0;
   }
-  if (!current) return dir->dir.fchild;
-  if (current->nsib) ++current->nsib->refcount;
+  if (!current) {
+    return dir->dir.fchild;
+  }
+  if (current->nsib) {
+    ++current->nsib->refcount;
+  }
   return current->nsib;
 }

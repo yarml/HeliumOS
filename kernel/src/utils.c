@@ -15,18 +15,20 @@ void hexdump(void const *mem, size_t size) {
     printd("%p(+%05lu): ", mem + line * HEXDUMP_BPL, line * HEXDUMP_BPL);
     for (size_t i = 0; i < HEXDUMP_BPL; ++i) {
       size_t idx = line * HEXDUMP_BPL + i;
-      if (idx < size)
+      if (idx < size) {
         printd("%02x ", cmem[idx]);
-      else
+      } else {
         printd("   ");
+      }
     }
     printd("\t");
     for (size_t i = 0; i < HEXDUMP_BPL; ++i) {
       size_t idx = line * HEXDUMP_BPL + i;
-      if (idx < size && isprint(cmem[idx]))
+      if (idx < size && isprint(cmem[idx])) {
         printd("%c", cmem[idx]);
-      else
+      } else {
         printd(".");
+      }
     }
     printd("\n");
   }

@@ -25,7 +25,9 @@ vcache_unit  vcache_map(void *padr) {
     mem_pde_ref *pde        = i_vcache_pde + pdei;
     size_t       lazy_count = pde_lazy_pages(pde);
 
-    if (!lazy_count) continue;
+    if (!lazy_count) {
+      continue;
+    }
 
     for (size_t ptei = 0; ptei < 512; ++ptei) {
       mem_pte *pte = i_vcache_pte + pdei * 512 + ptei;
@@ -59,7 +61,9 @@ vcache_unit  vcache_map(void *padr) {
   size_t       pte_idx          = 0;
 
   for (size_t i = 0; i < PDE_COUNT; ++i) {
-    if (!lazy_pages_count) lazy_pages_count = pde_lazy_pages(i_vcache_pde + i);
+    if (!lazy_pages_count) {
+      lazy_pages_count = pde_lazy_pages(i_vcache_pde + i);
+    }
 
     free_pages_count = pde_free_pages(i_vcache_pde + i);
     if (free_pages_count) {
@@ -229,9 +233,13 @@ void vcache_umap(vcache_unit unit, void *id) {
     for (size_t i = 0; i < 512; ++i) {
       mem_pte *current_pte = pde_pt + i;
       size_t   age         = pte_age(current_pte);
-      if (age && age < 1023) pte_set_age(current_pte, age + i);
+      if (age && age < 1023) {
+        pte_set_age(current_pte, age + i);
+      }
     }
-    if (id != VCACHE_NO_ID) pte->padr = (uintptr_t)id >> 12;
+    if (id != VCACHE_NO_ID) {
+      pte->padr = (uintptr_t)id >> 12;
+    }
     pte_set_age(pte, 1);
     pde_set_lazy(pde, lazy_count + 1);
     prtrace_end("vcache_umap", "LAZY_PAGES_NOT_MAX", 0);
@@ -287,11 +295,15 @@ void vcache_umap(vcache_unit unit, void *id) {
 
       // increment age if it's not maximum
       // in most situations, this condition is true
-      if (age < 1023) pte_set_age(current_pte, age + 1);
+      if (age < 1023) {
+        pte_set_age(current_pte, age + 1);
+      }
     }
   }
 
-  if (id != VCACHE_NO_ID) pte->padr = (uintptr_t)id >> 12;
+  if (id != VCACHE_NO_ID) {
+    pte->padr = (uintptr_t)id >> 12;
+  }
 
   // Mark the target page as lazy
   pte_set_age(pte, 1);

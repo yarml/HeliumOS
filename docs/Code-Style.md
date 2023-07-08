@@ -30,6 +30,8 @@ conventions used in HeliumOS.
 Extensions can be used in your code editor to automatically format code using
 the configuration file provided.
 
+A `make` rule `fix-style` is also available to format all C source code.
+
 # Code structure
 ## Indentation
 All code must use 2 spaces for indentation. The only exception for this is when

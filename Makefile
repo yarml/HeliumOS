@@ -8,6 +8,7 @@ QEMU_FLAGS := -cpu qemu64 -smp 1 -net none -m 64M
 # Toolchain to build targets for the build machine
 BUILD_CC := gcc
 
+CLANG_FORMAT := clang-format
 LSB_RELEASE := lsb_release
 
 MKFIFO := mkfifo
@@ -20,6 +21,7 @@ ECHO   := echo
 EXIT   := exit
 SOCAT  := socat
 FALSE  := false
+XARGS  := xargs
 CURL   := curl
 FIND   := find
 GZIP   := gzip -f

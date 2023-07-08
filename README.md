@@ -78,12 +78,13 @@ what I want to work on.
   * [X] Kernel terminal filesystem
 * [X] Kernel modules
   * [X] Make kernel terminal a module
+* [ ] Rework filesystem API.
+* [ ] Disk
 * [ ] Basic device drivers (Keyboard, Mouse, etc)
-* [ ] Power Management
 * [ ] System calls
 * [ ] User space processes
 * [ ] Multiprocessing
-* [ ] Disk
+* [ ] Power Management
 
 # Documentation
 Current documentation for HeliumOS can be found in [docs/].

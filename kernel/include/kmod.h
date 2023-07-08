@@ -1,6 +1,7 @@
 #ifndef HELIUM_KMOD_H
 #define HELIUM_KMOD_H
 
+#include <fs.h>
 #include <mem.h>
 
 #define KMOD_NAMELEN (256)

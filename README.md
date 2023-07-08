@@ -196,6 +196,13 @@ but `unsigned char *` are passed instead, if build fails there, you might need
 to fix them manually (only 4 changes required) (Will be fixed when Helium
 Bootboot is implemented)
 
+- Idk man, every now and then I get a new compilation error either from bootboot
+or from some missing includes in my code, idk why this is happening, maybe god
+doesn't want this OS to exist anymore and is just slowly breaking everything
+apart. Anyway, some bootboot file is missing an include of stdint.h, I forgot
+which file and too lazy to check, but if you get an error about uint64_t
+undefined, just add the include in the file the error is coming from.
+
 <!-- Raw links  -->
 [buildsys/]: buildsys/
 [kernel/]: kernel/

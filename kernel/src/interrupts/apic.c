@@ -2,6 +2,7 @@
 #include <cpuid.h>
 #include <mem.h>
 #include <stdio.h>
+#include <vcache.h>
 
 #include <asm/msr.h>
 
@@ -18,8 +19,8 @@ void apic_init() {
   printd("Initializing APIC\n");
   uint64_t apic_base = as_smsr(MSR_IA32_APIC_BASE);
 
-  uint8_t bsp           = apic_base & 0x100;
-  uint8_t global_enable = apic_base & 0x800;
+  uint8_t bsp           = (apic_base & 0x100) >> 8;
+  uint8_t global_enable = (apic_base & 0x800) >> 11;
 
   uint32_t base = apic_base & 0xFFFFFF000;
 
@@ -29,16 +30,28 @@ void apic_init() {
   printd("G ENABLE: %u\n", global_enable);
   printd("BASE: %08x\n", base);
 
-  void *vptr = KVMSPACE + (uint64_t)1024 * 1024 * 1024 * 1024 +
+  apic_regmap *vptr = KVMSPACE + (uint64_t)1024 * 1024 * 1024 * 1024 +
                (uint64_t)513 * 1024 * 1024 * 1024;
   printd("VPTR: %p\n", vptr);
   mem_vmap(vptr, (void *)(uintptr_t)base, 0x1000, 0);
 
-  uint32_t apic_id  = *(uint32_t *)(vptr + LAPIC_IDREG_OFF);
-  uint32_t apic_ver = *(uint32_t *)(vptr + LAPIC_VREG_OFF);
+  uint32_t apic_id  = vptr->idreg_p0;
+  uint32_t apic_ver = vptr->verreg_p0;
 
   printd("APIC ID: %08x\n", apic_id);
   printd("APIC VERSION: %08x\n", apic_ver);
 
   mem_vumap(vptr, 0x1000);
+
+  tpd("sizeof(API_REGMAP)=%ld\n", sizeof(struct APIC_REGMAP));
+}
+
+int apic_getid() {
+  vcache_unit tmp_apic_base = vcache_map(APIC_BASE);
+  if(tmp_apic_base.error) {
+    return -1;
+  }
+
+  vcache_umap(tmp_apic_base, VCACHE_AUTO_ID);
+  return 0;
 }

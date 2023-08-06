@@ -22,29 +22,34 @@ void _start() {
     // stop all secondary cores
     // they should wait to be started by Helium
 
+    uint32_t id;
+    uint8_t apic_base, bsp, global_enable;
+
     mutex_lock(&proc_lock);
-    ++proc_count;
+    {
+      ++proc_count;
 
-    uint32_t a, b, c, d;
-    __cpuid(1, a, b, c, d);
-    uint32_t id = b >> 24;
+      uint32_t a, b, c, d;
+      __cpuid(1, a, b, c, d);
+      id = b >> 24;
 
-    uint64_t apic_base = as_smsr(MSR_IA32_APIC_BASE);
+      apic_base = as_smsr(MSR_IA32_APIC_BASE);
 
-    uint8_t bsp           = apic_base & 0x100;
-    uint8_t global_enable = apic_base & 0x800;
+      bsp           = (apic_base & 0x100) >> 8;
+      global_enable = (apic_base & 0x800) >> 11;
 
-    uint32_t base = apic_base & 0xFFFFFF000;
+      uint32_t base = apic_base & 0xFFFFFF000;
 
-    printd(
-        "[Core %u] BSP: %u, G ENABLE: %u, BASE: %08x\n",
-        id,
-        bsp,
-        global_enable,
-        base
-    );  // This printd is wild when there are multiple cores
+      printd(
+          "[Core %u] BSP: %u, G ENABLE: %u, BASE: %08x\n",
+          id,
+          bsp,
+          global_enable,
+          base
+      );
+    }
     mutex_ulock(&proc_lock);
-    if (id != bootboot.bspid) {
+    if (bsp) {
       halt();
       printd("[Core %u] Unhalted... Stopping.\n", id);
       stop();

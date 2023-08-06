@@ -8,5 +8,6 @@ typedef int errno_t;
 noreturn void error_general(char *prefix, char *details);
 noreturn void error_out_of_memory(char *details);
 noreturn void error_inv_state(char *details);
+noreturn void error_feature(char *feature);
 
 #endif

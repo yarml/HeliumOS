@@ -15,3 +15,7 @@ noreturn void error_out_of_memory(char *details) {
 noreturn void error_inv_state(char *details) {
   error_general("Invalid state", details);
 }
+
+noreturn void error_feature(char *feature) {
+  error_general("Feature Unsupported", feature);
+}

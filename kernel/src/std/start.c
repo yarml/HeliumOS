@@ -1,3 +1,4 @@
+#include <apic.h>
 #include <boot_info.h>
 #include <cpuid.h>
 #include <interrupts.h>
@@ -50,7 +51,9 @@ void _start() {
     }
   }
 
-  while (proc_count != bootboot.numcores) { }
+  while (proc_count != bootboot.numcores) {
+    pause();
+  }
 
   printd("BSPID: %u\n", bootboot.bspid);
 
@@ -65,6 +68,8 @@ void _start() {
 
   printd("Initializing interrupts.\n");
   int_init();  // This will also enable interrupts
+
+  apic_init();
 
   // Map initrd into virtual memory
   printd("Initializing filesystem.\n");

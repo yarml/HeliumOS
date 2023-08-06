@@ -2,11 +2,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <utils.h>
+#include <vcache.h>
 
 #include "internal_stdlib.h"
 
 #include "../src/mem/internal_mem.h"
-#include "../src/mem/vcache/vcache.h"
 
 block_header *i_stdlib_alloc_block(size_t size) {
   // The requested size does not take into account that we need to allcoate

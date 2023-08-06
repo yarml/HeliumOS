@@ -2,6 +2,7 @@
 #include <boot_info.h>
 #include <cpuid.h>
 #include <interrupts.h>
+#include <kmod.h>
 #include <mem.h>
 #include <mutex.h>
 #include <stdio.h>
@@ -16,43 +17,46 @@ int  kmain();
 static _Atomic uint8_t proc_count = 0;
 static mutex           proc_lock  = 0;
 
+static void wait_init() {
+  uint32_t procid = apic_getid();
+
+  halt();
+  printd("[Proc %u] Unhalted... Stopping.\n", procid);
+  stop();
+}
+
 // Initialize C stdlib then call kmain()
 void _start() {
   {
     // stop all secondary cores
     // they should wait to be started by Helium
 
-    uint32_t id;
-    uint8_t apic_base, bsp, global_enable;
-
     mutex_lock(&proc_lock);
-    {
-      ++proc_count;
+    ++proc_count;
 
-      uint32_t a, b, c, d;
-      __cpuid(1, a, b, c, d);
-      id = b >> 24;
+    uint32_t id = apic_getid();
 
-      apic_base = as_smsr(MSR_IA32_APIC_BASE);
+    uint32_t apic_base = as_smsr(MSR_IA32_APIC_BASE);
 
-      bsp           = (apic_base & 0x100) >> 8;
-      global_enable = (apic_base & 0x800) >> 11;
+    uint8_t bsp           = (apic_base & 0x100) >> 8;
+    uint8_t global_enable = (apic_base & 0x800) >> 11;
 
-      uint32_t base = apic_base & 0xFFFFFF000;
+    uint32_t base = apic_base & 0xFFFFFF000;
 
-      printd(
-          "[Core %u] BSP: %u, G ENABLE: %u, BASE: %08x\n",
-          id,
-          bsp,
-          global_enable,
-          base
-      );
-    }
-    mutex_ulock(&proc_lock);
-    if (bsp) {
-      halt();
-      printd("[Core %u] Unhalted... Stopping.\n", id);
-      stop();
+    printd(
+        "[Proc %u] BSP: %u, G ENABLE: %u, BASE: %08x",
+        id,
+        bsp,
+        global_enable,
+        base
+    );
+    if (!bsp) {
+      printd(" waiting for initialization...\n");
+      mutex_ulock(&proc_lock);
+      wait_init();
+    } else {
+      printd(" will perform initialization...\n");
+      mutex_ulock(&proc_lock);
     }
   }
 
@@ -80,11 +84,12 @@ void _start() {
   printd("Initializing filesystem.\n");
   fs_init();
 
-  printd("Calling main function.\n");
-  kmain();
+  // Load kernel modules
+  kmod_loadall();
 
-  printf("Proc count: %u\n", proc_count);
+  // Use proper files for stdio
+  __init_stdio();
 
-  printd("stop()\n");
-  stop();
+  // printd("Calling main function.\n");
+  // kmain();
 }

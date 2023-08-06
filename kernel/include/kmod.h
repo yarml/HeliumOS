@@ -50,4 +50,6 @@ kmod *kmod_loadf(fsnode *f);
 kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN]);
 void  kmod_uload(kmod *mod);
 
+void kmod_loadall();
+
 #endif

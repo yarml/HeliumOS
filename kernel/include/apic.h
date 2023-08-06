@@ -17,20 +17,20 @@ struct APIC_REGMAP {
 
   uint32_t res2[4][4];
 
-  uint32_t taskprreg[4];
+  uint32_t taskprreg[4];  // TPR
   uint32_t arbprreg[4];
   uint32_t procprreg[4];
   uint32_t eoireg[4];
   uint32_t remoterreg[4];
-  uint32_t logdestreg[4];
-  uint32_t destfmtreg[4];
+  uint32_t logdestreg[4];  // LDR
+  uint32_t destfmtreg[4];  // DFR
   uint32_t sivreg[4];
 
   uint32_t isr[8][4];
   uint32_t tmr[8][4];
   uint32_t irr[8][4];
 
-  uint32_t errstatreg[4];
+  uint32_t errstatreg[4];  // ESR
 
   uint32_t res3[6][4];
 
@@ -50,13 +50,14 @@ struct APIC_REGMAP {
 
   uint32_t res4[4][4];
 
-  uint32_t divcfgreg[4];
+  uint32_t divcfgreg[4];  // DCR
 
   uint32_t res5[193][4];
 } pack;
 
 #define APIC_BASE ((void *)0xFEE00000)
 
-void apic_init();
+void     apic_init();
+uint32_t apic_getid();
 
 #endif

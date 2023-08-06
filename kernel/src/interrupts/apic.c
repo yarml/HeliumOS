@@ -31,27 +31,15 @@ void apic_init() {
   printd("BASE: %08x\n", base);
 
   apic_regmap *vptr = KVMSPACE + (uint64_t)1024 * 1024 * 1024 * 1024 +
-               (uint64_t)513 * 1024 * 1024 * 1024;
+                      (uint64_t)513 * 1024 * 1024 * 1024;
   printd("VPTR: %p\n", vptr);
   mem_vmap(vptr, (void *)(uintptr_t)base, 0x1000, 0);
 
-  uint32_t apic_id  = vptr->idreg_p0;
-  uint32_t apic_ver = vptr->verreg_p0;
+  uint32_t apic_id  = vptr->idreg[0];
+  uint32_t apic_ver = vptr->verreg[0];
 
   printd("APIC ID: %08x\n", apic_id);
   printd("APIC VERSION: %08x\n", apic_ver);
 
   mem_vumap(vptr, 0x1000);
-
-  tpd("sizeof(API_REGMAP)=%ld\n", sizeof(struct APIC_REGMAP));
-}
-
-int apic_getid() {
-  vcache_unit tmp_apic_base = vcache_map(APIC_BASE);
-  if(tmp_apic_base.error) {
-    return -1;
-  }
-
-  vcache_umap(tmp_apic_base, VCACHE_AUTO_ID);
-  return 0;
 }

@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <utils.h>
+#include <vcache.h>
 
 #include <asm/ctlr.h>
 #include <asm/gdt.h>
@@ -11,8 +12,6 @@
 #include <asm/scas.h>
 
 #include "internal_mem.h"
-
-#include "vcache/vcache.h"
 
 // Physical memory
 void  *i_pmm_header      = 0;

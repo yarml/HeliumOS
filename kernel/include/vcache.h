@@ -4,8 +4,6 @@
 #include <error.h>
 #include <mem.h>
 
-#include "../internal_mem.h"
-
 struct VCACHE_UNIT;
 typedef struct VCACHE_UNIT vcache_unit;
 struct VCACHE_UNIT {

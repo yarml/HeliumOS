@@ -1,8 +1,10 @@
 #include <stdio.h>
 #include <string.h>
+#include <vcache.h>
 
 #include "internal_vcache.h"
-#include "vcache.h"
+
+#include "../internal_mem.h"
 
 static void s_alloc_substruct(mem_vpstruct_ptr *vs) {
   mem_pallocation alloc = mem_ppalloc(

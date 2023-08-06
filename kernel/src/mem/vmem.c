@@ -2,13 +2,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <utils.h>
+#include <vcache.h>
 
 #include <asm/ctlr.h>
 #include <asm/invlpg.h>
 
 #include "internal_mem.h"
-
-#include "vcache/vcache.h"
 
 errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags) {
   prtrace_begin(

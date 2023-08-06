@@ -19,6 +19,7 @@ vcache_unit vcache_map(void *padr);
 void        vcache_remap(vcache_unit unit, void *padr);
 
 #define VCACHE_NO_ID ((void *)UINTPTR_MAX)
+#define VCACHE_AUTO_ID ((void *)UINTPTR_MAX - 1)
 void vcache_umap(vcache_unit unit, void *id);
 
 #define VCACHE_PTR (KVMSPACE)

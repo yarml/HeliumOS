@@ -5,6 +5,7 @@
 #include <kmod.h>
 #include <mem.h>
 #include <mutex.h>
+#include <proc.h>
 #include <stdio.h>
 #include <sys.h>
 
@@ -16,14 +17,6 @@ int  kmain();
 
 static _Atomic uint8_t proc_count = 0;
 static mutex           proc_lock  = 0;
-
-static void wait_init() {
-  uint32_t procid = apic_getid();
-
-  halt();
-  printd("[Proc %u] Unhalted... Stopping.\n", procid);
-  stop();
-}
 
 // Initialize C stdlib then call kmain()
 void _start() {
@@ -53,7 +46,7 @@ void _start() {
     if (!bsp) {
       printd(" waiting for initialization...\n");
       mutex_ulock(&proc_lock);
-      wait_init();
+      proc_waitinit();
     } else {
       printd(" will perform initialization...\n");
       mutex_ulock(&proc_lock);
@@ -92,4 +85,6 @@ void _start() {
 
   // printd("Calling main function.\n");
   // kmain();
+
+  proc_ignite();
 }

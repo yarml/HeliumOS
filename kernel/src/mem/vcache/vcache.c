@@ -1,8 +1,7 @@
-#include <vcache.h>
-
 #include <attributes.h>
 #include <stdio.h>
 #include <string.h>
+#include <vcache.h>
 
 #include <asm/invlpg.h>
 
@@ -237,9 +236,9 @@ void vcache_umap(vcache_unit unit, void *id) {
         pte_set_age(current_pte, age + i);
       }
     }
-    if(id == VCACHE_AUTO_ID) {
-      pte->padr = (uintptr_t) unit.ptr >> 12;
-    } else if(id != VCACHE_NO_ID) {
+    if (id == VCACHE_AUTO_ID) {
+      pte->padr = (uintptr_t)unit.ptr >> 12;
+    } else if (id != VCACHE_NO_ID) {
       pte->padr = (uintptr_t)id >> 12;
     }
     pte_set_age(pte, 1);

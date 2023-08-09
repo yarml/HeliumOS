@@ -65,6 +65,7 @@ struct IDT_ENTRY {
 #define IDT_TYPE_TRAP (0xF)
 
 void int_init();
+void int_load_and_enable();
 
 #define int_disable() asm("cli")
 #define int_enable() asm("sti")

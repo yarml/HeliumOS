@@ -6,7 +6,7 @@
 #include <asm/ctlr.h>
 
 static void exception_common_prologue(int_frame *frame, char *name) {
-  fprintf(stddbg, "[EXCEPTION:%s]\n", name);
+  fprintf(stddbg, "[Proc %&] [EXCEPTION:%s]\n", name);
   fprintf(
       stddbg,
       "IP: %016lx\n"
@@ -25,7 +25,9 @@ static void exception_common_prologue(int_frame *frame, char *name) {
 interrupt_handler void exception_div(int_frame *frame) {
   exception_common_prologue(frame, "DIV ERROR");
 
-  stop();
+  while (1) {
+    pause();
+  }
 }
 
 interrupt_handler void exception_page_fault(int_frame *frame, uint64_t ec) {

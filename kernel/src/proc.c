@@ -1,4 +1,6 @@
 #include <apic.h>
+#include <boot_info.h>
+#include <interrupts.h>
 #include <mutex.h>
 #include <proc.h>
 #include <stdatomic.h>
@@ -9,7 +11,12 @@
 static atomic_int ignition  = 0;
 static mutex      init_lock = 0;
 
-void proc_waitinit() {
+uint32_t proc_getid() { return apic_getid(); }
+
+int proc_isprimary() { return apic_getid() == bootboot.bspid; }
+
+void proc_ignition_wait() {
+  int_disable();
   while (!ignition) {
     pause();
   }
@@ -18,14 +25,24 @@ void proc_waitinit() {
 
 void proc_ignite() {
   ignition = 1;
-  proc_waitinit();
+  proc_ignition_wait();
 }
 
 void proc_init() {
-  uint32_t procid = apic_getid();
-
   mutex_lock(&init_lock);
-  printd("[Proc %u] Initialization\n", procid);
+  printd("[Proc %&] Initialization\n");
+
+  int_load_and_enable();
+
   mutex_ulock(&init_lock);
+
+  int a = 0;
+
+  printd("[Proc %&] about to do an oopsie\n");
+
+  int b = 10 / a;
+
+  printd("%%%d%%\n", b);
+
   stop();
 }

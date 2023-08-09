@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <proc.h>
 #include <stdarg.h>
 #include <stdbool.h>
 #include <stddef.h>
@@ -39,10 +40,12 @@ static inline char *__print_num(
   case n:                                                                      \
     result[1] = c;                                                             \
     break
+
       PN_PFX_BASE(10, 'd');
       PN_PFX_BASE(2, 'b');
       PN_PFX_BASE(8, 'c');
       PN_PFX_BASE(16, 'x');
+
 #undef PN_PFX_BASE
       default:
         result[1] = 'u';
@@ -181,6 +184,11 @@ int vsnprintf(char *s, size_t size, char const *template, va_list va) {
           to_print = "Not implemented";
           max      = INT32_MAX;
           min      = 0;
+          break;
+        case '&':
+          pad0     = true;
+          min      = 2;
+          to_print = __print_num(buf, 10, false, false, true, proc_getid());
           break;
         case '%':
           buf[0] = '%';

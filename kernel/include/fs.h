@@ -50,8 +50,9 @@ struct FS_IMPL {
   size_t (*fs_file_skip)(fsnode *file,
                          size_t  size);  // Default impl
 
-  size_t (*fs_file_write
-  )(fsnode *file, size_t off, char const *buf, size_t size);
+  size_t (*fs_file_write)(
+      fsnode *file, size_t off, char const *buf, size_t size
+  );
 
   size_t (*fs_file_append)(fsnode *file, char const *buf, size_t size);
 

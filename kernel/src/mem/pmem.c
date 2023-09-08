@@ -200,8 +200,8 @@ void mem_ppfree(void *pheader, mem_pallocation alloc) {
   mutex_lock(&pmm_lock);
   uint64_t *bitmap = (uint64_t *)(alloc.header_off + 1);
   size_t    fpg_idx =
-      (size_t
-      )(alloc.padr - ((mem_pseg_header *)(pheader + alloc.header_off))->padr) /
+      (size_t)(alloc.padr -
+               ((mem_pseg_header *)(pheader + alloc.header_off))->padr) /
       MEM_PS;
   size_t pg_count = ALIGN_UP(alloc.size, MEM_PS) / MEM_PS;
   size_t lpg_idx  = fpg_idx + pg_count - 1;

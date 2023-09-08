@@ -106,7 +106,8 @@ mem_vseg mem_alloc_vblock(
 
 // Pointer manipulation
 #define PTR_MAKE_CANONICAL(p)                                                  \
-  (void                                                                        \
-       *)((uintptr_t)p & 0x0000800000000000 ? ((uintptr_t)p | 0xFFFF000000000000) : p)
+  (void *)((uintptr_t)p & 0x0000800000000000                                   \
+               ? ((uintptr_t)p | 0xFFFF000000000000)                           \
+               : p)
 
 #endif

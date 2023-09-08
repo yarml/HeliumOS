@@ -25,9 +25,7 @@ static void exception_common_prologue(int_frame *frame, char *name) {
 interrupt_handler void exception_div(int_frame *frame) {
   exception_common_prologue(frame, "DIV ERROR");
 
-  while (1) {
-    pause();
-  }
+  stop();
 }
 
 interrupt_handler void exception_page_fault(int_frame *frame, uint64_t ec) {
@@ -79,5 +77,29 @@ interrupt_handler void exception_page_fault(int_frame *frame, uint64_t ec) {
   }
 
   // For the far far far far far far far future, implement swapping here
+  stop();
+}
+
+interrupt_handler void exception_stackseg_fault(int_frame *frame, uint64_t ec) {
+  exception_common_prologue(frame, "STACK SEGFAULT");
+
+  printd("Error code: %08lx\n", ec);
+
+  stop();
+}
+
+interrupt_handler void exception_general_prot(int_frame *frame, uint64_t ec) {
+  exception_common_prologue(frame, "GENERAL PROTECTION");
+
+  printd("Error code: %08lx\n", ec);
+
+  stop();
+}
+
+interrupt_handler void exception_double_fault(int_frame *frame, uint64_t ec) {
+  exception_common_prologue(frame, "DOUBLE FAULT");
+
+  printd("Error code: %08lx\n", ec);
+
   stop();
 }

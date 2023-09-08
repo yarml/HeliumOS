@@ -25,16 +25,31 @@ struct IDT_ENTRY_INFO {
 };
 
 static idt_entry_info kernel_idt_image[256] = {
-    [00] =
+    [0] =
         {.handler = exception_div,
-              .seg_sel = MEM_KERNEL_CODE_DESC,
-              .dpl     = 0,
-              .type    = IDT_TYPE_INT},
+             .seg_sel = MEM_KERNEL_CODE_DESC,
+             .dpl     = 0,
+             .type    = IDT_TYPE_INT},
+    [8] =
+        {.handler = exception_double_fault,
+             .seg_sel = MEM_KERNEL_CODE_DESC,
+             .dpl     = 0,
+             .type    = IDT_TYPE_INT},
+    [12] =
+        {.handler = exception_stackseg_fault,
+             .seg_sel = MEM_KERNEL_CODE_DESC,
+             .dpl     = 0,
+             .type    = IDT_TYPE_INT},
+    [13] =
+        {.handler = exception_general_prot,
+             .seg_sel = MEM_KERNEL_CODE_DESC,
+             .dpl     = 0,
+             .type    = IDT_TYPE_INT},
     [14] =
         {.handler = exception_page_fault,
-              .seg_sel = MEM_KERNEL_CODE_DESC,
-              .dpl     = 0,
-              .type    = IDT_TYPE_INT},
+             .seg_sel = MEM_KERNEL_CODE_DESC,
+             .dpl     = 0,
+             .type    = IDT_TYPE_INT},
 };
 
 static idt_entry kernel_idt[256];

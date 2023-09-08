@@ -4,7 +4,7 @@
 
 #include "internal_fs.h"
 
-void fs_rm(fsnode *node) {}
+void fs_rm(fsnode *node) { }
 
 void fs_close(fsnode *node) {
   if (node->refcount) {

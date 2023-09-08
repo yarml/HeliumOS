@@ -26,7 +26,7 @@ kmod *kmod_loadf(fsnode *f) {
   if (!fsize) {
     return 0;
   }
-  char   buf[fsize];
+  char   *buf = malloc(fsize);
   size_t read = 0;
   while (read < fsize) {
     errno     = 0;
@@ -36,7 +36,9 @@ kmod *kmod_loadf(fsnode *f) {
     }
     read += cr;
   }
-  return kmod_loadb(buf, f->name);
+  kmod *mod = kmod_loadb(buf, f->name);
+  free(buf);
+  return mod;
 }
 
 kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN]) {

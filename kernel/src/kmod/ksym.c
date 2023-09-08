@@ -6,6 +6,7 @@
 #include <hashtable.h>
 #include <kmod.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 hash_table *i_ksym_table = 0;
@@ -25,7 +26,7 @@ int ksym_loadf(fsnode *f) {
   if (!fsize) {
     return 1;
   }
-  char   buf[fsize];
+  char  *buf  = malloc(fsize);
   size_t read = 0;
   while (read < fsize) {
     errno     = 0;
@@ -35,7 +36,9 @@ int ksym_loadf(fsnode *f) {
     }
     read += cr;
   }
-  return ksym_loadb(buf);
+  int result = ksym_loadb(buf);
+  free(buf);
+  return result;
 }
 
 int ksym_loadb(void *ksymf) {

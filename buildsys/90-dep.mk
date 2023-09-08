@@ -13,9 +13,9 @@ dep:
 
 	$(info Installing dependencies for '$(DISTRO)')
 ifeq ($(DISTRO),Arch)
-	pacman -S base-devel gmp libmpc mpfr nasm zip gnu-efi qemu edk2-ovmf gdb tmux socat python
+	pacman -S base-devel gmp libmpc mpfr nasm zip gnu-efi qemu edk2-ovmf gdb tmux socat python clang
 else ifeq ($(DISTRO),ManjaroLinux)
-	pamac install base-devel gmp libmpc mpfr nasm zip gnu-efi qemu edk2-ovmf gdb tmux socat python
+	pamac install base-devel gmp libmpc mpfr nasm zip gnu-efi qemu edk2-ovmf gdb tmux socat python clang
 else
 	$(error Unsupported distro $(DISTRO), you'll need to install dependencies on your own)
 endif

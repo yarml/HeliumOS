@@ -38,6 +38,6 @@ block_header *i_stdlib_alloc_block(size_t size) {
   header->largest_free      = funit;
   header->largest_free_size = funit->size;
 
-  return header;
   // Done :)
+  return header;
 }

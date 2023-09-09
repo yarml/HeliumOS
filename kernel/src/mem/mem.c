@@ -143,7 +143,6 @@ void mem_init() {
   // Next we map the physical memory manager header into virtual space
   mem_vmap(PHEADER_VPTR, i_pmm_header, pmm_header_total_size, MAPF_R | MAPF_W);
   // Save the physical address in case it is needed
-  i_ppmm_header = i_pmm_header;
   i_pmm_header  = PHEADER_VPTR;
 
   // Finally, we remove identity mapping setup by bootboot

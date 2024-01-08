@@ -5,6 +5,7 @@
 #include <string.h>
 #include <utils.h>
 #include <vcache.h>
+#include <proc.h>
 
 #include <asm/ctlr.h>
 #include <asm/gdt.h>
@@ -59,12 +60,9 @@ void mem_init() {
   kernel_gdt[2].dpl     = 0;
   kernel_gdt[2].present = 1;
 
-  gdt gdtr;
+  proc_ignition_mark_done(PROC_IGNITION_GDT);
 
-  gdtr.limit = sizeof(kernel_gdt) - 1;
-  gdtr.base  = kernel_gdt;
-
-  as_lgdt(&gdtr, MEM_KERNEL_DATA_DESC, MEM_KERNEL_CODE_DESC);
+  load_gdt();
 
   size_t mmap_len = (bootboot.size - sizeof(BOOTBOOT)) / sizeof(MMapEnt) + 1;
 
@@ -166,4 +164,13 @@ char const *mmap_type(uint8_t type) {
     case 3:
       return "MMAP_MMIO";
   }
+}
+
+void load_gdt() {
+  gdt gdtr;
+
+  gdtr.limit = sizeof(kernel_gdt) - 1;
+  gdtr.base  = kernel_gdt;
+
+  as_lgdt(&gdtr, MEM_KERNEL_DATA_DESC, MEM_KERNEL_CODE_DESC);
 }

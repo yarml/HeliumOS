@@ -15,7 +15,6 @@ void __init_stdlib();
 void __init_stdio();
 int  kmain();
 
-// Initialize C stdlib then call kmain()
 void _start() {
   {
     // stop all secondary cores
@@ -24,12 +23,12 @@ void _start() {
       proc_ignition_wait();
     }
   }
+
   printd("BSPID: %u\n", bootboot.bspid);
 
-  // Disable interrupts for now
   int_disable();
 
-  printd("Initializing memory structures.\n");
+  printd("Initializing memory.\n");
   mem_init();
 
   printd("Initializing stdlib.\n");
@@ -37,19 +36,19 @@ void _start() {
 
   printd("Initializing interrupts.\n");
   int_init();
+  int_load_and_enable();
 
-  // Map initrd into virtual memory
   printd("Initializing filesystem.\n");
   fs_init();
 
-  // Load kernel modules
+  printd("Loading kernel modules\n");
   kmod_loadall();
 
-  // Use proper files for stdio
+  printd("Initializing stdio\n");
   __init_stdio();
 
-  // printd("Calling main function.\n");
-  // kmain();
+  printd("Calling main function.\n");
+  kmain();
 
   proc_ignite();
 }

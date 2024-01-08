@@ -17,8 +17,26 @@ to no knowledge about other platforms, so they may never be supported.
 If you find issues with compiling the kernel checkout
 [Known Issues](#known-issues), or contact me(checkout [Contact](#contact))
 
+# Current State of Affairs
+I did not have time to work for this OS for about 4 months now, but if I
+successfully execute my time management plan for this semester, I should be able
+to have time to work on it.
+
+This paragraph is to have a TODO list of things that I am planning to work on,
+this is a subset of the list in [Progress](#progress), and covers the priorities,
+and also serves as a means for me to find what I was doing when I go on a long break.
+
+- [ ] Multiprocessing P1: Make the system not crash when multiple cores are
+      running. To move to the next stage I just need to make it so that AP cores
+      hang on a loop. Nothing fancy.
+- [ ] APIC: Handle interrupts, make the OS useful, talk between processors.
+- [ ] Processes: Provide a way to run user space processes, can use the initrd
+      for now.
+- [ ] Multiprocessing P2: Efficiently distribute work between processors.
+
 # Index
 - [HeliumOS](#heliumos)
+- [Current State of Affairs](#current-state-of-affairs)
 - [Index](#index)
 - [Getting the sources](#getting-the-sources)
 - [Build system](#build-system)
@@ -79,12 +97,12 @@ what I want to work on.
 * [X] Kernel modules
   * [X] Make kernel terminal a module
 * [ ] APIC
-* [ ] Multiprocessing
-* [ ] Rework filesystem API.
-* [ ] Disk
-* [ ] Basic device drivers (Keyboard, Mouse, etc)
-* [ ] System calls
 * [ ] User space processes
+* [ ] Multiprocessing
+* [ ] System calls
+* [ ] Rework filesystem API.
+* [ ] Basic device drivers (Keyboard, Mouse, etc)
+* [ ] Disk
 * [ ] Power Management
 
 # Documentation
@@ -198,12 +216,9 @@ but `unsigned char *` are passed instead, if build fails there, you might need
 to fix them manually (only 4 changes required) (Will be fixed when Helium
 Bootboot is implemented)
 
-- Idk man, every now and then I get a new compilation error either from bootboot
-or from some missing includes in my code, idk why this is happening, maybe god
-doesn't want this OS to exist anymore and is just slowly breaking everything
-apart. Anyway, some bootboot file is missing an include of stdint.h, I forgot
-which file and too lazy to check, but if you get an error about uint64_t
-undefined, just add the include in the file the error is coming from.
+- Some bootboot file is missing an include of `stdint.h`. If you get an error
+about `uint64_t` undefined, just add the include in the file the error is coming
+from.
 
 <!-- Raw links  -->
 [buildsys/]: buildsys/

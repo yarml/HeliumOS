@@ -32,6 +32,8 @@ struct MEM_PALLOCATION {
 
 void mem_init();
 
+void load_gdt();
+
 /* mem_p* */
 
 #define PALLOC_STD_HEADER ((void *)UINTPTR_MAX)

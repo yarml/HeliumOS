@@ -8,6 +8,9 @@
 #include <stdio.h>
 #include <sys.h>
 
+int kmain();
+
+// Bitmap of which ignition processes have been completed by BSP
 static atomic_int ignition  = 0;
 static mutex      init_lock = 0;
 
@@ -17,9 +20,11 @@ int proc_isprimary() { return apic_getid() == bootboot.bspid; }
 
 void proc_ignition_wait() {
   int_disable();
-  while (!ignition) {
-    pause();
-  }
+  proc_ignition_wait_done(PROC_IGNITION_GDT);
+  // Once BSP sets up the GDT, we load it too
+  load_gdt();
+
+  proc_ignition_wait_done(PROC_IGNITION_DONE);
   proc_init();
 }
 
@@ -36,13 +41,20 @@ void proc_init() {
 
   mutex_ulock(&init_lock);
 
-  int a = 0;
+  if (proc_isprimary()) {
+    kmain();
+  }
 
-  printd("[Proc %&] about to do an oopsie\n");
-
-  int b = 10 / a;
-
-  printd("%%%d%%\n", b);
-
+  printd("[Proc %&] Stop");
   stop();
+}
+
+void proc_ignition_mark_done(int ignition_process) {
+  ignition |= ignition_process;
+}
+
+void proc_ignition_wait_done(int ignition_process) {
+  while (!(ignition & ignition_process)) {
+    pause();
+  }
 }

@@ -26,7 +26,7 @@ This paragraph is to have a TODO list of things that I am planning to work on,
 this is a subset of the list in [Progress](#progress), and covers the priorities,
 and also serves as a means for me to find what I was doing when I go on a long break.
 
-- [ ] Multiprocessing P1: Make the system not crash when multiple cores are
+- [X] Multiprocessing P1: Make the system not crash when multiple cores are
       running. To move to the next stage I just need to make it so that AP cores
       hang on a loop. Nothing fancy.
 - [ ] APIC: Handle interrupts, make the OS useful, talk between processors.
@@ -69,7 +69,8 @@ Otherwise you can download the sources in a [zip file].
 The sources come with a build system written in [make](Check [buildsys/])
 to automate all the steps necessary for the build.
 
-Building HeliumOS is as simple as following 2 steps:
+Building HeliumOS is as simple as following 3 steps:
+* Run just `make` to initialize the build system. It will simply say "Nothing to be done for 'nothing'"
 * Installing dependencies, either by executing `sudo make dep`, or if your
 distrubution is not supported(that is anything other than Arch & Manjaro),
 then check [dependencies].
@@ -81,6 +82,11 @@ You can then run the boot image from a vm using `make run-qemu`.
 
 The output file `build/helium.img` can be flashed to a USB and used to boot
 on real hardware, although I rarely test that.
+
+Important Note: When you just clone the repository, make sure you run `make`
+as a normal user first before installing dependencies. Otherwise, if `make` is
+run the first time as root, it will create buildsystem files as root, and they
+will be unusable later by a normal user.
 
 # Progress
 The following list of features may change order any time depending on

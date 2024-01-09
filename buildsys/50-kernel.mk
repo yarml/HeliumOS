@@ -8,13 +8,13 @@ KERNEL_BIN := $(INITRD_SYSROOT)sys/helium
 KERNEL_SYM := $(INITRD_SYSROOT)sys/ksym
 
 ASFLAGS := -felf64
-CFLAGS := -mno-red-zone -Wall -fpic -ffreestanding -fno-stack-protector \
+CFLAGS := -mno-red-zone -Wall -fpic -ffreestanding \
 		  -nostdlib -Werror -fno-asynchronous-unwind-tables
 INC_FLAGS := -I$(KERNEL_INC_DIR) -I$(BOOTBOOT_DIST_DIR) -I$(STD_INC)
 STRIPFLAGS :=  -s -K mmio -K fb -K bootboot -K environment -K initstack
 
 ifeq ($(M),DEBUG)
-CFLAGS += -DHELIUM_DEBUG -O0 -ggdb3
+CFLAGS += -DHELIUM_DEBUG -O0 -ggdb3 -fstack-protector-all
 else
 CFLAGS += -O3
 endif

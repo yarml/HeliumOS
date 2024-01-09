@@ -23,10 +23,9 @@ void _start() {
       proc_ignition_wait();
     }
   }
+  int_disable();
 
   printd("BSPID: %u\n", bootboot.bspid);
-
-  int_disable();
 
   printd("Initializing memory.\n");
   mem_init();
@@ -46,9 +45,6 @@ void _start() {
 
   printd("Initializing stdio\n");
   __init_stdio();
-
-  printd("Calling main function.\n");
-  kmain();
 
   proc_ignite();
 }

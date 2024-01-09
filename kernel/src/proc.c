@@ -20,17 +20,17 @@ int proc_isprimary() { return apic_getid() == bootboot.bspid; }
 
 void proc_ignition_wait() {
   int_disable();
-  proc_ignition_wait_done(PROC_IGNITION_GDT);
+  proc_ignition_wait_step(PROC_IGNITION_GDT);
   // Once BSP sets up the GDT, we load it too
   load_gdt();
 
-  proc_ignition_wait_done(PROC_IGNITION_DONE);
+  proc_ignition_wait_step(PROC_IGNITION_DONE);
   proc_init();
 }
 
 void proc_ignite() {
-  ignition = 1;
-  proc_ignition_wait();
+  proc_ignition_mark_step(PROC_IGNITION_DONE);
+  proc_init();
 }
 
 void proc_init() {
@@ -44,17 +44,15 @@ void proc_init() {
   if (proc_isprimary()) {
     kmain();
   }
-
-  printd("[Proc %&] Stop");
   stop();
 }
 
-void proc_ignition_mark_done(int ignition_process) {
-  ignition |= ignition_process;
+void proc_ignition_mark_step(int ignition_step) {
+  ignition = ignition | (1 << ignition_step);
 }
 
-void proc_ignition_wait_done(int ignition_process) {
-  while (!(ignition & ignition_process)) {
+void proc_ignition_wait_step(int ignition_step) {
+  while (!(ignition & (1 << ignition_step))) {
     pause();
   }
 }

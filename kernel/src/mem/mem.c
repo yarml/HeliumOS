@@ -1,11 +1,11 @@
 #include <boot_info.h>
 #include <mem.h>
+#include <proc.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <utils.h>
 #include <vcache.h>
-#include <proc.h>
 
 #include <asm/ctlr.h>
 #include <asm/gdt.h>
@@ -60,7 +60,7 @@ void mem_init() {
   kernel_gdt[2].dpl     = 0;
   kernel_gdt[2].present = 1;
 
-  proc_ignition_mark_done(PROC_IGNITION_GDT);
+  proc_ignition_mark_step(PROC_IGNITION_GDT);
 
   load_gdt();
 
@@ -141,7 +141,7 @@ void mem_init() {
   // Next we map the physical memory manager header into virtual space
   mem_vmap(PHEADER_VPTR, i_pmm_header, pmm_header_total_size, MAPF_R | MAPF_W);
   // Save the physical address in case it is needed
-  i_pmm_header  = PHEADER_VPTR;
+  i_pmm_header = PHEADER_VPTR;
 
   // Finally, we remove identity mapping setup by bootboot
   // TODO: we could reclaim the memory that the structures

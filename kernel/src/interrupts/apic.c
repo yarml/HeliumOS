@@ -58,66 +58,11 @@ void apic_init() {
     timer.mode      = 0b01;
 
     APIC_VBASE->lvt_timerreg[0] = timer.reg;
-    APIC_VBASE->divcfgreg[0]    = TIMER_DIVCFG(0b010);
-    APIC_VBASE->initcountreg[0] = bus_freq * 10000000;
+    APIC_VBASE->divcfgreg[0]    = TIMER_DIVCFG(0b111);
+    APIC_VBASE->initcountreg[0] = bus_freq * 1000;
   }
 
   mutex_ulock(&apic_init_lock);
-}
-
-void apic_init2() {
-  uint32_t a, b, c, d;
-  __cpuid(1, a, b, c, d);
-
-  uint32_t apic_support = d & 0x200;
-
-  if (!apic_support) {
-    error_feature("APIC");
-  }
-
-  mutex_lock(&apic_init_lock);
-
-  uint64_t apic_msr = as_smsr(MSR_IA32_APIC_BASE);
-
-  uint8_t bsp           = (apic_msr & 0x100) >> 8;
-  uint8_t global_enable = (apic_msr & 0x800) >> 11;
-
-  uint64_t apic_base = apic_msr & 0xFFFFFFFFFFFFF000;
-
-  printd("[Proc %&] APIC BASE: %016x\n", apic_base);
-
-  printd("BSP: %u\n", bsp);
-  printd("G ENABLE: %u\n", global_enable);
-  printd("BASE: %08x\n", apic_base);
-
-  apic_regmap *vptr = KVMSPACE + (uint64_t)1024 * 1024 * 1024 * 1024 +
-                      (uint64_t)512 * 1024 * 1024 * 1024;
-  printd("VPTR: %p\n", vptr);
-  mem_vmap(vptr, (void *)(uintptr_t)apic_base, 0x1000, 0);
-
-  uint32_t apic_id     = vptr->idreg[0];
-  uint32_t apic_verinf = vptr->verreg[0];
-
-  uint8_t ver               = apic_verinf & 0xFF;
-  uint8_t maxlvt_count      = (apic_verinf & 0xFF0000) >> 16;
-  uint8_t broadcast_supress = (apic_verinf & 0x1000000) >> 24;
-
-  printd("APIC ID: %08x\n", apic_id);
-  printd("APIC VERSION: %02x\n", ver);
-  printd("MAX LVT COUNT: %02x\n", maxlvt_count);
-  printd("ABILITY[SUPRESS EOI BROADCAST]: %03b\n", broadcast_supress);
-
-  uint32_t lvt_timer_reg = vptr->lvt_timerreg[0];
-  // lvt_timer lvttimer          = decode_lvt_timer_reg(lvt_timer_reg);
-  // uint32_t  recoded_timer_reg = encode_lvt_timer_reg(lvttimer);
-
-  printd("LVT Timer: %08x\n", lvt_timer_reg);
-  // printd("Recoded: %08x\n", recoded_timer_reg);
-
-  mem_vumap(vptr, 0x1000);
-
-  mutex_ulock(&apic_init_lock);
-  return;
 }
 
 uint32_t apic_getid() {
@@ -125,4 +70,54 @@ uint32_t apic_getid() {
   __cpuid(1, a, b, c, d);
 
   return b >> 24;
+}
+
+void apic_acpi_entry_handler(acpi_header *head) {
+  madt              *table                = (void *)head;
+  size_t             parsed_len           = sizeof(madt);
+  madt_entry_header *current_entry_header = table->first;
+
+  printf("LAPIC_ADR: %p, FLAGS: %x\n", table->lapic_adr, table->flags);
+
+  while (parsed_len < table->header.len) {
+    parsed_len += current_entry_header->len;
+
+    switch (current_entry_header->type) {
+      case MADT_LAPIC: {
+        madt_lapic *lapic = (void *)current_entry_header;
+        printf(
+            "\tLAPIC: ACPI Proc ID: %u, APIC ID: %u, FLAGS: %x\n",
+            lapic->acpi_procid,
+            lapic->apic_id,
+            lapic->flags
+        );
+      } break;
+      case MADT_IOAPIC: {
+        madt_ioapic *ioapic = (void *)current_entry_header;
+        printf(
+            "\tIOAPIC: IO APIC ID: %u, IO APIC Adr: %x, GSIB: "
+            "%x\n",
+            ioapic->ioapic_id,
+            ioapic->ioapic_adr,
+            ioapic->gsib
+        );
+      } break;
+      case MADT_IOAPIC_INTER_SRC_OVERRIDE: {
+        madt_ioapic_iso *ioapic_iso = (void *)current_entry_header;
+        printf(
+            "\tIOAPIC ISO: Bus source: %x, IRQ source: %x, GSI: %x, Flags: "
+            "%x\n",
+            ioapic_iso->bus_source,
+            ioapic_iso->irq_source,
+            ioapic_iso->gsi,
+            ioapic_iso->flags
+        );
+      } break;
+      default:
+        printf("\tUnknown MADT entry type: %x\n", current_entry_header->type);
+        break;
+    }
+    current_entry_header =
+        (void *)current_entry_header + current_entry_header->len;
+  }
 }

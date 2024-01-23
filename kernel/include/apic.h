@@ -1,6 +1,7 @@
 #ifndef HELIUM_APIC_H
 #define HELIUM_APIC_H
 
+#include <acpi.h>
 #include <attributes.h>
 #include <mem.h>
 #include <stdint.h>
@@ -111,6 +112,8 @@ typedef union SIV_REG {
 
 void     apic_init();
 uint32_t apic_getid();
+
+void apic_acpi_entry_handler(acpi_header *table);
 
 // I don't want to create a new header file for this guy
 void pic_disable();

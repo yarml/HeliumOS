@@ -1,3 +1,4 @@
+#include <apic.h>
 #include <cfgtb.h>
 #include <string.h>
 
@@ -7,6 +8,8 @@ static dts_hashtable *acpi_handlers;
 
 void cfgtb_init() {
   acpi_handlers = dts_hashtable_create_uptrkey(0);
+
+  cfgtb_acpi_register("APIC", apic_acpi_entry_handler);
 }
 
 void cfgtb_acpi_register(char *entry_sig, cfgtb_acpi_handler handler) {
@@ -25,7 +28,7 @@ void cfgtb_acpi_register(char *entry_sig, cfgtb_acpi_handler handler) {
   dts_stack_push(handlers_stack, &handler);
 }
 
-void cfgtb_acpi_callhandlers(char *entry_sig) {
+size_t cfgtb_acpi_callhandlers(char *entry_sig, acpi_header *table) {
   uintptr_t sig = 0;
   memcpy(&sig, entry_sig, 4);
 
@@ -36,7 +39,9 @@ void cfgtb_acpi_callhandlers(char *entry_sig) {
   }
 
   for (size_t i = 0; i < handlers_stack->len; ++i) {
-    cfgtb_acpi_handler handler = dts_stack_at(handlers_stack, i, 0);
-    handler();
+    cfgtb_acpi_handler handler =
+        *(cfgtb_acpi_handler *)dts_stack_at(handlers_stack, i, 0);
+    handler(table);
   }
+  return handlers_stack->len;
 }

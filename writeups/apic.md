@@ -58,3 +58,21 @@ I will simply now move on to the IO APIC, try making a keyboard driver. Hopefull
 It has been multiple days since the lats entry. I found out that to find where the IO/APIC base address is I need to parse
 the ACPI, so that's what I have been working on. It has been going smooth so far. I am trying to design a system that would
 allow me to have a module handle a particular ACPI entry if it reports supporting it.
+
+
+Let me tell you something funny. Something I find very funny. Something almost makes me want to cry. I emptied kmain(),
+it used to print the HeliumOS header, a fake prompt, then it printed PCI devices, I just made it return 0 immediatly, got
+rid of the header and prompt, and moved pci_probe to _start, and suddenly, the timer works? I got no clue why, it was probably something
+in PCI probe, I will go investigate what that fucker does. It looks so innocent, only a triple for loop. I have no idea why it makes
+it not work.
+
+So now, I can mark the first step of the objective done, we have a timer running. Now I can continue working on the keyboard
+driver. From what I read so far, there is a chance IOAPIC will also have that emulated PS/2 keyboard like PIC. If it does
+it should be in the interrupt source override entry of the MADT, however, neither in my real hardware, nor my emulator, do I get
+such entry for IRQ base 1(the PS/2 emuator). From what I read, if I want to know what IRQ a particular PCI device uses, I need to do
+some ACPI AML stuff. I am not familar with that at all, and to be quite honest, I am scared of it, it's an OOP language to talk with
+devices???? Idk, I want to first look if there is a way I can get the IRQ of a device from the PCI table directly (although I think
+if there was such a way I would have found it mentioned before the AML thingy). Another thing is that from what I know ACPI AML
+stuff is related to SSDT/DSDT entries. In Qemu I have no such entries. I do have them on real hardware however. Maybe there is an
+option I can pass to qemu to make it generate them. Anyways, if I can't find the info I want from PCI table, I will then look at
+AML. But for now, I am happy the timer is working.

@@ -1,11 +1,13 @@
 #include <acpi.h>
 #include <apic.h>
 #include <boot_info.h>
+#include <cfgtb.h>
 #include <cpuid.h>
 #include <interrupts.h>
 #include <kmod.h>
 #include <mem.h>
 #include <mutex.h>
+#include <pci.h>
 #include <proc.h>
 #include <stdio.h>
 #include <sys.h>
@@ -45,12 +47,16 @@ void _start() {
   fs_init();
 
   printd("Initializing config tables\n");
+  cfgtb_init();
 
   printd("Loading kernel modules\n");
   kmod_loadall();
 
   printd("Initializing stdio\n");
   __init_stdio();
+
+  printd("PCI Probe\n");
+  pci_probe();
 
   printd("ACPI Lookup\n");
   acpi_lookup();

@@ -16,6 +16,8 @@ global as_insw
 global as_ind
 global as_insd
 
+global as_iowait
+
 section .text
 
 as_outb:
@@ -91,4 +93,14 @@ as_insd:
   mov rcx, rdx
   mov rdx, rdi
   rep insd
+  ret
+
+; I copied this from an ooold version of my git repo
+; I have no clue how it works,
+; I have no clue why it works,
+; I have no clue IF it work.
+; I hope my past self had a good reason to write it like this
+as_iowait:
+  mov ax, 0
+  out 0x80, ax
   ret

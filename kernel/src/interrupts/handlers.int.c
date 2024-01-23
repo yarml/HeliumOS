@@ -120,14 +120,18 @@ interrupt_handler void apic_err(int_frame *frame) {
 }
 
 interrupt_handler void timer_tick(int_frame *frame) {
-  static int count = 0;
-  printf("[Proc %&] update: %d\n", count++);
+  static size_t count = 0;
+  if (count % 1000 == 0) {
+    printf("[Proc %&] tick: %lu\n", count);
+  }
 
-  APIC_VBASE->eoireg[0] = 1;
+  count++;
+
+  APIC_VBASE->eoireg[0] = 0;
 }
 
 interrupt_handler void spurious_int(int_frame *frame) {
-  printf("Spurious bitch\n");
+  printf("Spurious\n");
 
   APIC_VBASE->eoireg[0] = 0;
 }

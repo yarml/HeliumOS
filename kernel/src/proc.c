@@ -49,12 +49,6 @@ void proc_init() {
 
   if (proc_isprimary()) {
     kmain();
-    int a = 0;
-    while (1) {
-      printf("\r%d", a);
-      a++;
-      halt();
-    }
   }
   while (1) {
     halt();

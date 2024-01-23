@@ -22,4 +22,6 @@ void     as_insw(uint16_t port, uint16_t *data, size_t len);
 uint32_t as_ind(uint16_t port);
 void     as_insd(uint16_t port, uint32_t *data, size_t len);
 
+void as_iowait();
+
 #endif

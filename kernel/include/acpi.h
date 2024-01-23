@@ -77,8 +77,16 @@ typedef struct MADT_IOAPIC {
   uint8_t           ioapic_id;
   uint8_t           res0;
   uint32_t          ioapic_adr;
-  uint32_t          glob_sys_inter_base;
+  uint32_t          gsib;
 } pack madt_ioapic;
+
+typedef struct MADT_IOAPIC_ISO {
+  madt_entry_header header;
+  uint8_t           bus_source;
+  uint8_t           irq_source;
+  uint32_t          gsi;
+  uint16_t          flags;
+} pack madt_ioapic_iso;
 
 #define MADT_LAPIC (0)
 #define MADT_IOAPIC (1)

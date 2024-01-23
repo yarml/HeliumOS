@@ -6,13 +6,11 @@ initstack   = 16K               ;
 
 ENTRY(_start);
 
-PHDRS
-{
+PHDRS {
   kernel PT_LOAD AT(0xffffffffffe02000);
 }
 
-SECTIONS
-{
+SECTIONS {
   . = 0xffffffffffe02000;
   .text : {
     KEEP(*(.text.boot)) *(.text .text.*)

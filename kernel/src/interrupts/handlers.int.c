@@ -1,4 +1,7 @@
+#include <apic.h>
 #include <interrupts.h>
+#include <mutex.h>
+#include <proc.h>
 #include <stdio.h>
 #include <sys.h>
 #include <term.h>
@@ -20,6 +23,11 @@ static void exception_common_prologue(int_frame *frame, char *name) {
       frame->flags,
       frame->sp
   );
+}
+
+interrupt_handler void inter_unmapped(int_frame *frame) {
+  fprintf(stddbg, "[Proc %&] Received unmapped interrupt\n");
+  stop();
 }
 
 interrupt_handler void exception_div(int_frame *frame) {
@@ -102,4 +110,24 @@ interrupt_handler void exception_double_fault(int_frame *frame, uint64_t ec) {
   printd("Error code: %08lx\n", ec);
 
   stop();
+}
+
+static mutex timer_lock;
+
+interrupt_handler void apic_err(int_frame *frame) {
+  printf("[Proc %&] APIC Error\n");
+  stop();
+}
+
+interrupt_handler void timer_tick(int_frame *frame) {
+  static int count = 0;
+  printf("[Proc %&] update: %d\n", count++);
+
+  APIC_VBASE->eoireg[0] = 1;
+}
+
+interrupt_handler void spurious_int(int_frame *frame) {
+  printf("Spurious bitch\n");
+
+  APIC_VBASE->eoireg[0] = 0;
 }

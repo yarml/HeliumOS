@@ -1,3 +1,4 @@
+#include <acpi.h>
 #include <error.h>
 #include <kmod.h>
 #include <pci.h>

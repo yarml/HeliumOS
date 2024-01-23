@@ -15,7 +15,11 @@ typedef struct FB_SPEC fb_spec;
 struct FB_SPEC {
   uint8_t *fb;
   uint8_t *double_fb;
-  bool     use_dfb;
+  size_t dfb_lowest_off;  // Lowest offset from fb that was written to after the
+                          // last flush, inclusive
+  size_t dfb_highest_off;  // Highest offset from fb that was written to after
+                           // the last flush, exclusive
+  bool use_dfb;
 
   size_t fb_len;
 
@@ -105,8 +109,16 @@ static triplet read_triplet(char const *b) {
 }
 
 static void dfb_flush() {
-  if (tstate.fbinfo.use_dfb) {
-    memcpy(tstate.fbinfo.fb, tstate.fbinfo.double_fb, tstate.fbinfo.fb_len);
+  size_t *lowoff  = &tstate.fbinfo.dfb_lowest_off;
+  size_t *highoff = &tstate.fbinfo.dfb_highest_off;
+  if (tstate.fbinfo.use_dfb && *highoff != 0 && *lowoff != UINT64_MAX) {
+    memcpy(
+        tstate.fbinfo.fb + *lowoff,
+        tstate.fbinfo.double_fb + *lowoff,
+        *highoff - *lowoff
+    );
+    *lowoff  = UINT64_MAX;
+    *highoff = 0;
   }
 }
 
@@ -140,7 +152,9 @@ static size_t term_execute(char const *cmd, size_t size) {
     dfb_flush();
   } else if (!strcmp(label, "dfb_on")) {
     memcpy(tstate.fbinfo.double_fb, tstate.fbinfo.fb, tstate.fbinfo.fb_len);
-    tstate.fbinfo.use_dfb = true;
+    tstate.fbinfo.dfb_highest_off = 0;
+    tstate.fbinfo.dfb_lowest_off  = UINT64_MAX;
+    tstate.fbinfo.use_dfb         = true;
   } else if (!strcmp(label, "dfb_off")) {
     dfb_flush();
     tstate.fbinfo.use_dfb = false;
@@ -179,6 +193,11 @@ static size_t term_file_append(fsnode *file, char const *buf, size_t size) {
           tstate.fontinfo.pixh * tstate.fbinfo.scanline
       );
       tstate.cursor = (tstate.ch - 1) * tstate.cw;
+      if (tstate.fbinfo.use_dfb) {
+        // All screen should be refreshed now
+        tstate.fbinfo.dfb_lowest_off  = 0;
+        tstate.fbinfo.dfb_highest_off = tstate.fbinfo.fb_len;
+      }
     }
 
     char cc = buf[i];
@@ -257,11 +276,14 @@ static size_t term_file_append(fsnode *file, char const *buf, size_t size) {
       size_t px = cx * tstate.fontinfo.pixw;
       size_t py = cy * tstate.fontinfo.pixh + y;
 
-      memcpy(
-          target + px * 4 + py * tstate.fbinfo.scanline,
-          linedata,
-          sizeof(linedata)
-      );
+      size_t wroff = px * 4 + py * tstate.fbinfo.scanline;
+      memcpy(target + wroff, linedata, sizeof(linedata));
+      if (wroff < tstate.fbinfo.dfb_lowest_off) {
+        tstate.fbinfo.dfb_lowest_off = wroff;
+      }
+      if (wroff + 1 > tstate.fbinfo.dfb_highest_off) {
+        tstate.fbinfo.dfb_highest_off = wroff + 1;
+      }
     }
     ++tstate.cursor;
   }
@@ -284,10 +306,12 @@ static int term_init_state(term_state *s, void *f) {
 
   uint8_t *double_fb = malloc(fb_len);
 
-  s->fbinfo.fb        = &fb;
-  s->fbinfo.double_fb = double_fb;
-  s->fbinfo.fb_len    = fb_len;
-  s->fbinfo.use_dfb   = false;
+  s->fbinfo.fb              = &fb;
+  s->fbinfo.double_fb       = double_fb;
+  s->fbinfo.fb_len          = fb_len;
+  s->fbinfo.use_dfb         = false;
+  s->fbinfo.dfb_lowest_off  = UINT64_MAX;
+  s->fbinfo.dfb_highest_off = 0;
 
   s->fbinfo.pixw = bootboot.fb_width;
   s->fbinfo.pixh = bootboot.fb_height;

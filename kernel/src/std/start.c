@@ -1,3 +1,4 @@
+#include <acpi.h>
 #include <apic.h>
 #include <boot_info.h>
 #include <cpuid.h>
@@ -27,6 +28,9 @@ void _start() {
 
   printd("BSPID: %u\n", bootboot.bspid);
 
+  printd("Disabling legacy PIC\n");
+  pic_disable();
+
   printd("Initializing memory.\n");
   mem_init();
 
@@ -45,6 +49,9 @@ void _start() {
 
   printd("Initializing stdio\n");
   __init_stdio();
+
+  printd("ACPI Lookup\n");
+  acpi_lookup();
 
   proc_ignite();
 }

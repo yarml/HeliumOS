@@ -5,6 +5,7 @@
 
 // Bitmap indices for ignition
 #define PROC_IGNITION_GDT 0
+#define PROC_IGNITION_APIC_MAP 1
 #define PROC_IGNITION_DONE 31
 
 void proc_ignite();
@@ -16,5 +17,7 @@ int      proc_isprimary();
 
 void proc_ignition_mark_step(int ignition_step);
 void proc_ignition_wait_step(int ignition_step);
+
+uint32_t proc_bus_freq();
 
 #endif

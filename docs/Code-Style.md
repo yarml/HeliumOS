@@ -48,7 +48,7 @@ split the line into multiple ones.
 Use the suffix `_size` for variables holding the size of a structure in bytes.
 
 ## Suffix `_len`
-Use the suufix `_len` for variables holding the length of a structure in
+Use the suffix `_len` for variables holding the length of a structure in
 elements unit.
 
 ## Suffix `_off`

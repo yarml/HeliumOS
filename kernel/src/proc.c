@@ -1,5 +1,6 @@
 #include <apic.h>
 #include <boot_info.h>
+#include <cpuid.h>
 #include <interrupts.h>
 #include <mutex.h>
 #include <proc.h>
@@ -35,16 +36,25 @@ void proc_ignite() {
 
 void proc_init() {
   mutex_lock(&init_lock);
-  printd("[Proc %&] Initialization\n");
 
   int_load_and_enable();
+
+  apic_init();
 
   mutex_ulock(&init_lock);
 
   if (proc_isprimary()) {
     kmain();
+    int a = 0;
+    while (1) {
+      printf("\r%d", a);
+      a++;
+      halt();
+    }
   }
-  stop();
+  while (1) {
+    halt();
+  }
 }
 
 void proc_ignition_mark_step(int ignition_step) {
@@ -55,4 +65,22 @@ void proc_ignition_wait_step(int ignition_step) {
   while (!(ignition & (1 << ignition_step))) {
     pause();
   }
+}
+
+uint32_t proc_bus_freq() {
+  uint32_t bus_freq;
+
+  uint32_t a, b, c, d;
+  // Check if we're in a VM
+  __cpuid(1, a, b, c, d);
+  if (c & (1 << 31)) {
+    // If running in a VM, will just set CPU frequency to 1000MHz, accuracy
+    // doesn't matter In this context.
+    bus_freq = 100;
+  } else {
+    __cpuid(0x16, a, b, c, d);
+    bus_freq = c;
+  }
+
+  return bus_freq;
 }

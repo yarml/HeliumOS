@@ -50,7 +50,28 @@ static idt_entry_info kernel_idt_image[256] = {
              .seg_sel = MEM_KERNEL_CODE_DESC,
              .dpl     = 0,
              .type    = IDT_TYPE_INT},
+    [0xFD] =
+        {.handler = apic_err,
+             .seg_sel = MEM_KERNEL_CODE_DESC,
+             .dpl     = 0,
+             .type    = IDT_TYPE_INT},
+    [0xFE] =
+        {.handler = timer_tick,
+             .seg_sel = MEM_KERNEL_CODE_DESC,
+             .dpl     = 0,
+             .type    = IDT_TYPE_INT},
+    [0xFF] =
+        {.handler = spurious_int,
+             .seg_sel = MEM_KERNEL_CODE_DESC,
+             .dpl     = 0,
+             .type    = IDT_TYPE_INT},
 };
+
+static idt_entry_info default_idt_entry_info = {
+    .handler = inter_unmapped,
+    .seg_sel = MEM_KERNEL_CODE_DESC,
+    .dpl     = 0,
+    .type    = IDT_TYPE_INT};
 
 static idt_entry kernel_idt[256];
 static mutex     idt_lock = 0;
@@ -73,14 +94,16 @@ void int_init() {
 
   memset(kernel_idt, 0, sizeof(kernel_idt));
 
+  idt_entry default_idt_entry = decode_entry_info(default_idt_entry_info);
+
   for (size_t i = 0; i < 256; ++i) {
     idt_entry_info *info = kernel_idt_image + i;
 
     if (!info->handler) {
-      continue;
+      kernel_idt[i] = default_idt_entry;
+    } else {
+      kernel_idt[i] = decode_entry_info(*info);
     }
-
-    kernel_idt[i] = decode_entry_info(*info);
   }
 }
 

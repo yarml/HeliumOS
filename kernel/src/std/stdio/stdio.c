@@ -10,8 +10,14 @@ void __init_stdio() {
   s_stderr = fopen("term://stderr", "a");
 }
 
-FILE *__get_stdout() { return s_stdout; }
+FILE *__get_stdout() {
+  return s_stdout;
+}
 
-FILE *__get_stderr() { return s_stderr; }
+FILE *__get_stderr() {
+  return s_stderr;
+}
 
-FILE *__get_stddbg() { return s_stddbg; }
+FILE *__get_stddbg() {
+  return s_stddbg;
+}

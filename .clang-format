@@ -19,6 +19,7 @@ AlignConsecutiveBitFields: Consecutive
 AlignConsecutiveAssignments: Consecutive
 AlignConsecutiveDeclarations: Consecutive
 
+AllowShortFunctionsOnASingleLine: false
 AllowShortLoopsOnASingleLine: true
 AlignTrailingComments: true
 AllowAllArgumentsOnNextLine: true

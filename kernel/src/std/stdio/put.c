@@ -24,7 +24,9 @@ int fputc(int c, FILE *stream) {
   return c;
 }
 
-int putchar(int c) { return fputc(c, stdout); }
+int putchar(int c) {
+  return fputc(c, stdout);
+}
 
 int fputs(char const *s, FILE *stream) {
   if (!stream) {
@@ -42,4 +44,6 @@ int fputs(char const *s, FILE *stream) {
   }
 }
 
-int puts(char const *s) { return fputs(s, stdout); }
+int puts(char const *s) {
+  return fputs(s, stdout);
+}

@@ -136,4 +136,5 @@ kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN]) {
   return 0;
 }
 
-void kmod_uload(kmod *mod) { }
+void kmod_uload(kmod *mod) {
+}

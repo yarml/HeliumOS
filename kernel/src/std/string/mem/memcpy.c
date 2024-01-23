@@ -24,6 +24,7 @@ void *memcpy(void *to, void const *from, size_t size) {
   // at worst case, it should individually copy 7 bytes
   while (((uintptr_t)to % max_alignment || (uintptr_t)from % max_alignment) &&
          size) {
+    // This reminds me of that sudo CVE
     *(uint8_t *)to++ = *(uint8_t *)from++;
     --size;
   }
@@ -51,6 +52,8 @@ void *memcpy(void *to, void const *from, size_t size) {
     size -= ALIGN_DN(size, max_alignment);
   }
   // Copy leftover bytes, should be a maximum of 7
+  // Unless mass copying wasn't done, in which case it should be a max of 64
+  // bytes
   as_movsb((uint64_t)to, (uint64_t)from, size);
 
   return oto;

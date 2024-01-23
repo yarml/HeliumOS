@@ -50,10 +50,10 @@ static void *get_vadr(
 
 static void print_indent(size_t indent) {
   for (size_t i = 0; i < indent; ++i) {
-    printf("--");
+    printd("--");
   }
   if (indent != 0) {
-    printf(" ");
+    printd(" ");
   }
 }
 
@@ -64,24 +64,24 @@ static void print_acpi_recursive(
     size_t        *pgindex
 ) {
   print_indent(indent);
-  printf("%.4s: ", head);
+  printd("%.4s: ", head);
   indent++;
 
   if (head->len > 4096) {
-    printf("Too large\n");
+    printd("Too large\n");
     return;
   }
 
   // Verify checksum
   uint8_t checksum = memsum(head, head->len);
   if (checksum) {
-    printf("Invalid cheksum(%u)\n", checksum);
+    printd("Invalid cheksum(%u)\n", checksum);
     return;
   }
   if (!memcmp(head, "XSDT", 4)) {
     xsdt  *table    = (void *)head;
     size_t nentries = (table->header.len - sizeof(xsdt)) / 8;
-    printf("\n");
+    printd("\n");
     for (size_t i = 0; i < nentries; ++i) {
       // Find if this physical page is already mapped
       acpi_header *next_table =
@@ -93,17 +93,17 @@ static void print_acpi_recursive(
     size_t             parsed_len           = sizeof(madt);
     madt_entry_header *current_entry_header = table->first;
 
-    printf("LAPIC_ADR: %p, FLAGS: %x", table->lapic_adr, table->flags);
+    printd("LAPIC_ADR: %p, FLAGS: %x", table->lapic_adr, table->flags);
 
     while (parsed_len < table->header.len) {
-      printf("\n");
+      printd("\n");
       print_indent(indent);
       parsed_len += current_entry_header->len;
 
       switch (current_entry_header->type) {
         case MADT_LAPIC: {
           madt_lapic *lapic = (void *)current_entry_header;
-          printf(
+          printd(
               "LAPIC: ACPI Proc ID: %u, APIC ID: %u, FLAGS: %x",
               lapic->acpi_procid,
               lapic->apic_id,
@@ -112,7 +112,7 @@ static void print_acpi_recursive(
         } break;
         case MADT_IOAPIC: {
           madt_ioapic *ioapic = (void *)current_entry_header;
-          printf(
+          printd(
               "IOAPIC: IO APIC ID: %u, IO APIC Adr: %x, Glob Sys Inter Base: "
               "%x",
               ioapic->ioapic_id,
@@ -121,15 +121,15 @@ static void print_acpi_recursive(
           );
         } break;
         default:
-          printf("Unknown MADT entry type: %x", current_entry_header->type);
+          printd("Unknown MADT entry type: %x", current_entry_header->type);
           break;
       }
       current_entry_header =
           (void *)current_entry_header + current_entry_header->len;
     }
-    printf("\n");
+    printd("\n");
   } else {
-    printf("Unknown\n");
+    printd("Unknown\n");
   }
 }
 
@@ -143,6 +143,6 @@ void acpi_lookup() {
   acpi_header *xsdt =
       get_vadr(acpi_vmemmap, (void *)bootboot.arch.x86_64.acpi_ptr, &pgindex);
 
-  printf("ACPI Lookup\n");
+  printd("ACPI Lookup\n");
   print_acpi_recursive(0, xsdt, acpi_vmemmap, &pgindex);
 }

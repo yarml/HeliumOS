@@ -44,6 +44,8 @@ void _start() {
   printd("Initializing filesystem.\n");
   fs_init();
 
+  printd("Initializing config tables\n");
+
   printd("Loading kernel modules\n");
   kmod_loadall();
 

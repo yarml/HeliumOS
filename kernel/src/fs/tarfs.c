@@ -17,7 +17,9 @@ void tar_header_print(tar_header *header) {
   printd("Size: %lu\n", tar_file_size(header));
 }
 
-size_t tar_file_size(tar_header *header) { return stou(header->size, 0, 8); }
+size_t tar_file_size(tar_header *header) {
+  return stou(header->size, 0, 8);
+}
 
 char *tar_entry_type(tar_header *header) {
   switch (header->type) {

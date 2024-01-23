@@ -54,3 +54,7 @@ hide the fact they are giving space for VMs to express themeselves. Idk, it's ju
 Okay listen, it has been a few days, the APIC timer simply doesn't want to behave the way it should, I have no clue why.
 I will simply now move on to the IO APIC, try making a keyboard driver. Hopefully this one goes smooth.
 
+# Update 2
+It has been multiple days since the lats entry. I found out that to find where the IO/APIC base address is I need to parse
+the ACPI, so that's what I have been working on. It has been going smooth so far. I am trying to design a system that would
+allow me to have a module handle a particular ACPI entry if it reports supporting it.

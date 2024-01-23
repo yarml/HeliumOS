@@ -23,4 +23,6 @@ uint8_t __stack_chk_stack[1024];
 mutex __stack_chk_lock;
 
 // This is called from assembly
-void __stack_chk_fail_p2() { printd("[Proc %&] Stack smashing detected"); }
+void __stack_chk_fail_p2() {
+  printd("[Proc %&] Stack smashing detected");
+}

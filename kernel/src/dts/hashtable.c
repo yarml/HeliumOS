@@ -12,8 +12,8 @@ dts_hashtable *dts_hashtable_create_strkey(size_t esize) {
       esize,
       DTS_HASHTABLE_MAX_COLLISIONS,
       DTS_HASHTABLE_INIT_BUCKETS,
-      (dts_keycmp_f) strcmp,
-      (dts_keylen_f) strlen,
+      (dts_keycmp_f)strcmp,
+      (dts_keylen_f)strlen,
       dts_hashtable_std_strhash
   );
 }
@@ -158,4 +158,6 @@ size_t dts_hashtable_std_strhash(void const *vkey) {
   }
   return h;
 }
-size_t dts_hashtable_std_uptrhash(void const *key) { return (size_t)key; }
+size_t dts_hashtable_std_uptrhash(void const *key) {
+  return (size_t)key;
+}

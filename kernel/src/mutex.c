@@ -7,4 +7,6 @@ void mutex_lock(mutex *mutex) {
   }
 }
 
-void mutex_ulock(mutex *mutex) { *mutex = 0; }
+void mutex_ulock(mutex *mutex) {
+  *mutex = 0;
+}

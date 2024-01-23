@@ -21,4 +21,6 @@ int isbdigit(int c, int base) {
          ('A' <= c && c < 'A' + base - 10) || ('a' <= c && c < 'a' + base - 10);
 }
 
-int isnbdigit(int c, int base) { return !isbdigit(c, base); }
+int isnbdigit(int c, int base) {
+  return !isbdigit(c, base);
+}

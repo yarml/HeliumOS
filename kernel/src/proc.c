@@ -15,9 +15,13 @@ int kmain();
 static atomic_int ignition  = 0;
 static mutex      init_lock = 0;
 
-uint32_t proc_getid() { return apic_getid(); }
+uint32_t proc_getid() {
+  return apic_getid();
+}
 
-int proc_isprimary() { return apic_getid() == bootboot.bspid; }
+int proc_isprimary() {
+  return apic_getid() == bootboot.bspid;
+}
 
 void proc_ignition_wait() {
   int_disable();

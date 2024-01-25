@@ -6,10 +6,15 @@
 
 #define KMOD_NAMELEN (256)
 
+typedef struct KMOD_FT {
+  void (*post)();
+} kmod_ft;
+
 typedef struct KMOD kmod;
 struct KMOD {
   char     name[KMOD_NAMELEN];
   mem_vseg vseg;
+  kmod_ft  functable;
 };
 
 typedef struct ELF64_KMOD_LOADER_COMMAND elf64_kmod_loader_command;
@@ -51,5 +56,8 @@ kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN]);
 void  kmod_uload(kmod *mod);
 
 void kmod_loadall();
+
+void kmod_init();
+void kmod_post();
 
 #endif

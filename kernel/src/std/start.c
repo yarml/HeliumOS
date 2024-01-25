@@ -41,7 +41,6 @@ void _start() {
 
   printd("Initializing interrupts.\n");
   int_init();
-  int_load_and_enable();
 
   printd("Initializing filesystem.\n");
   fs_init();
@@ -50,6 +49,7 @@ void _start() {
   cfgtb_init();
 
   printd("Loading kernel modules\n");
+  kmod_init();
   kmod_loadall();
 
   printd("Initializing stdio\n");
@@ -60,6 +60,8 @@ void _start() {
 
   printd("ACPI Lookup\n");
   acpi_lookup();
+
+  kmod_post();
 
   proc_ignite();
 }

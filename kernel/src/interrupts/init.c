@@ -2,6 +2,7 @@
 #include <interrupts.h>
 #include <mem.h>
 #include <mutex.h>
+#include <proc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -74,7 +75,7 @@ static idt_entry_info default_idt_entry_info = {
     .type    = IDT_TYPE_INT};
 
 static idt_entry kernel_idt[256];
-static mutex     idt_lock = 0;
+static idt_entry bsp_idt[256];
 
 static idt_entry decode_entry_info(idt_entry_info info) {
   return (idt_entry){
@@ -105,15 +106,44 @@ void int_init() {
       kernel_idt[i] = decode_entry_info(*info);
     }
   }
+
+  memcpy(bsp_idt, kernel_idt, sizeof(kernel_idt));
 }
 
 void int_load_and_enable() {
-  mutex_lock(&idt_lock);
+  int_disable();
   idt idtr;
-  idtr.limit  = sizeof(kernel_idt) - 1;
-  idtr.offset = kernel_idt;
+
+  if (proc_isprimary()) {
+    idtr.limit  = sizeof(bsp_idt) - 1;
+    idtr.offset = bsp_idt;
+  } else {
+    idtr.limit  = sizeof(kernel_idt) - 1;
+    idtr.offset = kernel_idt;
+  }
 
   as_lidt(&idtr);
   int_enable();
-  mutex_ulock(&idt_lock);
+}
+
+errno_t int_register(interrupt_handler_f handler, size_t *allocated_entry) {
+  static size_t next_int_num = 32;
+
+  if (next_int_num >= 0xF0) {
+    return 1;
+  }
+
+  idt_entry_info info = {
+      .handler = handler,
+      .seg_sel = MEM_KERNEL_CODE_DESC,
+      .dpl     = 0,
+      .type    = IDT_TYPE_INT,
+  };
+  idt_entry entry       = decode_entry_info(info);
+  bsp_idt[next_int_num] = entry;
+  if (allocated_entry) {
+    *allocated_entry = next_int_num;
+  }
+  next_int_num++;
+  return 0;
 }

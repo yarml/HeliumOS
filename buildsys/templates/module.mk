@@ -30,6 +30,10 @@ $(OUT_DIR)modules/<mod-name>/%.c.o: $(MODULES_DIR)<mod-name>/%.c
 	$(MKDIR) -p $(dir $@)
 	$(HOST_CC) $(MODULE_<mod-name>_CFLAGS) $(INC_FLAGS) -o $@ -c $^
 
+$(OUT_DIR)modules/<mod-name>/%.int.c.o: $(MODULES_DIR)<mod-name>/%.int.c
+	$(MKDIR) -p $(dir $@)
+	$(HOST_CC) -mgeneral-regs-only $(MODULE_<mod-name>_CFLAGS) $(INC_FLAGS) -o $@ -c $^
+
 $(OUT_DIR)modules/<mod-name>/%.asm.o: $(MODULES_DIR)<mod-name>/%.asm
 	$(MKDIR) -p $(dir $@)
 	$(HOST_AS) $(MODULE_<mod-name>_ASFLAGS) $(INC_FLAGS) -o $@ $^

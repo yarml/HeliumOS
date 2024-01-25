@@ -76,3 +76,36 @@ if there was such a way I would have found it mentioned before the AML thingy). 
 stuff is related to SSDT/DSDT entries. In Qemu I have no such entries. I do have them on real hardware however. Maybe there is an
 option I can pass to qemu to make it generate them. Anyways, if I can't find the info I want from PCI table, I will then look at
 AML. But for now, I am happy the timer is working.
+
+Bingo `Alternatively, you could just use MSI or MSI-X, and skip complicated ACPI.` I think this means there is a way for PCI
+to setup the interrupt directly or something?
+
+Yesterday Night, I spent a lot of time reading about USB, I read about 60% of the USB page on OSDEV and started reading the overview
+chapter of Inteæ's xHCI documentation, because for some reason I had assumed that an integrated keyboard emulates a USB keyboard, then
+out of curiosity I ran `lsusb` to see how Linux sees my keyboard, but strange, it didn't list my integrated keyboard, is it just a PCI
+device? But it doesn't appear on `lspci` either. Where the hell is the integrated keyboard, I thought. I list devices in
+`/proc/bus/input/devices` and I do see my keyboard there, it says it is on Bus 11, but what Bus 11? it's not PCI nor USB. I learn about
+this command `lshw` which should list all hardware in my PC in a tree format, and I see PCI, and USB is connected to PCI, but the keyboard is
+in its own branch of the tree, it just says it's an input device. Then it came unto me, it's a PS/2 keyboard. I thought PS/2 keyboard were
+a thing of the past, an intergated keyboard surely isn't just a PS/2 device right? Welp, it looks like it is. Now I put some dirty code
+to make the IOAPIC map IRQ1 to interrupt 0xD0, and it fucking works. In OSDev they clearly state that relying on the IOAPIC to have the
+same IRQs as legacy PIC is not good, and they recommend looking in the AML to see how PCI devices are using the IRQs of the IOAPIC, but
+that would have been a lot of work only for me to eventually discover that my computer does not even have a USB keyboard.
+
+Now I am working on cleaning up the code I used to make the keyboard work, notably I should at the very least respect any potential
+redirection entry in the MADT for IRQ1.
+
+After that I think I will make small simple kernel shell, implement an `lspci` and `lsacpi`, and not print them by default.
+
+Then, finally, I can mark this step of the OS as DONE!
+
+Oh right, I also want to make this PS/2 driver a kernel module, which means I need a way to make kernel modules register
+interrupt handlers. I will work on that, also, I probably need to work on a dependency system for my kernel modules, the `kshell`
+module which will handle the kernel shell should depend on `ps2`, or a more generic `kbd` feature, and maybe make `ps2` provide the `kbd`
+feature. For now I will just make sure to use both of them.
+
+Or what about this, what if I make a system for message passing between kernel modules. I am thinking something like `klisten("kbd", buf, len)` in the
+kshell part, and `ksend("kbd", buf, len)` in the PS/2 driver part.
+
+Going back to interrupt allocation, I should probably also allocate this interrupt in only one processor, so the logic for interrupt initialization
+should change, I can make life simple and make BSP handle all interrupts from external devices, which doesn't look that bad tbh.

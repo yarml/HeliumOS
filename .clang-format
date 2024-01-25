@@ -38,3 +38,5 @@ AllowShortBlocksOnASingleLine: Empty
 
 AlignEscapedNewlines: Right
 AlignArrayOfStructures: Left
+
+ColumnLimit: 80

@@ -3,7 +3,6 @@
 - [General](#general)
 - [Emergency](#emergency)
 - [Back burner](#back-burner)
-- [I should do these now, but I'm lazy](#i-should-do-these-now-but-im-lazy)
 - [Do no forget](#do-no-forget)
 - [Optimizations](#optimizations)
 
@@ -12,19 +11,17 @@ Check README.md the section called "Progress", it contains the features being
 worked on / planned to work on.
 
 # Emergency
-* [ ] HeliumBootboot
-* [ ] Helium mkbootimg
-
-# Back burner
-* [ ] Docker based build system
-
-# I should do these now, but I'm lazy
 * Implement mem_vumap()
 * Implement free_block()
 
+# Back burner
+* [ ] HeliumBootboot
+* [ ] Helium mkbootimg
+* [ ] Docker based build system
+
 # Do no forget
 * Make page invalidation inter processor proof(When multi processing is
-  supported).
+  supported). (This is simpler that what I thought, I think)
 
 # Optimizations
-* Reuse memory taken by bootboot.
+* Reuse memory taken by bootboot. (meh)

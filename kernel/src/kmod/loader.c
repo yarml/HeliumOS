@@ -1,7 +1,6 @@
 #include <elf.h>
 #include <errno.h>
 #include <fs.h>
-#include <hashtable.h>
 #include <kmod.h>
 #include <mem.h>
 #include <stdio.h>
@@ -131,9 +130,11 @@ kmod *kmod_loadb(void *kmodf, char name[KMOD_NAMELEN]) {
         break;
     }
   }
-  int (*mod_init)() = base + eh->entrypoint;
-  mod_init();
-  return 0;
+  kmod_ft (*mod_init)() = base + eh->entrypoint;
+  mod->functable        = mod_init();
+  i_addmod(mod);
+  printd("Loaded module '%s' at offset: %p\n", mod->name, base);
+  return mod;
 }
 
 void kmod_uload(kmod *mod) {

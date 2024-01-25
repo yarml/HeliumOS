@@ -7,6 +7,7 @@
 #include <term.h>
 
 #include <asm/ctlr.h>
+#include <asm/io.h>
 
 static void exception_common_prologue(int_frame *frame, char *name) {
   fprintf(stddbg, "[Proc %&] [EXCEPTION:%s]\n", name);
@@ -120,13 +121,7 @@ interrupt_handler void apic_err(int_frame *frame) {
 }
 
 interrupt_handler void timer_tick(int_frame *frame) {
-  static size_t count = 0;
-  if (count % 1000 == 0) {
-    printf("[Proc %&] tick: %lu\n", count);
-  }
-
-  count++;
-
+  // No printing, too much noise
   APIC_VBASE->eoireg[0] = 0;
 }
 

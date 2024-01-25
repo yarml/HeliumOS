@@ -1,5 +1,6 @@
 #include <debug.h>
 #include <fs.h>
+#include <kmod.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -10,7 +11,7 @@ static size_t debug_file_append(fsnode *file, char const *buf, size_t size) {
   return dbg_write_string(lbuf);
 }
 
-int module_init() {
+kmod_ft module_init() {
   fsimpl impl;
   memset(&impl, 0, sizeof(impl));
 
@@ -19,7 +20,7 @@ int module_init() {
   filesys *fs = fs_mount("dbg");
   if (!fs) {
     printd("Could not mount 'dbg://'\n");
-    return 1;
+    return (kmod_ft){0};
   }
 
   // Set fake dir capabilities to be able to build the immutable
@@ -35,5 +36,5 @@ int module_init() {
 
   fs->dir_cap = FSCAP_USED;
 
-  return 0;
+  return (kmod_ft){0};
 }

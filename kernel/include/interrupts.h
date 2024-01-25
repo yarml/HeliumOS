@@ -2,6 +2,8 @@
 #define HELIUM_INTERRUPTS_H
 
 #include <attributes.h>
+#include <error.h>
+#include <stddef.h>
 #include <stdint.h>
 
 typedef struct INT_FRAME int_frame;
@@ -60,12 +62,16 @@ struct IDT_ENTRY {
   uint64_t res2    : 32;
 } pack;
 
+typedef void (*interrupt_handler_f)(int_frame *frame);
+
 // 64bit IDT types
 #define IDT_TYPE_INT (0xE)
 #define IDT_TYPE_TRAP (0xF)
 
 void int_init();
 void int_load_and_enable();
+
+errno_t int_register(interrupt_handler_f handler, size_t *allocated_entry);
 
 #define int_disable() asm("cli")
 #define int_enable() asm("sti")

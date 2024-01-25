@@ -15,4 +15,6 @@ void apic_err(int_frame *frame);
 void timer_tick(int_frame *frame);
 void spurious_int(int_frame *frame);
 
+void ps2_kbd_int(int_frame *frame);
+
 #endif

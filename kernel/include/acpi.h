@@ -7,7 +7,7 @@
 
 #define ACPI_TABLE_VBASE                                                       \
   (KVMSPACE + (uint64_t)1024 * 1024 * 1024 * 1024 +                            \
-   (uint64_t)512 * 1024 * 1024 * 1024 + 4096)
+   (uint64_t)768 * 1024 * 1024 * 1024)
 
 typedef struct XSDP {
   char     signature[8];

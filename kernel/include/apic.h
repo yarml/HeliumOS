@@ -103,15 +103,57 @@ typedef union SIV_REG {
   uint32_t reg;
 } pack siv_reg;
 
+typedef union IOREDTBL {
+  uint64_t reg;
+  struct {
+    uint32_t low;
+    uint32_t high;
+  } pack;
+  struct {
+    uint64_t vector     : 8;
+    uint64_t deliv_mode : 3;
+    uint64_t dest_mode  : 1;
+    uint64_t deliv_stat : 1;
+    uint64_t pinpol     : 1;
+    uint64_t remote_irr : 1;
+    uint64_t trig_mode  : 1;
+    uint64_t mask       : 1;
+    uint64_t res0       : 39;
+    uint64_t dest       : 8;
+
+  } pack;
+} pack ioredtbl;
+
 #define APIC_BASE ((void *)0xFEE00000)
 #define APIC_VBASE                                                             \
   ((apic_regmap *)(KVMSPACE + (uint64_t)1024 * 1024 * 1024 * 1024 +            \
                    (uint64_t)512 * 1024 * 1024 * 1024))
 
+typedef volatile struct IOAPIC_REGMAP {
+  uint32_t regsel;
+  uint32_t res0[3];
+  uint32_t regwin;
+} pack ioapic_regmap;
+
+typedef struct IOAPIC_INFO {
+  ioapic_regmap *regmap;
+  size_t         id;
+  size_t         irq_base;
+  size_t         len;
+} ioapic_info;
+
+#define IOAPIC_VBASE                                                           \
+  (KVMSPACE + (uint64_t)1024 * 1024 * 1024 * 1024 +                            \
+   (uint64_t)513 * 1024 * 1024 * 1024)
+
 #define TIMER_DIVCFG(mode) ((mode & 0b11) | ((mode & 0b100) << 1))
 
 void     apic_init();
 uint32_t apic_getid();
+void     apic_eoi();
+
+size_t ioapic_find_redirection(size_t irq);
+void   ioapic_set_handler(size_t irq, size_t vector);
 
 void apic_acpi_entry_handler(acpi_header *table);
 

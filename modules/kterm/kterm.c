@@ -2,6 +2,7 @@
 #include <ctype.h>
 #include <error.h>
 #include <fs.h>
+#include <kmod.h>
 #include <psf.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -337,14 +338,14 @@ static int term_init_state(term_state *s, void *f) {
   return 0;
 }
 
-int module_init() {
+kmod_ft module_init() {
   fsnode *font = fs_search("initrd://sys/font.psf");
   void   *f    = tarfs_direct_access(font);
   fs_close(font);
   int status = term_init_state(&tstate, f);
   if (status) {
     printd("Could not initialize terminal state.\n");
-    return 1;
+    return (kmod_ft){0};
   }
 
   fsimpl impl;
@@ -355,7 +356,7 @@ int module_init() {
   filesys *fs = fs_mount("term");
   if (!fs) {
     printd("Coud not mount 'term://'\n");
-    return 1;
+    return (kmod_ft){0};
   }
 
   // Set fake dir capabilities to be able to build the immutable
@@ -377,5 +378,5 @@ int module_init() {
 
   fs->dir_cap = FSCAP_USED;
 
-  return 0;
+  return (kmod_ft){0};
 }

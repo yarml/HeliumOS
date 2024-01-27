@@ -8,11 +8,11 @@
 
 #include <asm/ctlr.h>
 #include <asm/io.h>
+#include <dev/ps2.h>
 
 static void exception_common_prologue(int_frame *frame, char *name) {
-  fprintf(stddbg, "[Proc %&] [EXCEPTION:%s]\n", name);
-  fprintf(
-      stddbg,
+  printd("[Proc %&] [EXCEPTION:%s]\n", name);
+  printd(
       "IP: %016lx\n"
       "CS: %016lx\n"
       "SS: %016lx\n"
@@ -27,7 +27,7 @@ static void exception_common_prologue(int_frame *frame, char *name) {
 }
 
 interrupt_handler void inter_unmapped(int_frame *frame) {
-  fprintf(stddbg, "[Proc %&] Received unmapped interrupt\n");
+  printd("[Proc %&] Received unmapped interrupt\n");
   stop();
 }
 
@@ -47,8 +47,7 @@ interrupt_handler void exception_page_fault(int_frame *frame, uint64_t ec) {
   char *operation = err_code->write ? "write" : "read";
   char *priv      = err_code->user ? "user" : "kernel";
 
-  fprintf(
-      stddbg,
+  printd(
       "Memory violation while trying to %s.\n"
       "Running code is %s.\n"
       "At memory address %p\n",
@@ -58,31 +57,31 @@ interrupt_handler void exception_page_fault(int_frame *frame, uint64_t ec) {
   );
 
   if (!err_code->present) {
-    fprintf(stddbg, "Caused by structure without present flag.\n");
+    printd("Caused by structure without present flag.\n");
   } else if (err_code->rsvd) {
-    fprintf(stddbg, "Caused by reserved bit set to 1.\n");
+    printd("Caused by reserved bit set to 1.\n");
   } else {
-    fprintf(stddbg, "Caused by page level protection.\n");
+    printd("Caused by page level protection.\n");
   }
 
   if (err_code->pk_violation) {
-    fprintf(stddbg, "Caused by protection-key violation.\n");
+    printd("Caused by protection-key violation.\n");
   }
 
   if (err_code->shadow_stack) {
-    fprintf(stddbg, "Caused by shadow stack.\n");
+    printd("Caused by shadow stack.\n");
   }
 
   if (err_code->ins_fetch) {
-    fprintf(stddbg, "While trying to fetch instruction.\n");
+    printd("While trying to fetch instruction.\n");
   }
 
   if (err_code->hlat) {
-    fprintf(stddbg, "HLAT.\n");
+    printd("HLAT.\n");
   }
 
   if (err_code->sgx) {
-    fprintf(stddbg, "SGX.\n");
+    printd("SGX.\n");
   }
 
   // For the far far far far far far far future, implement swapping here
@@ -129,4 +128,10 @@ interrupt_handler void spurious_int(int_frame *frame) {
   printf("Spurious\n");
 
   APIC_VBASE->eoireg[0] = 0;
+}
+
+interrupt_handler void ps2_kbd_int(int_frame *frame) {
+  uint8_t scancode = as_inb(PS2_PORT_DATA);
+  printd("Scancode: %02x\n", scancode);
+  apic_eoi();
 }

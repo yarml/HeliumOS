@@ -96,11 +96,5 @@ nothing:
 # Include rest of build system
 include buildsys/*.mk
 
-# Generate the modules buildsystem
-$(shell $(MKDIR) -p $(BUILD_DIR)buildsys/)
-$(shell $(PY) $(PYDIR)gen_build_modules.py)
-
-include $(BUILD_DIR)buildsys/*.mk
-
 # Include the late buildsystem
 include buildsys/late/*.mk

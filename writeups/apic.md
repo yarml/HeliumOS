@@ -109,3 +109,12 @@ kshell part, and `ksend("kbd", buf, len)` in the PS/2 driver part.
 
 Going back to interrupt allocation, I should probably also allocate this interrupt in only one processor, so the logic for interrupt initialization
 should change, I can make life simple and make BSP handle all interrupts from external devices, which doesn't look that bad tbh.
+
+I have spent some days thinking and decided I don't want kernel modules anymore. They have advantages, but those advantages are irrelevant
+considering how small my kernel is. On the other side, my implementation of kernel modules is missing a lot of things, I can't have switch
+statements in kernel modules, I am pretty sure I can fix that with enough research, but it's the idea that there are a lot of things that
+don't work and each one of them requires research to fix on its own. It was a fun experience to implement and all, but it needs to go out.
+I am also removing the filesystem for now, I will reimplement one in the future. Normally the filesystem was supposed to be how user space
+processes communicate with the kernel, but right now they are only used to communicate between the kernel modules and the kernel core, which is
+a lot of overhead for what otherwise would have been a function call.
+

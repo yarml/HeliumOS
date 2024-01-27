@@ -1,3 +1,0 @@
-CLEAN += $(INITRD_SYSROOT)modules/
-
-MODULES_ALL :=

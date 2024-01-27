@@ -4,7 +4,7 @@
 #include <sys.h>
 
 noreturn void error_general(char *prefix, char *details) {
-  fprintf(stddbg, "[Proc %&][%s] %s\n", prefix, details);
+  printd("[Proc %&][%s] %s\n", prefix, details);
   stop();
 }
 

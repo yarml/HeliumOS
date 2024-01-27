@@ -2,9 +2,9 @@
 #include <apic.h>
 #include <boot_info.h>
 #include <cfgtb.h>
-#include <cpuid.h>
+#include <dev.h>
 #include <interrupts.h>
-#include <kmod.h>
+#include <kterm.h>
 #include <mem.h>
 #include <mutex.h>
 #include <pci.h>
@@ -15,7 +15,6 @@
 #include <asm/msr.h>
 
 void __init_stdlib();
-void __init_stdio();
 int  kmain();
 
 void _start() {
@@ -48,12 +47,10 @@ void _start() {
   printd("Initializing config tables\n");
   cfgtb_init();
 
-  printd("Loading kernel modules\n");
-  kmod_init();
-  kmod_loadall();
+  printd("Initializing kernel terminal\n");
+  kterm_init();
 
-  printd("Initializing stdio\n");
-  __init_stdio();
+  printd("Loading kernel modules\n");
 
   printd("PCI Probe\n");
   pci_probe();
@@ -61,7 +58,7 @@ void _start() {
   printd("ACPI Lookup\n");
   acpi_lookup();
 
-  kmod_post();
+  dev_init();
 
   proc_ignite();
 }

@@ -9,6 +9,7 @@
 #include <sys.h>
 
 #include <asm/idt.h>
+#include <dev/ps2.h>
 
 #include "handlers.h"
 
@@ -48,6 +49,11 @@ static idt_entry_info kernel_idt_image[256] = {
              .type    = IDT_TYPE_INT},
     [14] =
         {.handler = exception_page_fault,
+             .seg_sel = MEM_KERNEL_CODE_DESC,
+             .dpl     = 0,
+             .type    = IDT_TYPE_INT},
+    [PS2_KBD_INTVEC] =
+        {.handler = ps2_kbd_int,
              .seg_sel = MEM_KERNEL_CODE_DESC,
              .dpl     = 0,
              .type    = IDT_TYPE_INT},
@@ -114,36 +120,9 @@ void int_load_and_enable() {
   int_disable();
   idt idtr;
 
-  if (proc_isprimary()) {
-    idtr.limit  = sizeof(bsp_idt) - 1;
-    idtr.offset = bsp_idt;
-  } else {
-    idtr.limit  = sizeof(kernel_idt) - 1;
-    idtr.offset = kernel_idt;
-  }
+  idtr.limit  = sizeof(kernel_idt) - 1;
+  idtr.offset = kernel_idt;
 
   as_lidt(&idtr);
   int_enable();
-}
-
-errno_t int_register(interrupt_handler_f handler, size_t *allocated_entry) {
-  static size_t next_int_num = 32;
-
-  if (next_int_num >= 0xF0) {
-    return 1;
-  }
-
-  idt_entry_info info = {
-      .handler = handler,
-      .seg_sel = MEM_KERNEL_CODE_DESC,
-      .dpl     = 0,
-      .type    = IDT_TYPE_INT,
-  };
-  idt_entry entry       = decode_entry_info(info);
-  bsp_idt[next_int_num] = entry;
-  if (allocated_entry) {
-    *allocated_entry = next_int_num;
-  }
-  next_int_num++;
-  return 0;
 }

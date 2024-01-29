@@ -1,5 +1,5 @@
 Start: Jan 9, 2024.
-End: .
+End: Jan 29, 2024.
 # Objective
 Implement APIC. I want to have a timer set in every core, have a working keyboard
 driver, figure out what APIs I will need to make available so that this driver can be moved
@@ -118,3 +118,8 @@ I am also removing the filesystem for now, I will reimplement one in the future.
 processes communicate with the kernel, but right now they are only used to communicate between the kernel modules and the kernel core, which is
 a lot of overhead for what otherwise would have been a function call.
 
+Now this is done, I am wondering what I want my PS/2 keyboard driver to be able to do before marking this step as done for good.
+Maybe I want to have `fgets` and `ps2_ispressed`.
+
+I made an `fgets` and a wannabe minimal shell, I think this is good to be marked done.
+Goodnight.

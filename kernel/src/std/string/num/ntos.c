@@ -4,6 +4,7 @@
 
 char *ntos(intmax_t n, int base, char *tail) {
   bool negative = n < 0;
+  
   do {
     --tail;
     if (abs(n % base) < 10) {

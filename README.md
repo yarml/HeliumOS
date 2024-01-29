@@ -7,29 +7,26 @@
 ```
 
 # HeliumOS
-HeliumOS, a hobby operating system I am working on to keep myself from
-overthinking life. The long term goal of the OS is to have a mixture of
-all the nice features of other operating systems.
+HeliumOS, a hobby operating system I am working on my free time. The long term
+goal of the OS is to have a mixture of all the nice features of other operating
+systems.
 
 Currently, the only supported platform is x86-64 UEFI, and I have little
 to no knowledge about other platforms, so they may never be supported.
 
 If you find issues with compiling the kernel checkout
-[Known Issues](#known-issues), or contact me(checkout [Contact](#contact))
+[Known Issues](#known-issues).
+
+![HeliumOS Screenshot](/docs/screenshot.png)
 
 # Current State of Affairs
-I did not have time to work for this OS for about 4 months now, but if I
-successfully execute my time management plan for this semester, I should be able
-to have time to work on it.
-
-This paragraph is to have a TODO list of things that I am planning to work on,
-this is a subset of the list in [Progress](#progress), and covers the priorities,
-and also serves as a means for me to find what I was doing when I go on a long break.
+This list is a subset of what is found in [Progress](#progress), and covers the
+priorities.
 
 - [X] Multiprocessing P1: Make the system not crash when multiple cores are
       running. To move to the next stage I just need to make it so that AP cores
       hang on a loop. Nothing fancy.
-- [ ] APIC: Handle interrupts, make the OS useful, talk between processors.
+- [X] APIC: Handle interrupts, make the OS useful, talk between processors.
 - [ ] Processes: Provide a way to run user space processes, can use the initrd
       for now.
 - [ ] Multiprocessing P2: Efficiently distribute work between processors.
@@ -43,7 +40,6 @@ and also serves as a means for me to find what I was doing when I go on a long b
 - [Progress](#progress)
 - [Documentation](#documentation)
 - [Contributions](#contributions)
-- [Contact](#contact)
 - [Source directory structure](#source-directory-structure)
   - [buildsys/](#buildsys)
   - [kernel/](#kernel)
@@ -102,12 +98,15 @@ what I want to work on.
   * [X] Kernel terminal filesystem
 * [X] Kernel modules
   * [X] Make kernel terminal a module
-* [ ] APIC
+* [X] APIC
+* [X] Basic device drivers
+  * [X] Framebuffer (Screen)
+  * [X] Keyboard
+  * [ ] Mouse
 * [ ] User space processes
 * [ ] Multiprocessing
 * [ ] System calls
 * [ ] Rework filesystem API.
-* [ ] Basic device drivers (Keyboard, Mouse, etc)
 * [ ] Disk
 * [ ] Power Management
 
@@ -123,13 +122,6 @@ Below is a list of some key documentations:
 If by any chance you are interested in this project, you are free to study,
 fork, modify, and open a pull request. Any type of work is welcome, be it
 bug fixes(there exist many!), new features, or documentation.
-
-# Contact
-You can contact me in case you want more details about the project, or just
-wanna chat about anything.
-
-- Discord: y_arml
-- Email: youssefharmal@gmail.com
 
 # Source directory structure
 ## [buildsys/]

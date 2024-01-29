@@ -31,4 +31,8 @@ int tpd(char const *template, ...);
 /* Temporary printf, like tpd but for printf instead of printd */
 int tpf(char const *template, ...);
 
+int    getc();
+size_t getdelim(char **restrict lineptr, size_t *restrict n, int delim);
+size_t getline(char **restrict lineptr, size_t *restrict n);
+
 #endif

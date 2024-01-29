@@ -1,11 +1,13 @@
 #include <boot_info.h>
 #include <fs.h>
+#include <kterm.h>
 #include <psf.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys.h>
 #include <utils.h>
 
 #include <fs/tar.h>
@@ -60,9 +62,18 @@ struct TERM_STATE {
 
   uint32_t fg;
   uint32_t bg;
+
+  bool echo;
 };
 
+typedef struct INPUTBUF {
+  char  *buf;
+  size_t len;
+  size_t cap;
+} inputbuf;
+
 static term_state state;
+static inputbuf   buffer;
 
 static uint32_t getcolor(
     uint8_t format, uint8_t r, uint8_t g, uint8_t b, uint8_t a
@@ -131,6 +142,14 @@ void kterm_init() {
 
   s->fg = getcolor(s->fbinfo.format, 255, 255, 255, 0);
   s->bg = getcolor(s->fbinfo.format, 0, 0, 0, 0);
+
+  s->echo = true;
+
+  buffer.buf = calloc(1, 256);
+  buffer.len = 0;
+  buffer.cap = 256;
+
+  kterm_dfb(true);
 }
 
 size_t kterm_print(char const *str) {
@@ -231,4 +250,98 @@ size_t kterm_print(char const *str) {
     ++state.cursor;
   }
   return size;
+}
+void kterm_clear() {
+  uint8_t *target = state.fbinfo.double_fb && state.fbinfo.use_dfb
+                      ? state.fbinfo.double_fb
+                      : state.fbinfo.fb;
+  memset(target, 0, state.fbinfo.fb_len);
+  state.fbinfo.dfb_lowest_off  = 0;
+  state.fbinfo.dfb_highest_off = state.fbinfo.fb_len;
+  state.cursor                 = 0;
+}
+void kterm_setfg(uint8_t r, uint8_t g, uint8_t b) {
+  state.fg = getcolor(state.fbinfo.format, r, g, b, 0);
+}
+void kterm_setbg(uint8_t r, uint8_t g, uint8_t b) {
+  state.bg = getcolor(state.fbinfo.format, r, g, b, 0);
+}
+
+void kterm_flush() {
+  size_t *lowoff  = &state.fbinfo.dfb_lowest_off;
+  size_t *highoff = &state.fbinfo.dfb_highest_off;
+  if (state.fbinfo.use_dfb && *highoff != 0 && *lowoff != UINT64_MAX) {
+    memcpy(
+        state.fbinfo.fb + *lowoff,
+        state.fbinfo.double_fb + *lowoff,
+        *highoff - *lowoff
+    );
+    *lowoff  = UINT64_MAX;
+    *highoff = 0;
+  }
+}
+void kterm_dfb(bool usedfb) {
+  if (usedfb) {
+    memcpy(state.fbinfo.double_fb, state.fbinfo.fb, state.fbinfo.fb_len);
+    state.fbinfo.dfb_highest_off = 0;
+    state.fbinfo.dfb_lowest_off  = UINT64_MAX;
+    state.fbinfo.use_dfb         = true;
+  } else {
+    kterm_flush();
+    state.fbinfo.use_dfb = false;
+  }
+}
+
+static void extract_buffer(char *restrict str, size_t n) {
+  memcpy(str, buffer.buf, n);
+  str[n + 1] = 0;
+  int delta  = buffer.buf[n] == '\n' ? 1 : 0;
+  memmove(buffer.buf, buffer.buf + n + delta, buffer.len - n - delta);
+  buffer.len -= n + delta;
+}
+
+char *kterm_fgets(char *restrict str, size_t n) {
+  if (!n) {
+    return str;
+  }
+  // Like unix fgets, read until \n or n - 1
+  while (1) {
+    void *newline = memchr(buffer.buf, '\n', buffer.len);
+    if (newline) {
+      size_t newline_idx = (size_t)(newline - (size_t)buffer.buf);
+      size_t copy_amount = newline_idx > n - 1 ? n - 1 : newline_idx;
+      extract_buffer(str, copy_amount);
+      return str;
+    }
+    if (buffer.len >= n - 1) {
+      extract_buffer(str, n - 1);
+      return str;
+    }
+    halt();
+  }
+}
+
+void kterm_putcin(char c) {
+  if (buffer.len + 1 > buffer.cap) {
+    size_t newcap =
+        buffer.cap * 2 < buffer.len + 1 ? buffer.len + 4 : buffer.cap * 2;
+    buffer.buf = realloc(buffer.buf, newcap);
+    buffer.cap = newcap;
+  }
+  buffer.buf[buffer.len] = c;
+  buffer.len++;
+  if (state.echo) {
+    putchar(c);
+  }
+}
+void kterm_putsin(char const *str) {
+  size_t len = strlen(str);
+  if (buffer.len + len > buffer.cap) {
+    size_t newcap = buffer.cap * 2 < buffer.len + len ? buffer.len + len + 4
+                                                      : buffer.cap * 2;
+    buffer.buf    = realloc(buffer.buf, newcap);
+    buffer.cap    = newcap;
+  }
+  memcpy(buffer.buf + buffer.len, str, len);
+  buffer.len += len;
 }

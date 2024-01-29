@@ -2,6 +2,7 @@
 #include <boot_info.h>
 #include <cpuid.h>
 #include <interrupts.h>
+#include <kshell.h>
 #include <mutex.h>
 #include <proc.h>
 #include <stdatomic.h>
@@ -49,9 +50,7 @@ void proc_init() {
 
   if (proc_isprimary()) {
     kmain();
-  }
-  while (1) {
-    halt();
+    kshell_run();
   }
 }
 

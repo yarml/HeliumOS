@@ -1,10 +1,10 @@
 #include <apic.h>
 #include <interrupts.h>
+#include <kterm.h>
 #include <mutex.h>
 #include <proc.h>
 #include <stdio.h>
 #include <sys.h>
-#include <term.h>
 
 #include <asm/ctlr.h>
 #include <asm/io.h>
@@ -121,17 +121,11 @@ interrupt_handler void apic_err(int_frame *frame) {
 
 interrupt_handler void timer_tick(int_frame *frame) {
   // No printing, too much noise
+  kterm_flush();
   APIC_VBASE->eoireg[0] = 0;
 }
 
 interrupt_handler void spurious_int(int_frame *frame) {
   printf("Spurious\n");
-
   APIC_VBASE->eoireg[0] = 0;
-}
-
-interrupt_handler void ps2_kbd_int(int_frame *frame) {
-  uint8_t scancode = as_inb(PS2_PORT_DATA);
-  printd("Scancode: %02x\n", scancode);
-  apic_eoi();
 }

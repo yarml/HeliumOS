@@ -9,11 +9,11 @@ collections = {
     'Assembly source code': ('asm', ),
     'Source code': ('c', 'h', 'asm'),
     'Build system': ('mk', 'py', 'sh', 'sed'),
-    'Configuration': ('ld', 'cfg', 'config', 'json', 'gdbinit', 'gitignore'),
+    'Configuration': ('ld', 'config', 'json', 'gdbinit', 'gitignore'),
     'Documentation': ('md', )
 }
 
-paths = ('kernel/', 'buildsys/', 'docs/', 'tools/', 'modules/')
+paths = ('kernel/', 'buildsys/', 'docs/')
 files = ['README.md', 'LICENSE.md','.gdbinit', '.gitignore']
 
 def main():

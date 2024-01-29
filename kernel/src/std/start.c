@@ -3,6 +3,7 @@
 #include <boot_info.h>
 #include <cfgtb.h>
 #include <dev.h>
+#include <initrd.h>
 #include <interrupts.h>
 #include <kterm.h>
 #include <mem.h>
@@ -41,8 +42,8 @@ void _start() {
   printd("Initializing interrupts.\n");
   int_init();
 
-  printd("Initializing filesystem.\n");
-  fs_init();
+  printd("Initializing initrd.\n");
+  initrd_init();
 
   printd("Initializing config tables\n");
   cfgtb_init();

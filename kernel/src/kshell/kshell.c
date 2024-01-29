@@ -32,8 +32,7 @@ static void banner() {
 void kshell_run() {
   kterm_clear();
   banner();
-  // char  *linebuf = 0;
-  // size_t buflen  = 0;
+
   char buf[256];
   while (1) {
     prompt("admin", "initrd:/", true);

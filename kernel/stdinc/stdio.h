@@ -1,7 +1,6 @@
 #ifndef CSTD_STDIO_H
 #define CSTD_STDIO_H
 
-#include <fs.h>
 #include <stdarg.h>
 #include <stddef.h>
 

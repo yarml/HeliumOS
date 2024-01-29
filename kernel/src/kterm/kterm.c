@@ -1,5 +1,5 @@
 #include <boot_info.h>
-#include <fs.h>
+#include <initrd.h>
 #include <kterm.h>
 #include <psf.h>
 #include <stddef.h>
@@ -9,8 +9,6 @@
 #include <string.h>
 #include <sys.h>
 #include <utils.h>
-
-#include <fs/tar.h>
 
 typedef struct FB_SPEC fb_spec;
 struct FB_SPEC {
@@ -63,6 +61,8 @@ struct TERM_STATE {
   uint32_t fg;
   uint32_t bg;
 
+  size_t anchor;  // Cursor position where \b doesn't work anymore, set by the
+                  // shell kterm_fgets
   bool echo;
 };
 
@@ -94,9 +94,8 @@ static uint32_t getcolor(
 }
 
 void kterm_init() {
-  fsnode *font = fs_search("initrd://sys/font.psf");
-  void   *f    = tarfs_direct_access(font);
-  fs_close(font);
+  initrd_file *font_file = initrd_search("/sys/font.psf");
+  void        *f         = font_file->content;
 
   term_state *s = &state;
 
@@ -186,7 +185,27 @@ size_t kterm_print(char const *str) {
     switch (cc) {
       // Unsupported, for now
       case '\a':
+        continue;
       case '\b':
+        if (state.cursor != 0 && state.cursor > state.anchor) {
+          state.cursor--;
+          for (size_t y = 0; y < state.fontinfo.pixh; ++y) {
+            size_t cx = state.cursor % state.cw;
+            size_t cy = state.cursor / state.cw;
+
+            size_t px = cx * state.fontinfo.pixw;
+            size_t py = cy * state.fontinfo.pixh + y;
+
+            size_t wroff = px * 4 + py * state.fbinfo.scanline;
+            memset(target + wroff, 0, state.fontinfo.pixw * 4);
+            if (wroff < state.fbinfo.dfb_lowest_off) {
+              state.fbinfo.dfb_lowest_off = wroff;
+            }
+            if (wroff + 1 > state.fbinfo.dfb_highest_off) {
+              state.fbinfo.dfb_highest_off = wroff + 1;
+            }
+          }
+        }
         continue;
       case '\n':
         state.cursor =
@@ -304,6 +323,7 @@ char *kterm_fgets(char *restrict str, size_t n) {
   if (!n) {
     return str;
   }
+  state.anchor = state.cursor;
   // Like unix fgets, read until \n or n - 1
   while (1) {
     void *newline = memchr(buffer.buf, '\n', buffer.len);
@@ -344,4 +364,7 @@ void kterm_putsin(char const *str) {
   }
   memcpy(buffer.buf + buffer.len, str, len);
   buffer.len += len;
+  if (state.echo) {
+    puts(str);
+  }
 }

@@ -134,7 +134,12 @@ In general, the memory layout HeliumOS uses is as follows:
 15E1023P896T to the addresses in the table*
 
 ### User space layout
-Undefined as of yet.
+| Start | End  | Size  | Description           |
+| ----- | ---- | ----- | --------------------- |
+| 0     | 2G   | 2G    | Invalid               |
+| 2G    | 1T   | 1022G | Main executable image |
+| 1T    | 128T | 127T  | Undefined             |
+
 
 ## Concepts
 The virtual memory manager comes with 2 subsystems, the VCache, and the global

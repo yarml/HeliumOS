@@ -2,6 +2,7 @@
 #include <kterm.h>
 #include <stdio.h>
 #include <string.h>
+#include <userspace.h>
 
 static void prompt(char *user, char *pwd, int super) {
   kterm_setfg(255, 255, 0);
@@ -56,6 +57,10 @@ void kshell_run() {
       kterm_clear();
     } else if (!strcmp(cmd, "version")) {
       puts("HeliumOS v0.1\n");
+    } else if (!strcmp(cmd, "exec")) {
+      int result = exec();
+      kterm_setfg(0, 255, 0);
+      printf("Process exited with result code: %d\n", result);
     } else {
       kterm_setfg(255, 0, 0);
       printf("Unknown command '%.*s'.\n", cmdlen, cmd);

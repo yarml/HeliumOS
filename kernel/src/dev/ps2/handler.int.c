@@ -9,8 +9,7 @@
 #include "ps2.h"
 
 interrupt_handler void ps2_kbd_int(int_frame *frame) {
-  int_disable();
-  apic_eoi();
+  goto defer;
   uint8_t scancode = as_inb(PS2_PORT_DATA);
   int     press    = !(scancode & 0x80);
   scancode &= 0x7F;
@@ -20,10 +19,10 @@ interrupt_handler void ps2_kbd_int(int_frame *frame) {
 
   if (scancode == KEY_CTL) {
     i_kbdstate.ctrl += delta;
-    return;
+    goto defer;
   }
   if (i_kbdstate.ctrl) {  // we don't handle control yet
-    return;
+    goto defer;
   }
 
   switch (scancode) {
@@ -51,4 +50,6 @@ interrupt_handler void ps2_kbd_int(int_frame *frame) {
       }
     } break;
   }
+defer:
+  apic_eoi();
 }

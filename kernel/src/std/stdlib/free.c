@@ -39,8 +39,7 @@ void free(void *ptr) {
   if (!target_unit->fprev) {
     target_unit->fnext         = target_unit->block->ffunit;
     target_unit->block->ffunit = target_unit;
-  } else  // Otherwise, we get fnext from fprev
-  {
+  } else {  // Otherwise, we get fnext from fprev
     target_unit->fnext        = target_unit->fprev->fnext;
     target_unit->fprev->fnext = target_unit;
   }

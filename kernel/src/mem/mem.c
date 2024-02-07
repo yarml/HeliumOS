@@ -29,9 +29,9 @@ size_t i_order_ps[ORDER_COUNT] = {
     [2] = (size_t)512 * 512 * MEM_PS,
     [3] = (size_t)512 * 512 * 512 * MEM_PS};
 
-static gdt_entry kernel_gdt[3];  // 3 GDT entries, one for the NULL entry
-                                 // one for code segment
-                                 // one for data segment
+static gdt_entry basic_gdt[3];
+
+static void basic_gdt_setup();
 
 void mem_init() {
   prtrace_begin("mem_init", 0);
@@ -44,25 +44,14 @@ void mem_init() {
       - Remove identitity mapping at [0;16G)
   */
 
-  // Setup gdt
-  memset(kernel_gdt, 0, sizeof(kernel_gdt));
-
-  // GDT 1 is kernel code segment
-  kernel_gdt[1].nsys    = 1;
-  kernel_gdt[1].exec    = 1;
-  kernel_gdt[1].dpl     = 0;
-  kernel_gdt[1].lmode   = 1;
-  kernel_gdt[1].present = 1;
-
-  // GDT 2 is kernel data segment
-  kernel_gdt[2].nsys    = 1;
-  kernel_gdt[2].write   = 1;
-  kernel_gdt[2].dpl     = 0;
-  kernel_gdt[2].present = 1;
-
-  proc_ignition_mark_step(PROC_IGNITION_GDT);
-
-  load_gdt();
+  basic_gdt_setup();
+  load_gdt(
+      basic_gdt,
+      sizeof(basic_gdt),
+      MEM_KERNEL_DATA_DESC,
+      MEM_KERNEL_CODE_DESC,
+      0
+  );
 
   size_t mmap_len = (bootboot.size - sizeof(BOOTBOOT)) / sizeof(MMapEnt) + 1;
 
@@ -166,11 +155,18 @@ char const *mmap_type(uint8_t type) {
   }
 }
 
-void load_gdt() {
-  gdt gdtr;
+static void basic_gdt_setup() {
+  // GDT 1 is kernel code segment
+  basic_gdt[1].nsys    = 1;
+  basic_gdt[1].exec    = 1;
+  basic_gdt[1].dpl     = 0;
+  basic_gdt[1].lmode   = 1;
+  basic_gdt[1].present = 1;
 
-  gdtr.limit = sizeof(kernel_gdt) - 1;
-  gdtr.base  = kernel_gdt;
-
-  as_lgdt(&gdtr, MEM_KERNEL_DATA_DESC, MEM_KERNEL_CODE_DESC);
+  // GDT 2 is kernel data segment
+  basic_gdt[2].nsys    = 1;
+  basic_gdt[2].write   = 1;
+  basic_gdt[2].dpl     = 0;
+  basic_gdt[2].present = 1;
 }
+

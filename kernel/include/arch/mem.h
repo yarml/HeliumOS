@@ -5,10 +5,10 @@
 #include <stdint.h>
 
 // Segmentation structures
-typedef struct GDT       gdt;
+typedef struct GDTR      gdtr;
 typedef struct GDT_ENTRY gdt_entry;
 
-struct GDT {
+struct GDTR {
   uint16_t   limit;
   gdt_entry *base;
 } pack;
@@ -20,7 +20,7 @@ struct GDT_ENTRY {
   uint64_t write       : 1;
   uint64_t direction   : 1;
   uint64_t exec        : 1;
-  uint64_t nsys        : 1;
+  uint64_t nsys        : 1;  // Must be 1
   uint64_t dpl         : 2;
   uint64_t present     : 1;
   uint64_t limit1      : 4;
@@ -30,6 +30,30 @@ struct GDT_ENTRY {
   uint64_t granularity : 1;
   uint64_t base1       : 8;
 } pack;
+
+typedef struct TSS_ENTRY {
+  uint64_t limit0      : 16;
+  uint64_t base0       : 24;
+  uint64_t type        : 4; // Must be 0b1001
+  uint64_t nsys        : 1;  // Must be 0
+  uint64_t dpl         : 2;
+  uint64_t present     : 1;
+  uint64_t limit1      : 4;
+  uint64_t res0        : 3;
+  uint64_t granularity : 1;
+  uint64_t base1       : 40;
+  uint64_t res1        : 32;
+} pack tss_entry;
+
+typedef struct TSS {
+  uint32_t res0;
+  uint64_t rsp[3];
+  uint64_t res1;
+  uint64_t ist[7];
+  uint64_t res2;
+  uint16_t res3;
+  uint16_t iomap_base;
+} pack tss;
 
 // Paging structures
 

@@ -1,6 +1,7 @@
 #include <apic.h>
 #include <boot_info.h>
 #include <cpuid.h>
+#include <env.h>
 #include <interrupts.h>
 #include <kshell.h>
 #include <mutex.h>
@@ -9,12 +10,21 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <sys.h>
+#include <userspace.h>
+#include <utils.h>
 
-int kmain();
+#include <asm/sys.h>
+#include <asm/userspace.h>
+#include <dts/hashtable.h>
 
-// Bitmap of which ignition processes have been completed by BSP
-static atomic_int ignition  = 0;
-static mutex      init_lock = 0;
+// Set to 1 by BSP to tell other processors they can go to their event loop
+static atomic_bool ignition  = 0;
+static mutex       init_lock = 0;
+
+// Hashtable indexable by APIC ID, there exist as many entries as CPUs in the
+// system
+static dts_hashtable *proc_table = 0;
+static size_t         numcores   = 0;
 
 uint32_t proc_getid() {
   return apic_getid();
@@ -25,59 +35,85 @@ int proc_isprimary() {
 }
 
 void proc_ignition_wait() {
-  int_disable();
-  proc_ignition_wait_step(PROC_IGNITION_GDT);
-  // Once BSP sets up the GDT, we load it too
-  load_gdt();
-
-  proc_ignition_wait_step(PROC_IGNITION_DONE);
+  while (!ignition) {
+    pause();
+  }
   proc_init();
 }
 
 void proc_ignite() {
-  proc_ignition_mark_step(PROC_IGNITION_DONE);
+  ignition = true;
   proc_init();
 }
 
 void proc_init() {
   mutex_lock(&init_lock);
 
-  int_load_and_enable();
+  // We need to figure out what is out stack
+  int   x;
+  void *ptr        = &x;
+  void *stack_base = (void *)ALIGN_UP((uintptr_t)ptr, KSTACK_SIZE);
 
+  proc_info *pinfo = proc_getinfo();
+
+  // Continue filling up proc_info of current processor
+  pinfo->ksatck = stack_base;
+
+  printd("[Proc %&] Stack base: %p\n", stack_base);
+  printd("[Proc %&] NMI Stack base: %p\n", pinfo->nmi_stack);
+  printd("[Proc %&] DF Stack base: %p\n", pinfo->df_stack);
+
+  printd("Loading processor specific GDT\n");
+  gdt_proc_setup(pinfo);
+
+  int_load();
   apic_init();
+  as_enable_syscall(as_syscall_handle);
 
   mutex_ulock(&init_lock);
 
   if (proc_isprimary()) {
-    kmain();
-    kshell_run();
+    printd("Total number of cores: %lu\n", proc_numcores());
   }
-}
 
-void proc_ignition_mark_step(int ignition_step) {
-  ignition = ignition | (1 << ignition_step);
-}
-
-void proc_ignition_wait_step(int ignition_step) {
-  while (!(ignition & (1 << ignition_step))) {
-    pause();
-  }
+  // Next, we go on a loop that simply halts repeatedly
+  // I am doing it in assembly instead of C so that I can be 100% sure no
+  // stack is being manipulated
+  // This also enables interrupts
+  as_event_loop();
 }
 
 uint32_t proc_bus_freq() {
   uint32_t bus_freq;
 
-  uint32_t a, b, c, d;
-  // Check if we're in a VM
-  __cpuid(1, a, b, c, d);
-  if (c & (1 << 31)) {
-    // If running in a VM, will just set CPU frequency to 1000MHz, accuracy
-    // doesn't matter In this context.
-    bus_freq = 100;
-  } else {
-    __cpuid(0x16, a, b, c, d);
-    bus_freq = c;
-  }
+  bus_freq = env_busfreq();
 
   return bus_freq;
+}
+
+void proc_register(uint32_t apic_id, proc_info *info) {
+  if (!proc_table) {
+    proc_table = dts_hashtable_create_uptrkey(0);
+    // Error handling my ass
+  }
+
+  void *apic_id_key = (void *)(uintptr_t)apic_id;
+
+  bool found = false;
+  dts_hashtable_search(proc_table, apic_id_key, &found);
+
+  if (found) {  // should not happen
+    printd("Found conflicting APIC IDs: %u\n", apic_id);
+    return;
+  }
+  ++numcores;
+  dts_hashtable_insert(proc_table, apic_id_key, info);
+}
+
+size_t proc_numcores() {
+  return numcores;
+}
+
+proc_info *proc_getinfo() {
+  return dts_hashtable_search(proc_table, (void *)(uintptr_t)proc_getid(), 0);
 }

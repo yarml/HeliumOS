@@ -20,65 +20,51 @@
 typedef struct IDT_ENTRY_INFO idt_entry_info;
 
 struct IDT_ENTRY_INFO {
-  void    *handler;
-  uint16_t seg_sel;
-  uint16_t dpl;
-  uint16_t type;
+  void   *handler;
+  uint8_t ist;
 };
 
 static idt_entry_info kernel_idt_image[256] = {
-    [0] =
-        {.handler = exception_div,
-             .seg_sel = MEM_KERNEL_CODE_DESC,
-             .dpl     = 0,
-             .type    = IDT_TYPE_INT},
+    [0] = {.handler = exception_div},
+    [2] = {.handler = nmi_handler, .ist = 1},
     [8] =
-        {.handler = exception_double_fault,
-             .seg_sel = MEM_KERNEL_CODE_DESC,
-             .dpl     = 0,
-             .type    = IDT_TYPE_INT},
+        {
+           .handler = exception_double_fault,
+           .ist     = 2,
+           },
     [12] =
-        {.handler = exception_stackseg_fault,
-             .seg_sel = MEM_KERNEL_CODE_DESC,
-             .dpl     = 0,
-             .type    = IDT_TYPE_INT},
+        {
+           .handler = exception_stackseg_fault,
+           },
     [13] =
-        {.handler = exception_general_prot,
-             .seg_sel = MEM_KERNEL_CODE_DESC,
-             .dpl     = 0,
-             .type    = IDT_TYPE_INT},
+        {
+           .handler = exception_general_prot,
+           },
     [14] =
-        {.handler = exception_page_fault,
-             .seg_sel = MEM_KERNEL_CODE_DESC,
-             .dpl     = 0,
-             .type    = IDT_TYPE_INT},
+        {
+           .handler = exception_page_fault,
+           },
     [PS2_KBD_INTVEC] =
-        {.handler = ps2_kbd_int,
-             .seg_sel = MEM_KERNEL_CODE_DESC,
-             .dpl     = 0,
-             .type    = IDT_TYPE_INT},
+        {
+           .handler = ps2_kbd_int,
+           },
     [0xFD] =
-        {.handler = apic_err,
-             .seg_sel = MEM_KERNEL_CODE_DESC,
-             .dpl     = 0,
-             .type    = IDT_TYPE_INT},
+        {
+           .handler = apic_err,
+           },
     [0xFE] =
-        {.handler = timer_tick,
-             .seg_sel = MEM_KERNEL_CODE_DESC,
-             .dpl     = 0,
-             .type    = IDT_TYPE_INT},
+        {
+           .handler = timer_tick,
+           },
     [0xFF] =
-        {.handler = spurious_int,
-             .seg_sel = MEM_KERNEL_CODE_DESC,
-             .dpl     = 0,
-             .type    = IDT_TYPE_INT},
+        {
+           .handler = spurious_int,
+           },
 };
 
 static idt_entry_info default_idt_entry_info = {
     .handler = inter_unmapped,
-    .seg_sel = MEM_KERNEL_CODE_DESC,
-    .dpl     = 0,
-    .type    = IDT_TYPE_INT};
+};
 
 static idt_entry kernel_idt[256];
 static idt_entry bsp_idt[256];
@@ -87,8 +73,8 @@ static idt_entry decode_entry_info(idt_entry_info info) {
   return (idt_entry){
       .offset0 = (uintptr_t)info.handler & 0xFFFF,
       .offset1 = (uintptr_t)info.handler >> 16,
-      .seg_sel = info.seg_sel,
-      .ist     = 0,
+      .seg_sel = MEM_KERNEL_CODE_DESC,
+      .ist     = info.ist,
       .dpl     = 0,
       .type    = IDT_TYPE_INT,
       .present = 1,
@@ -116,7 +102,7 @@ void int_init() {
   memcpy(bsp_idt, kernel_idt, sizeof(kernel_idt));
 }
 
-void int_load_and_enable() {
+void int_load() {
   int_disable();
   idt idtr;
 
@@ -124,5 +110,4 @@ void int_load_and_enable() {
   idtr.offset = kernel_idt;
 
   as_lidt(&idtr);
-  int_enable();
 }

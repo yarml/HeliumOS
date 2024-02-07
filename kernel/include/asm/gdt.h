@@ -5,7 +5,8 @@
 
 #include <arch/mem.h>
 
-void as_lgdt(gdt *gdtr, uint16_t data_sel, uint16_t code_sel);
-void as_sgdt(gdt *gdtr);
+void as_setup_gdt(
+    gdtr *reg, uint16_t data_sel, uint16_t code_sel, uint16_t tss_sel
+);
 
 #endif

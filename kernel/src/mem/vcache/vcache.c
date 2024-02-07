@@ -104,8 +104,7 @@ vcache_unit vcache_map(void *padr) {
           }
 
           mem_pte *pte = i_vcache_pte + i * 512;
-          if (mem_vpstruct2_meta(pte))  // if it is lazy
-          {
+          if (mem_vpstruct2_meta(pte)) {  // if it is lazy
             // also set target_pte to this, so that we don't need to look for it
             // again after the flush is done
             target_pte = pte;

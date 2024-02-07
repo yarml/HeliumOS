@@ -1,4 +1,5 @@
 #include <apic.h>
+#include <boot_info.h>
 #include <cpuid.h>
 #include <interrupts.h>
 #include <mem.h>
@@ -28,19 +29,14 @@ void apic_init() {
   }
 
   if (!proc_isprimary()) {
-    proc_ignition_wait_step(PROC_IGNITION_APIC_MAP);
     as_rlcr3();
   } else {
     mem_vmap(APIC_VBASE, APIC_BASE, 0x1000, 0);
-    proc_ignition_mark_step(PROC_IGNITION_APIC_MAP);
   }
   mutex_lock(&apic_init_lock);
 
-  printd("[Proc %&] APIC init\n");
-  printd("\tAPIC version: %02x\n", APIC_VBASE->verreg[0] & 0xFF);
-
-  // Setup a timer for the BSP
-  if (proc_isprimary()) {
+  // Setup timer
+  {
     lvt_error err = {.reg = 0};
     err.vector    = 0xFD;
 
@@ -51,8 +47,6 @@ void apic_init() {
     siv.vector      = 0xFF;
 
     APIC_VBASE->sivreg[0] = siv.reg;
-
-    printd("TPR: %x\n", APIC_VBASE->taskprreg[0]);
 
     uint32_t bus_freq = proc_bus_freq();
 
@@ -148,11 +142,8 @@ void ioapic_set_handler(size_t irq, size_t vector) {
     }
   }
   if (!target) {
-    printd("NOTTT FOUND\n");
     return;
   }
-
-  printd("FOUND\n");
 
   size_t regoff = 0x10 + (irq - target->irq_base) * 2;
 
@@ -167,7 +158,7 @@ void apic_acpi_entry_handler(acpi_header *head) {
   madt              *table                = (void *)head;
   size_t             parsed_len           = sizeof(madt);
   madt_entry_header *current_entry_header = table->first;
-
+  uint32_t sysid = 4;  // Other processors start from 4, BSP is always 0
   while (parsed_len < table->header.len) {
     parsed_len += current_entry_header->len;
 
@@ -180,6 +171,32 @@ void apic_acpi_entry_handler(acpi_header *head) {
             lapic->apic_id,
             lapic->flags
         );
+        if (!lapic->flags) {
+          break;
+        }
+        proc_info *info = calloc(1, sizeof(proc_info));
+        info->apicid    = lapic->apic_id;
+        info->sysid     = lapic->apic_id == bootboot.bspid ? 0 : sysid++;
+
+        info->nmi_stack = mem_alloc_vblock(
+                              NMI_STACK_SIZE,
+                              MAPF_R | MAPF_W,
+                              PROC_TABLE_VPTR,
+                              PROC_TABLE_VSIZE
+                          )
+                              .ptr +
+                          NMI_STACK_SIZE;
+        info->df_stack = mem_alloc_vblock(
+                             DF_STACK_SIZE,
+                             MAPF_R | MAPF_W,
+                             PROC_TABLE_VPTR,
+                             PROC_TABLE_VSIZE
+                         )
+                             .ptr +
+                         DF_STACK_SIZE;
+        // Other fields are set by the processor itself after ignition
+
+        proc_register(lapic->apic_id, info);
       } break;
       case MADT_IOAPIC: {
         madt_ioapic *ioapic = (void *)current_entry_header;

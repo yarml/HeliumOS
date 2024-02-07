@@ -69,11 +69,8 @@ typedef void (*interrupt_handler_f)(int_frame *frame);
 #define IDT_TYPE_TRAP (0xF)
 
 void int_init();
-void int_load_and_enable();
-
-errno_t int_register(interrupt_handler_f handler, size_t *allocated_entry);
+void int_load();
 
 #define int_disable() asm("cli")
-#define int_enable() asm("sti")
 
 #endif

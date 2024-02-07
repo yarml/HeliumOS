@@ -3,6 +3,7 @@
 
 #include <attributes.h>
 #include <error.h>
+#include <proc.h>
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -11,7 +12,10 @@
 #define MEM_PSEG_MAGIC (0xA55AA55AA55AA55A)
 
 #define MEM_KERNEL_CODE_DESC (0x08)
-#define MEM_KERNEL_DATA_DESC (0x10)
+#define MEM_KERNEL_DATA_DESC (MEM_KERNEL_CODE_DESC + 0x08)
+#define MEM_USER_DATA_DESC (0x1B)
+#define MEM_USER_CODE_DESC (MEM_USER_DATA_DESC + 0x08)
+#define MEM_TSS_DESC (0x28)
 
 struct MEM_PSEG_HEADER;
 typedef struct MEM_PSEG_HEADER mem_pseg_header;
@@ -32,7 +36,15 @@ struct MEM_PALLOCATION {
 
 void mem_init();
 
-void load_gdt();
+void load_gdt(
+    gdt_entry *gdt,
+    size_t     size,
+    uint16_t   data_sel,
+    uint16_t   code_sel,
+    uint16_t   tss_sel
+);
+
+void gdt_proc_setup(proc_info *info);
 
 /* mem_p* */
 

@@ -72,10 +72,9 @@ mem_pallocation mem_ppalloc(
 
     size_t bitmap_size = BITMAP_SIZE(h->size);
 
-    if ((!cont || h->size >= size)      /* big enough, without
-                                           considering allocated pages */
-        && (!below || h->padr < below)) /* lowest address low enough */
-    {
+    if ((!cont || h->size >= size)        /* big enough, without
+                                             considering allocated pages */
+        && (!below || h->padr < below)) { /* lowest address low enough */
       uint64_t *bitmap = (uint64_t *)(h + 1);
       size_t    first_found_idx =
           bitmap_size / 8 -
@@ -105,23 +104,18 @@ mem_pallocation mem_ppalloc(
 
           size_t lpg_idx  = pg_idx - 1;
           size_t pg_count = lpg_idx - fpg_idx + 1;
-          if (!cont || pg_count * MEM_PS >= size) /* if size
-                                                     is enough */
-          {
+          if (!cont || pg_count * MEM_PS >= size) { /* if size is enough */
             // A more efficient way to set bits than
             // the older implementation
-            if (lpg_idx - fpg_idx + 1 < 64)  // only one/two u64 to change
-            {
+            if (lpg_idx - fpg_idx + 1 < 64) {  // only one/two u64 to change
               if (ALIGN_DN(lpg_idx, 64) != ALIGN_DN(fpg_idx, 64)) {  // one u64
                 bitmap[fpg_idx / 64] |=
                     BITRANGE(fpg_idx % 64, lpg_idx % 64 + 1);
-              } else  // two u64 to change
-              {
+              } else {  // two u64 to change
                 bitmap[fpg_idx / 64] |= BITRANGE(fpg_idx % 64, 64);
                 bitmap[lpg_idx / 64] |= BITRANGE(0, lpg_idx % 64 + 1);
               }
-            } else  // multiple u64s to set
-            {
+            } else {  // multiple u64s to set
               bitmap[fpg_idx / 64] |= BITRANGE(fpg_idx % 64, 64);
               bitmap[lpg_idx / 64] |= BITRANGE(0, lpg_idx % 64 + 1);
               // Set lpg_idx to not count the last few pages that have

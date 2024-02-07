@@ -37,7 +37,7 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags) {
     prtrace_end("mem_vmap", "ERR_MEM_MANAGED", 0);
     return ERR_MEM_MANAGED;
   }
-
+  // => <= >=
   int target_order = 0;
   if (flags & MAPF_P1G) {
     target_order = 2;
@@ -159,8 +159,7 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags) {
     memset(target_entry, 0, sizeof(*target_entry));
 
     // We handle pdpte/pde in the same way
-    if (target_order)  // if pde/pdpte
-    {
+    if (target_order) {  // if pde/pdpte
       // retype target_entry, l_entry for large_entry
       mem_vpstruct *l_entry = (mem_vpstruct *)target_entry;
       l_entry->ps           = 1;  // Mark this page as a map page not ref page
@@ -172,8 +171,7 @@ errno_t mem_vmap(void *vadr, void *padr, size_t size, int flags) {
       l_entry->padr   = (uintptr_t)padr >> 13;  // there is a reserved bit
 
       l_entry->present = 1;
-    } else  // target is PTE
-    {
+    } else {  // target is PTE
       mem_pte *pte = (mem_pte *)target_entry;
       pte->write   = (flags & MAPF_W) != 0;
       if (vadr < KVMSPACE) {
@@ -236,10 +234,10 @@ static void recursive_find_vseg(
     void            **seg_ptr,
     size_t           *seg_size,
     size_t           *indices,
-    size_t           *eindices
+    size_t           *eindices,
+    void             *heap_start
 ) {
-  if (order)  // PML4E, PDPTE, PDE
-  {
+  if (order) {  // PML4E, PDPTE, PDE
     size_t *pidx   = indices + order;
     size_t *peidx  = eindices + order;
     int     fentry = 1;
@@ -251,7 +249,7 @@ static void recursive_find_vseg(
           *seg_ptr = PTR_MAKE_CANONICAL(indices[order] * ORDER_PS(order));
         }
         *seg_size += ORDER_PS(order);
-        if (*seg_size >= req) {
+        if (*seg_size >= req && *seg_ptr >= heap_start) {
           return;
         }
       } else {
@@ -264,15 +262,15 @@ static void recursive_find_vseg(
             seg_ptr,
             seg_size,
             indices,
-            eindices
+            eindices,
+            heap_start
         );
         if (*seg_size >= req) {
           return;
         }
       }
     }
-  } else  // PTE
-  {
+  } else {  // PTE
     mem_pte *cpte = (mem_pte *)base + indices[0] % 512;
     if (!cpte->present) {
       if (!*seg_size) {
@@ -282,8 +280,7 @@ static void recursive_find_vseg(
       if (*seg_size >= req) {
         return;
       }
-    } else  // This PTE is a disappointment
-    {
+    } else {  // This PTE is a disappointment
       *seg_ptr  = 0;
       *seg_size = 0;
     }
@@ -329,7 +326,15 @@ mem_vseg mem_find_vsegment(size_t size, void *heap_start, size_t heap_size) {
   size_t seg_size = 0;
 
   recursive_find_vseg(
-      size, cache, i_pmlmax, MAX_ORDER, &seg_ptr, &seg_size, indices, eindices
+      size,
+      cache,
+      i_pmlmax,
+      MAX_ORDER,
+      &seg_ptr,
+      &seg_size,
+      indices,
+      eindices,
+      heap_start
   );
 
   for (size_t i = 0; i < 3; ++i) {

@@ -127,18 +127,21 @@ In general, the memory layout HeliumOS uses is as follows:
 | 1T512G4K | 1T513G   | 1023M1024K | Undefined                |
 | 1T513G   | 1T768G   | 255G       | IOAPIC control registers |
 | 1T768G   | 2T       | 256G       | ACPI Tables              |
-| 2T       | 112T     | 110T       | Undefined                |
+| 2T       | 4T       | 2T         | Processor table          |
+| 4T       | 112T     | 108T       | Undefined                |
 | 112T     | 128T     | 16T        | Bootboot reserved        |
 
 *Addresses are offseted, the real addresses can be calculated by adding
 15E1023P896T to the addresses in the table*
 
 ### User space layout
-| Start | End  | Size  | Description           |
-| ----- | ---- | ----- | --------------------- |
-| 0     | 2G   | 2G    | Invalid               |
-| 2G    | 1T   | 1022G | Main executable image |
-| 1T    | 128T | 127T  | Undefined             |
+| Start | End  | Size  | Description                                      |
+| ----- | ---- | ----- | ------------------------------------------------ |
+| 0     | 2G   | 2G    | Invalid                                          |
+| 2G    | 1T   | 1022G | Main executable image                            |
+| 1T    | 16T  | 15T   | Invalid                                          |
+| 16T   | 17T  | 1T    | Stack(Only 2M is allocated, the rest is invalid) |
+| 17T   | 128T | 111T  | Undefined                                        |
 
 
 ## Concepts

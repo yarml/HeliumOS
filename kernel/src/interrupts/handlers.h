@@ -4,6 +4,7 @@
 #include <interrupts.h>
 #include <stdint.h>
 
+void nmi_handler(int_frame *frame);
 void inter_unmapped(int_frame *frame);
 void exception_div(int_frame *frame);
 void exception_page_fault(int_frame *frame, uint64_t err_code);

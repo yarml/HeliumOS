@@ -79,8 +79,7 @@ called `example_struct`
 ```c
 struct EXAMPLE_STRUCT;
 typedef struct EXAMPLE_STRUCT example_struct;
-struct EXAMPLE_STRUCT
-{
+struct EXAMPLE_STRUCT {
   ...
 };
 ```

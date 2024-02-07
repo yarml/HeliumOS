@@ -5,10 +5,18 @@
 #include <proc.h>
 #include <stdio.h>
 #include <sys.h>
+#include <userspace.h>
 
 #include <asm/ctlr.h>
 #include <asm/io.h>
 #include <dev/ps2.h>
+
+interrupt_handler void nmi_handler(int_frame *frame) {
+  // Runs on NMI specific stack
+  int_disable();
+  printd("Received NMI\n");
+  stop();
+}
 
 static void exception_common_prologue(int_frame *frame, char *name) {
   printd("[Proc %&] [EXCEPTION:%s]\n", name);
@@ -120,12 +128,21 @@ interrupt_handler void apic_err(int_frame *frame) {
 }
 
 interrupt_handler void timer_tick(int_frame *frame) {
-  // No printing, too much noise
   kterm_flush();
-  APIC_VBASE->eoireg[0] = 0;
+  apic_eoi();
+
+  // Mini scheduler just to get things working
+  // Execute the user space proram once
+  static bool executed = false;
+
+  if (proc_isprimary() && !executed) {
+    printd("exec()\n");
+    executed = true;
+    exec();
+  }
 }
 
 interrupt_handler void spurious_int(int_frame *frame) {
+  apic_eoi();
   printf("Spurious\n");
-  APIC_VBASE->eoireg[0] = 0;
 }

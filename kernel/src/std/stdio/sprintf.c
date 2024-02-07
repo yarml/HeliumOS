@@ -76,8 +76,7 @@ int vsnprintf(char *s, size_t size, char const *template, va_list va) {
     int         max      = INT32_MAX;
     int         min      = 0;
     bool        pad0     = false;
-    if (*template == '%')  // do something fancy
-    {
+    if (*template == '%') {  // do something fancy
       ++template;
 
       bool lmode = false;

@@ -4,7 +4,6 @@ M ?= DEBUG
 QEMU_BIN   := qemu-system-x86_64
 OVMF_CODE  := /usr/share/edk2-ovmf/x64/OVMF_CODE.fd
 OVMF_VARS  := /usr/share/edk2-ovmf/x64/OVMF_VARS.fd
-QEMU_FLAGS := -cpu qemu64 -smp 1 -net none -m 64M
 # Toolchain to build targets for the build machine
 BUILD_CC := gcc
 

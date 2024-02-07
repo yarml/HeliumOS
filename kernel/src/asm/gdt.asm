@@ -1,9 +1,8 @@
-global as_lgdt
-global as_sgdt
+global as_setup_gdt
 
 section .text
 
-as_lgdt:
+as_setup_gdt:
   lgdt [rdi]
   mov rax, rsi
   mov ss, ax
@@ -11,6 +10,9 @@ as_lgdt:
   mov es, ax
   mov fs, ax
   mov gs, ax
+
+  mov ax, cx
+  ltr ax
 
   ; Loading CS with the correct value will be tricky since the value is variable
   ; First, we pop the return address from the stack into rdi
@@ -21,7 +23,3 @@ as_lgdt:
   push rdi
   ; Now we do a far return, I hope this works first try(it did third try)
   retfq
-
-as_sgdt:
-  sgdt [rdi]
-  ret

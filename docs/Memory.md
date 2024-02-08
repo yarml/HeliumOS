@@ -128,7 +128,8 @@ In general, the memory layout HeliumOS uses is as follows:
 | 1T513G   | 1T768G   | 255G       | IOAPIC control registers |
 | 1T768G   | 2T       | 256G       | ACPI Tables              |
 | 2T       | 4T       | 2T         | Processor table          |
-| 4T       | 112T     | 108T       | Undefined                |
+| 4T       | 5T       | 1T         | Stack table              |
+| 5T       | 112T     | 107T       | Undefined                |
 | 112T     | 128T     | 16T        | Bootboot reserved        |
 
 *Addresses are offseted, the real addresses can be calculated by adding

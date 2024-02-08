@@ -74,3 +74,6 @@ CPL 3 in user space code, the fix is probably easy, i'm just too lazy to fix it 
 those registers can even be used in amd64.
 
 Anyways, I will mark the switch CPU to user mode step as done. Loading an elf file should be easy.
+
+Never mind, the next step is the print syscall, this will be a temporary system call while awaiting the new filesystem implementation. The exit syscall
+I will not make it do anything for now, just call stop(), since we only have one process running at this stage, when its done, we do nothing more.

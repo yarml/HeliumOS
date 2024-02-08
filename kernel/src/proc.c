@@ -42,6 +42,16 @@ void proc_ignition_wait() {
 }
 
 void proc_ignite() {
+  // A few things to do before waking up the other cores
+  // Like allocating space for the stack table
+  mem_vseg stacktableseg =
+      mem_alloc_vblock(0x1000, MAPF_W | MAPF_R, STACK_TABLE_VPTR, 0x1000);
+
+  if (stacktableseg.error) {
+    error_out_of_memory("Could not allocate spa efor stack table");
+  }
+  // That's it for now
+
   ignition = true;
   proc_init();
 }
@@ -49,12 +59,15 @@ void proc_ignite() {
 void proc_init() {
   mutex_lock(&init_lock);
 
-  // We need to figure out what is out stack
+  // We need to figure out what is our stack
   int   x;
   void *ptr        = &x;
   void *stack_base = (void *)ALIGN_UP((uintptr_t)ptr, KSTACK_SIZE);
 
   proc_info *pinfo = proc_getinfo();
+
+  // Stack base should be written in the stack table as well.
+  STACK_TABLE_VPTR[pinfo->apicid] = stack_base;
 
   // Continue filling up proc_info of current processor
   pinfo->ksatck = stack_base;

@@ -11,6 +11,16 @@
 #define USPACE_STACK_TOP ((void *)(USPACE_STACK_BASE - USPACE_STACK_SIZE))
 
 int  exec();
-void syscall(uint64_t rdi);
+void syscall(
+    uint64_t rdi,
+    uint64_t rsi,
+    uint64_t rdx,
+    uint64_t rcx,
+    uint8_t  r8,
+    uint64_t r9
+);
+
+#define SYSCALL_EXIT (0x10)
+#define SYSCALL_PRINT (0x11)
 
 #endif

@@ -13,6 +13,9 @@
 #define PROC_TABLE_VPTR (KVMSPACE + (uintptr_t)2 * 1024 * 1024 * 1024 * 1024)
 #define PROC_TABLE_VSIZE ((uintptr_t)2 * 1024 * 1024 * 1024 * 1024)
 
+#define STACK_TABLE_VPTR                                                       \
+  ((void **)(KVMSPACE + (uintptr_t)4 * 1024 * 1024 * 1024 * 1024))
+
 // One of these is created per CPU
 typedef struct PROC_INFO {
   size_t sysid;  // Assigned by Helium

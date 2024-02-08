@@ -93,6 +93,7 @@ mem_vseg mem_find_vsegment(size_t size, void *heap_start, size_t heap_size);
 mem_vseg mem_alloc_vblock(
     size_t size, int flags, void *heap_start, size_t heap_size
 );
+void *mem_alloc_into(void *vptr, size_t size, int flags);
 
 // Kernel virtual space
 #define KVMSPACE                                                               \

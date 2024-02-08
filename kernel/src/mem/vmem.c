@@ -359,24 +359,23 @@ mem_vseg mem_alloc_vblock(
     return seg;
   }
 
+  mem_alloc_into(seg.ptr, size, flags);
+  return seg;
+}
+
+void *mem_alloc_into(void *vptr, size_t size, int flags) {
   size_t allocated = 0;
   while (allocated < size) {
     mem_pallocation alloc =
         mem_ppalloc(PALLOC_STD_HEADER, size - allocated, 0, false, 0);
-
     if (alloc.error) {
       // TODO: Instead of error, we need to find a way to deallocate
       // all the allocated phyical pages and return 0
-      error_out_of_memory(
-          "Could not allocate physical memory while "
-          "trying to allocate kernel heap space!"
-      );
+      error_out_of_memory("Could not allocate physical memory");
     }
 
-    // Map the newly allocated physical pages to their place in the heap
-    mem_vmap(seg.ptr + allocated, alloc.padr, alloc.size, flags);
+    mem_vmap(vptr + allocated, alloc.padr, alloc.size, flags);
     allocated += alloc.size;
   }
-
-  return seg;
+  return vptr;
 }

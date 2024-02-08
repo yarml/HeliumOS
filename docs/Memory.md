@@ -136,13 +136,13 @@ In general, the memory layout HeliumOS uses is as follows:
 15E1023P896T to the addresses in the table*
 
 ### User space layout
-| Start | End  | Size  | Description                                      |
-| ----- | ---- | ----- | ------------------------------------------------ |
-| 0     | 2G   | 2G    | Invalid                                          |
-| 2G    | 1T   | 1022G | Main executable image                            |
-| 1T    | 16T  | 15T   | Invalid                                          |
-| 16T   | 17T  | 1T    | Stack(Only 2M is allocated, the rest is invalid) |
-| 17T   | 128T | 111T  | Undefined                                        |
+| Start | End  | Size   | Description                                          |
+| ----- | ---- | ------ | ---------------------------------------------------- |
+| 0     | 4K   | 4K     | Invalid                                              |
+| 4K    | 16T  | 16T-4K | ELF Image                                            |
+| 16T   | 32T  | 16T    | Invalid                                              |
+| 32T   | 48T  | 16T    | Stack(Only top 2M is allocated, the rest is invalid) |
+| 48T   | 128T | 80T    | Undefined(Will contain heap later)                   |
 
 
 ## Concepts

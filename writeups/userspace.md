@@ -7,8 +7,9 @@ and to exit the program.
 # Progress
 - [X] Load flat binary to user space addresses, and be able to call it
 - [X] Switch CPU to user mode
-- [ ] Implement print & exit syscalls
-- [ ] Load ELF executable
+- [X] Implement print & exit syscalls
+- [X] Load ELF executable
+- [ ] Setup crt0 and write userspace programs in C
 - [ ] Setup build system to make this process streamlined
 
 # Initial steps
@@ -77,3 +78,11 @@ Anyways, I will mark the switch CPU to user mode step as done. Loading an elf fi
 
 Never mind, the next step is the print syscall, this will be a temporary system call while awaiting the new filesystem implementation. The exit syscall
 I will not make it do anything for now, just call stop(), since we only have one process running at this stage, when its done, we do nothing more.
+
+print and exit syscalls are now implemented and they work! Next is a little boring, loading an ELF file :)
+
+And that was not hard as well. I had already wrote most code before when I was implementing kernel modules, and I didn't
+throw away the elf part because I knew I would need it when loading user space programs. And unlike kernel modules I did not
+need any special linker or any bullshit like that, I just needed to follow the program header directives and that's it. Userspace
+programs know thei entire memory space, unlike kernel modules which needed to link with kernel functions, and they didn't even
+known where they were loaded. This stuff is soo easy.

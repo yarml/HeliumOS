@@ -43,7 +43,6 @@ priorities.
 - [Source directory structure](#source-directory-structure)
   - [buildsys/](#buildsys)
   - [kernel/](#kernel)
-  - [modules/](#modules)
   - [tools/](#tools)
   - [sysroots/](#sysroots)
   - [docs/](#docs)
@@ -96,7 +95,7 @@ what I want to work on.
   * [X] initrd filesystem
   * [X] Debug filesystem
   * [X] Kernel terminal filesystem
-* [X] Kernel modules
+* [X] Kernel modules (Removed)
   * [X] Make kernel terminal a module
 * [X] APIC
 * [X] Basic device drivers
@@ -132,7 +131,6 @@ bug fixes(there exist many!), new features, or documentation.
   * `pyscripts/` Python scripts used by the build system.
   * `shscripts` Shell scripts used by the buildsystem
   * `IDE` Pre-made configurations for some IDEs
-  * `templates/` Files used by the build system to generate other files.
 
 Documentation for the buildsystem can be found here [Buildsystem].
 
@@ -144,13 +142,6 @@ Documentation for the buildsystem can be found here [Buildsystem].
 `bootimg.json` mkbootimg configuration.
 
 `bootboot.config` Bootboot configuration.
-
-## [modules/]
-Each directory in `modules/` represents a separate kernel module that can
-be loaded dynamically by the kernel during execution.
-
-`modules.cfg` determines which kernel modules are to be included `M`, or skipped
-`U`.
 
 ## [tools/]
 Some tools used by the buildsystem to generate other files used by

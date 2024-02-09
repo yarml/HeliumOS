@@ -56,8 +56,6 @@ KERNEL_INC_DIR := $(KERNEL_DIR)include/
 STD_INC        := $(KERNEL_DIR)stdinc/
 LINKER_SCRIPT  := $(KERNEL_DIR)link.ld
 
-MODULES_DIR := $(ROOT_DIR)modules/
-
 BOOTBOOT_CFG := $(KERNEL_DIR)bootboot.config
 BOOTIMG_CFG  := $(KERNEL_DIR)bootimg.json
 
@@ -82,7 +80,6 @@ SEDDIR        := $(BUILDSYS)sedscripts/
 IDEDIR        := $(BUILDSYS)IDE/
 PYDIR         := $(BUILDSYS)pyscripts/
 SHDIR         := $(BUILDSYS)shscripts/
-TEMPLATES_DIR := $(BUILDSYS)templates/
 
 CACHE_DIR := $(ROOT_DIR)cache/
 

@@ -9,8 +9,8 @@ and to exit the program.
 - [X] Switch CPU to user mode
 - [X] Implement print & exit syscalls
 - [X] Load ELF executable
-- [ ] Setup crt0 and write userspace programs in C
-- [ ] Setup build system to make this process streamlined
+- [X] Setup crt0 and write userspace programs in C
+- [X] Setup build system to make this process streamlined
 
 # Initial steps
 First thing I want to do is remove the entire file system, I will replace the initrd
@@ -86,3 +86,12 @@ throw away the elf part because I knew I would need it when loading user space p
 need any special linker or any bullshit like that, I just needed to follow the program header directives and that's it. Userspace
 programs know thei entire memory space, unlike kernel modules which needed to link with kernel functions, and they didn't even
 known where they were loaded. This stuff is soo easy.
+
+I think I will do the next 2 steps at once, setup a runtime for C code, and setup the build system to streamline the process.
+I think user space processes will for now be put in the initrd at `/bin`. I am thinking of having a `config.mk` in `userspace/`
+that would let the build system know what user space programs there are. And then each program has a `config.mk` with its dependencies,
+for instance `runtime`. I will statically link everything for now.
+
+I have an impulse to make a rust tool that parses some files then generate makefiles that are then used by the build system. What
+I really don't want is to repeat the build instructions inside every program. It will be a small tool, it will add yet another dependency
+to Helium, but, why not, let's do it.

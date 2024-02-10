@@ -6,6 +6,7 @@ OVMF_CODE  := /usr/share/edk2-ovmf/x64/OVMF_CODE.fd
 OVMF_VARS  := /usr/share/edk2-ovmf/x64/OVMF_VARS.fd
 # Toolchain to build targets for the build machine
 BUILD_CC := gcc
+BUILD_CARGO := cargo +stable
 
 CLANG_FORMAT := clang-format
 LSB_RELEASE := lsb_release
@@ -56,6 +57,8 @@ KERNEL_INC_DIR := $(KERNEL_DIR)include/
 STD_INC        := $(KERNEL_DIR)stdinc/
 LINKER_SCRIPT  := $(KERNEL_DIR)link.ld
 
+UPDIR := $(ROOT_DIR)userspace/
+
 BOOTBOOT_CFG := $(KERNEL_DIR)bootboot.config
 BOOTIMG_CFG  := $(KERNEL_DIR)bootimg.json
 
@@ -72,14 +75,15 @@ BUILD_SYSROOT  := $(SYSROOTS)build/
 HOST_SYSROOT   := $(SYSROOTS)host/
 
 BUILD_DIR := $(ROOT_DIR)build/
-
 OUT_DIR := $(BUILD_DIR)out/
+UPOUT_DIR := $(OUT_DIR)userspace/
 
 BUILDSYS      := buildsys/
 SEDDIR        := $(BUILDSYS)sedscripts/
 IDEDIR        := $(BUILDSYS)IDE/
 PYDIR         := $(BUILDSYS)pyscripts/
 SHDIR         := $(BUILDSYS)shscripts/
+TEMPLATES_DIR := $(BUILDSYS)template/
 
 CACHE_DIR := $(ROOT_DIR)cache/
 
@@ -91,6 +95,11 @@ nothing:
 
 # Include rest of build system
 include buildsys/*.mk
+
+$(shell $(MAKE) -C $(ROOT_DIR)tools/ >/dev/null)
+$(shell $(BUILD_SYSROOT)bin/upconfig >/dev/null)
+
+include build/buildsys/*.mk
 
 # Include the late buildsystem
 include buildsys/late/*.mk

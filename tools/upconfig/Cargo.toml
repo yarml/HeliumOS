@@ -1,0 +1,8 @@
+[package]
+name = "upconfig"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+serde = { version = "1.0.196", features = ["serde_derive", "derive"] }
+toml = "0.8.10"

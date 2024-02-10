@@ -14,7 +14,7 @@ void syscall(
 ) {
   switch (rdi) {
     case SYSCALL_EXIT:
-      printd("Exiting program\n");
+      printd("Exiting program with status code: %lu\n", rsi);
       as_event_loop();
     case SYSCALL_PRINT:
       if (rsi < (uintptr_t)KVMSPACE) {  // No printing kernel memory lol

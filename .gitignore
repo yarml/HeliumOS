@@ -1,3 +1,4 @@
+/sysroots/initrd/bin/
 /sysroots/initrd/sys/
 /sysroots/build/
 /output.txt
@@ -7,3 +8,5 @@
 /tests/
 /ext/
 /tmp/
+target/
+Cargo.lock

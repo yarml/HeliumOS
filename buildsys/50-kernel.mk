@@ -23,22 +23,22 @@ CLEAN += $(INITRD_SYSROOT)sys/
 
 # Compile targets
 $(OUT_DIR)kernel/%.c.o: $(KERNEL_SRC_DIR)%.c
-	$(MKDIR) -p $(dir $@)
+	$(MKDIR) -p $(@D)
 	$(HOST_CC) $(CFLAGS)  $(INC_FLAGS) -o $@ -c $^
 
 # Some special files need special flags, we handle them separatly
 $(OUT_DIR)kernel/%.int.c.o: $(KERNEL_SRC_DIR)%.int.c
-	$(MKDIR) -p $(dir $@)
+	$(MKDIR) -p $(@D)
 	$(HOST_CC) $(CFLAGS) -mgeneral-regs-only $(INC_FLAGS) -o $@ -c $^
 
 $(OUT_DIR)kernel/%.asm.o: $(KERNEL_SRC_DIR)%.asm
-	$(MKDIR) -p $(dir $@)
+	$(MKDIR) -p $(@D)
 	$(HOST_AS) $(ASFLAGS) $(INC_FLAGS) -o $@ $^
 
 # Link target
 # Will also build the toolchain if not available
 $(KERNEL_BIN): $(HOST_CC) $(MKBOOTIMG_BIN) $(LINKER_SCRIPT) $(OBJS)
-	$(MKDIR) -p $(dir $@)
+	$(MKDIR) -p $(@D)
 	$(MKDIR) -p $(OUT_DIR)
 	$(HOST_CC) $(CFLAGS) $(OBJS) -o $(OUT_DIR)kernel.elf -T $(LINKER_SCRIPT)
 	$(HOST_OBJCOPY) --only-keep-debug $(OUT_DIR)kernel.elf $(OUT_DIR)kernel.dbg

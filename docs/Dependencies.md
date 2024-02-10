@@ -37,6 +37,7 @@ This is currently supported on:
 
 # Dependencies of the buildsystem
 - python3
+- Cargo
 - GNU Make
 - Git
 - Basic Unix utilities (Check relevant section)

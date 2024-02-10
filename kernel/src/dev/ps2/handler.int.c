@@ -9,7 +9,6 @@
 #include "ps2.h"
 
 interrupt_handler void ps2_kbd_int(int_frame *frame) {
-  goto defer;
   uint8_t scancode = as_inb(PS2_PORT_DATA);
   int     press    = !(scancode & 0x80);
   scancode &= 0x7F;

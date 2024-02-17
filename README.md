@@ -209,6 +209,11 @@ Bootboot is implemented)
 about `uint64_t` undefined, just add the include in the file the error is coming
 from.
 
+- I believe `mkbootimg` has some bug, sometimes it doesn't create the boot image
+properly, even if all the build objects are cleaned and kernel is rebuilt. I
+did not experiment with this bug a lot, but doing a `make clean && make mkbootimg-rm`
+seemes to fix the issue.
+
 <!-- Raw links  -->
 [buildsys/]: buildsys/
 [kernel/]: kernel/

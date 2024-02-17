@@ -7,7 +7,7 @@
 
 void   kterm_init();
 size_t kterm_print(char const *str);
-char  *kterm_fgets(char *restrict str, size_t n);
+size_t kterm_read(char *restrict str, size_t n);
 
 // Put character/string in the input buffer
 void kterm_putcin(char c);

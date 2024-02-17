@@ -23,13 +23,13 @@ void gdt_proc_setup(proc_info *info) {
   // GDT 3 is user data segment
   info->gdt[3].nsys    = 1;
   info->gdt[3].write   = 1;
-  info->gdt[3].dpl     = 0;
+  info->gdt[3].dpl     = 3;
   info->gdt[3].present = 1;
 
   // GDT 4 is user code segment
   info->gdt[4].nsys    = 1;
   info->gdt[4].exec    = 1;
-  info->gdt[4].dpl     = 0;
+  info->gdt[4].dpl     = 3;
   info->gdt[4].lmode   = 1;
   info->gdt[4].present = 1;
 

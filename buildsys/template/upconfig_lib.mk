@@ -14,7 +14,7 @@ UPLIB += $(LIB_TARGET_<name>)
 
 $(LIB_OBJDIR_<name>)%.c.o: $(LIB_SRCDIR_<name>)%.c
 	$(MKDIR) -p $(@D)
-	$(HOST_CC) -Werror -ffreestanding -c $^ -o $@ $(LIB_INCLUDE_FLAGS_<name>)
+	$(HOST_CC) -Werror -ffreestanding -ggdb3 -c $^ -o $@ $(LIB_INCLUDE_FLAGS_<name>)
 
 $(LIB_OBJDIR_<name>)%.asm.o: $(LIB_SRCDIR_<name>)%.asm
 	$(MKDIR) -p $(@D)

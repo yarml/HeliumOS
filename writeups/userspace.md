@@ -95,3 +95,6 @@ for instance `runtime`. I will statically link everything for now.
 I have an impulse to make a rust tool that parses some files then generate makefiles that are then used by the build system. What
 I really don't want is to repeat the build instructions inside every program. It will be a small tool, it will add yet another dependency
 to Helium, but, why not, let's do it.
+
+I ended up doin just that, a rust tool, it is done now. Although everything is complete in this step, I would like to just make the
+`init` process be a little mini-shell and then I can move to multi processing.

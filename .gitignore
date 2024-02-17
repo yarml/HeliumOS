@@ -1,4 +1,5 @@
 /sysroots/initrd/bin/
+/sysroots/initrd/lib/
 /sysroots/initrd/sys/
 /sysroots/build/
 /output.txt

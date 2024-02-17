@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <sys.h>
 #include <userspace.h>
+#include <utils.h>
 
 #include <asm/ctlr.h>
 #include <asm/io.h>
@@ -120,29 +121,28 @@ interrupt_handler void exception_double_fault(int_frame *frame, uint64_t ec) {
   stop();
 }
 
-static mutex timer_lock;
-
 interrupt_handler void apic_err(int_frame *frame) {
   printf("[Proc %&] APIC Error\n");
   stop();
 }
 
 interrupt_handler void timer_tick(int_frame *frame) {
-  kterm_flush();
+  if (proc_isprimary()) {
+    kterm_flush();
+  }
+
+  int_disable();
   apic_eoi();
 
-  // Mini scheduler just to get things working
-  // Execute the user space proram once
-  static bool executed = false;
-
-  if (proc_isprimary() && !executed) {
+  static bool execed = false;
+  if (proc_isprimary() && !execed) {
     printd("exec()\n");
-    executed = true;
+    execed = true;
     exec();
   }
 }
 
 interrupt_handler void spurious_int(int_frame *frame) {
-  apic_eoi();
   printf("Spurious\n");
+  apic_eoi();
 }

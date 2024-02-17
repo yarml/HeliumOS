@@ -19,8 +19,6 @@ as_event_loop:
   jmp .loop
 
 as_syscall_handle:
-  cli
-  push rax
   push rbx
   push rcx
   push rdx
@@ -69,6 +67,4 @@ as_syscall_handle:
   pop rdx
   pop rcx
   pop rbx
-  pop rax
-  sti
   o64 sysret

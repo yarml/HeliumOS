@@ -6,10 +6,21 @@ section .text
 ; rsi: stack
 ; rdx: rflags
 as_call_userspace:
-  mov rcx, rdi
-  mov r11, rdx
-  mov rsp, rsi
-  o64 sysret
+  mov ax, 0x1B
+  mov ds, ax
+  mov es, ax
+	mov fs, ax
+	mov gs, ax
+
+  push rax
+  add ax, 0x08
+
+  push rsi
+  push rdx
+  push rax
+  push rdi
+  ; APIC EOI
+  o64 iret
 
 ; rdi: syscall_handler
 as_enable_syscall:

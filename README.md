@@ -27,7 +27,7 @@ priorities.
       running. To move to the next stage I just need to make it so that AP cores
       hang on a loop. Nothing fancy.
 - [X] APIC: Handle interrupts, make the OS useful, talk between processors.
-- [ ] Processes: Provide a way to run user space processes, can use the initrd
+- [X] Processes: Provide a way to run user space processes, can use the initrd
       for now.
 - [ ] Multiprocessing P2: Efficiently distribute work between processors.
 
@@ -102,7 +102,7 @@ what I want to work on.
   * [X] Framebuffer (Screen)
   * [X] Keyboard
   * [ ] Mouse
-* [ ] User space processes
+* [X] User space processes
 * [ ] Multiprocessing
 * [ ] System calls
 * [ ] Rework filesystem API.

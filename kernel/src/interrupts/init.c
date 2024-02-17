@@ -52,7 +52,7 @@ static idt_entry_info kernel_idt_image[256] = {
         {
            .handler = apic_err,
            },
-    [0xFE] =
+    [0xF0] =
         {
            .handler = timer_tick,
            },

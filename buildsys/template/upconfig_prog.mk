@@ -21,7 +21,7 @@ UPPROG += $(PROG_TARGET_<name>)
 
 $(PROG_OBJDIR_<name>)%.c.o: $(PROG_SRCDIR_<name>)%.c
 	$(MKDIR) -p $(@D)
-	$(HOST_CC) -Werror -ffreestanding -c $^ -o $@ $(PROG_INCLUDE_FLAGS_<name>)
+	$(HOST_CC) -Werror -ffreestanding -ggdb3 -c $^ -o $@ $(PROG_INCLUDE_FLAGS_<name>)
 
 $(PROG_OBJDIR_<name>)%.asm.o: $(PROG_SRCDIR_<name>)%.asm
 	$(MKDIR) -p $(@D)

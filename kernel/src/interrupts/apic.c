@@ -51,7 +51,7 @@ void apic_init() {
     uint32_t bus_freq = proc_bus_freq();
 
     lvt_timer timer = {.reg = 0};
-    timer.vector    = 0xFE;
+    timer.vector    = 0xF0;
     timer.mode      = 0b01;
 
     APIC_VBASE->lvt_timerreg[0] = timer.reg;

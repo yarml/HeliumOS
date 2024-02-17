@@ -61,8 +61,6 @@ struct TERM_STATE {
   uint32_t fg;
   uint32_t bg;
 
-  size_t anchor;  // Cursor position where \b doesn't work anymore, set by the
-                  // shell kterm_fgets
   bool echo;
 };
 
@@ -148,7 +146,7 @@ void kterm_init() {
   buffer.len = 0;
   buffer.cap = 256;
 
-  kterm_dfb(true);
+  kterm_dfb(false);
 }
 
 size_t kterm_print(char const *str) {
@@ -187,7 +185,7 @@ size_t kterm_print(char const *str) {
       case '\a':
         continue;
       case '\b':
-        if (state.cursor != 0 && state.cursor > state.anchor) {
+        if (state.cursor != 0) {
           state.cursor--;
           for (size_t y = 0; y < state.fontinfo.pixh; ++y) {
             size_t cx = state.cursor % state.cw;
@@ -313,32 +311,18 @@ void kterm_dfb(bool usedfb) {
 
 static void extract_buffer(char *restrict str, size_t n) {
   memcpy(str, buffer.buf, n);
-  str[n + 1] = 0;
-  int delta  = buffer.buf[n] == '\n' ? 1 : 0;
-  memmove(buffer.buf, buffer.buf + n + delta, buffer.len - n - delta);
-  buffer.len -= n + delta;
+  memmove(buffer.buf, buffer.buf + n, buffer.len - n);
+  buffer.len -= n;
 }
 
-char *kterm_fgets(char *restrict str, size_t n) {
+size_t kterm_read(char *restrict str, size_t n) {
   if (!n) {
-    return str;
+    return 0;
   }
-  state.anchor = state.cursor;
-  // Like unix fgets, read until \n or n - 1
-  while (1) {
-    void *newline = memchr(buffer.buf, '\n', buffer.len);
-    if (newline) {
-      size_t newline_idx = (size_t)(newline - (size_t)buffer.buf);
-      size_t copy_amount = newline_idx > n - 1 ? n - 1 : newline_idx;
-      extract_buffer(str, copy_amount);
-      return str;
-    }
-    if (buffer.len >= n - 1) {
-      extract_buffer(str, n - 1);
-      return str;
-    }
-    halt();
-  }
+
+  size_t read_amount = buffer.len > n ? n : buffer.len;
+  extract_buffer(str, read_amount);
+  return read_amount;
 }
 
 void kterm_putcin(char c) {

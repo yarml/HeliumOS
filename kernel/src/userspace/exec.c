@@ -15,7 +15,7 @@ static bool verify_elf(elf64_header *header) {
 void exec() {
   // WIP, for now we just load a dummy file from initrd
   // Runs on a single core and waits until program exists
-  initrd_file  *dummy     = initrd_search("/dummy");
+  initrd_file  *dummy     = initrd_search("/bin/init");
   elf64_header *exec_file = dummy->content;
 
   if (!verify_elf(exec_file)) {
@@ -62,5 +62,5 @@ void exec() {
 
   // Allocate stack
   mem_alloc_into(USPACE_STACK_TOP, USPACE_STACK_SIZE, MAPF_W | MAPF_R | MAPF_U);
-  as_call_userspace((void *)exec_file->entrypoint, USPACE_STACK_BASE, 0);
+  as_call_userspace((void *)exec_file->entrypoint, USPACE_STACK_BASE, 0x200);
 }

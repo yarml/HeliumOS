@@ -71,6 +71,7 @@ typedef void (*interrupt_handler_f)(int_frame *frame);
 void int_init();
 void int_load();
 
+#define int_enable() asm("sti")
 #define int_disable() asm("cli")
 
 #endif

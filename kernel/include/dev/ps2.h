@@ -1,7 +1,7 @@
 #ifndef HELIUM_DEV_PS2_H
 #define HELIUM_DEV_PS2_H
 
-#define PS2_KBD_INTVEC (0xD0)
+#define PS2_KBD_INTVEC (0xFE)
 
 void ps2_init();
 

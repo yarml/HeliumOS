@@ -51,17 +51,14 @@ DISTRO := $(shell $(LSB_RELEASE) -i | $(CUT) -d ':' -f2 | $(TR) -d " \t")
 
 ROOT_DIR 	  := $(shell pwd -P)/
 
-KERNEL_DIR := $(ROOT_DIR)kernel/
-KERNEL_SRC_DIR := $(KERNEL_DIR)src/
-KERNEL_INC_DIR := $(KERNEL_DIR)include/
-STD_INC        := $(KERNEL_DIR)stdinc/
-LINKER_SCRIPT  := $(KERNEL_DIR)link.ld
+CONFIG_DIR =$(ROOT_DIR)config/
+
+LINKER_SCRIPT  := $(CONFIG_DIR)link.ld
+BOOTBOOT_CFG := $(CONFIG_DIR)bootboot.config
+BOOTIMG_CFG  := $(CONFIG_DIR)bootimg.json
+TRIPLET_CFG := $(CONFIG_DIR)helium.json
 
 UPDIR := $(ROOT_DIR)userspace/
-
-BOOTBOOT_CFG := $(KERNEL_DIR)bootboot.config
-BOOTIMG_CFG  := $(KERNEL_DIR)bootimg.json
-
 
 EXT_DIR 	  := $(ROOT_DIR)ext/
 EXT_SRC_DIR   := $(EXT_DIR)src/
@@ -96,10 +93,10 @@ nothing:
 # Include rest of build system
 include buildsys/*.mk
 
-$(shell $(MAKE) -C $(ROOT_DIR)tools/ >/dev/null)
-$(shell $(BUILD_SYSROOT)bin/upconfig >/dev/null)
+# $(shell $(MAKE) -C $(ROOT_DIR)tools/ >/dev/null)
+# $(shell $(BUILD_SYSROOT)bin/upconfig >/dev/null)
 
-include build/buildsys/*.mk
+# include build/buildsys/*.mk
 
 # Include the late buildsystem
 include buildsys/late/*.mk

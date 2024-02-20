@@ -9,5 +9,6 @@
 /tests/
 /ext/
 /tmp/
+_userspace/
 target/
 Cargo.lock

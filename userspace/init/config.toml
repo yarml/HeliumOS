@@ -1,3 +1,0 @@
-bin = "init"
-dep = ["rt"]
-type = "Program"

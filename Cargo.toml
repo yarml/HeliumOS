@@ -1,0 +1,9 @@
+[package]
+name = "helium"
+version = "0.0.1"
+authors = ["Youssef Harmal"]
+edition = "2021"
+
+[dependencies]
+rlibc = "1.0"
+

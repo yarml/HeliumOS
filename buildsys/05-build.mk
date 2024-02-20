@@ -5,6 +5,7 @@ $(BUILD_DIR):
 .PHONY: clean clean-cache clean-all
 
 clean:
+	cargo clean
 	$(RM) $(CLEAN)
 
 clean-cache:

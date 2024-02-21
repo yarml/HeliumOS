@@ -12,8 +12,15 @@ macro_rules! print {
     use core::fmt::Write;
     let mut writer = $crate::debug::DEBUG_WRITER.lock();
     writer.write_fmt(format_args!($($arg)*)).unwrap();
-});
+  });
 }
+
+#[macro_export]
+macro_rules! println {
+  ($fmt:expr) => (print!(concat!($fmt, "\n")));
+  ($fmt:expr, $($arg:tt)*) => (print!(concat!($fmt, "\n"), $($arg)*));
+}
+
 
 pub static DEBUG_WRITER: Mutex<DebugWriter> = Mutex::new(DebugWriter());
 

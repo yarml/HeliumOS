@@ -11,6 +11,7 @@ mod bootboot;
 mod debug;
 mod interrupts;
 mod io;
+mod mem;
 mod proc;
 
 use core::panic::PanicInfo;
@@ -25,10 +26,13 @@ fn _start() -> ! {
     }
   }
 
-  print!("Disabling PIC\n");
+  println!("Disabling PIC");
   pic::disable();
 
-  print!("Loop\n");
+  println!("Initializing memory");
+  mem::init();
+
+  println!("Loop");
   loop {}
 }
 

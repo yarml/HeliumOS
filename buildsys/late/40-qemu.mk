@@ -14,7 +14,7 @@ QEMU_CMD := $(QEMU_BIN) \
 		-device ide-hd,drive=sysimg,bus=ahci.0 \
 		-debugcon stdio \
 		-m 512M \
-		-smp 4
+		-smp 1
 
 run-qemu: bootimg
 	$(QEMU_CMD)

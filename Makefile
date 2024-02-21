@@ -4,9 +4,9 @@ M ?= DEBUG
 QEMU_BIN   := qemu-system-x86_64
 OVMF_CODE  := /usr/share/edk2-ovmf/x64/OVMF_CODE.fd
 OVMF_VARS  := /usr/share/edk2-ovmf/x64/OVMF_VARS.fd
+
 # Toolchain to build targets for the build machine
-BUILD_CC := gcc
-BUILD_CARGO := cargo +stable
+BUILD_CARGO := cargo
 
 CLANG_FORMAT := clang-format
 LSB_RELEASE := lsb_release

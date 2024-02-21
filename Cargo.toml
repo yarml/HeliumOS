@@ -6,4 +6,5 @@ edition = "2021"
 
 [dependencies]
 rlibc = "1.0"
+spin = "0.9.8"
 

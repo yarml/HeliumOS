@@ -11,7 +11,6 @@ clean:
 clean-cache:
 	$(RM) $(CACHE_DIR)
 
-# Will remove EVERYTHING inluding gcc and binutils builds
-clean-all: clean gcc-rm binutils-rm mkbootimg-rm bootboot-rm clean-cache
+clean-all: clean binutils-rm mkbootimg-rm bootboot-rm clean-cache
 
 export CC = $(BUILD_CC)

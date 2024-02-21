@@ -1,8 +1,5 @@
 {
-  "files.associations": {
-    "*.asm": "nasm",
-    "*.h": "c",
-    "*.inc": "c"
-  },
-  "rust-analyzer.linkedProjects": ["tools/upconfig/Cargo.toml"]
+  "rust-analyzer.check.command": "xcheck",
+  "rust-analyzer.cargo.target": "x86_64-unknown-none",
+  "rust-analyzer.check.allTargets": false
 }

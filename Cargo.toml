@@ -5,7 +5,14 @@ authors = ["Youssef Harmal"]
 edition = "2021"
 
 [dependencies]
+linked_list_allocator = "0.10.5"
 modular-bitfield = "0.11.2"
-rlibc = "1.0"
+rlibc = "1.0.0"
 spin = "0.9.8"
+x86_64 = "0.14.12"
 
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"

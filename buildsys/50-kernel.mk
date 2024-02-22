@@ -16,7 +16,7 @@ KERNEL_SRC = $(shell $(FIND) src/ -name "*.rs")
 $(KERNEL_BIN): $(BINUTILS_DEP) $(MKBOOTIMG_BIN) $(LINKER_SCRIPT) $(KERNEL_SRC)
 	$(MKDIR) -p $(@D)
 	$(MKDIR) -p $(OUT_DIR)
-	cargo xbuild --target $(TRIPLET_CFG)
+	$(BUILD_CARGO) build
 	$(HOST_OBJCOPY) --only-keep-debug $(KERNEL_OUT) $(OUT_DIR)kernel.dbg
 	$(HOST_OBJCOPY) --strip-debug $(KERNEL_OUT)
 	$(HOST_STRIP) $(STRIPFLAGS) $(KERNEL_OUT)  -o $@

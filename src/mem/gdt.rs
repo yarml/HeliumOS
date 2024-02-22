@@ -1,7 +1,8 @@
 use core::arch::asm;
+use core::mem;
 use modular_bitfield::bitfield;
 use modular_bitfield::specifiers::*;
-use core::mem;
+use spin::Mutex;
 
 #[bitfield]
 pub struct GDTEntry {
@@ -59,14 +60,24 @@ pub fn load(table: &[GDTEntry], data_sel: u16, code_sel: u16, tss_sel: u16) {
       "mov ax, cx",
       "ltr ax",
       "push rdx",
-      "lea rdx, 42f",
+      "lea rdx, 2f",
       "push rdx",
       "retfq",
-      "42:", // Far return location
+      "2:", // Far return location
       in("rdi") &reg,
       in("rax") data_sel,
       in("rdx") code_sel,
       in("rcx") tss_sel,
     }
   };
+}
+
+static BASIC_GDT: Mutex<[GDTEntry; 3]> =
+  Mutex::new([gdt_null(), gdt_null(), gdt_null()]);
+pub fn basic_init() {
+  let mut basic_gdt_guard = BASIC_GDT.lock();
+  let basic_gdt = basic_gdt_guard.as_mut();
+  basic_gdt[1] = gdt(true, false, 0);
+  basic_gdt[2] = gdt(false, true, 0);
+  load(basic_gdt, 0x10, 0x08, 0x00);
 }

@@ -1,3 +1,7 @@
+use x86_64::{align_down, align_up, PhysAddr};
+
+use crate::mem::PAGE_SIZE;
+
 pub const BOOTBOOT_MAGIC: &'static [u8; 5usize] = b"BOOT\0";
 pub const PROTOCOL_MINIMAL: u32 = 0;
 pub const PROTOCOL_STATIC: u32 = 1;
@@ -47,21 +51,21 @@ pub struct BOOTBOOT {
   pub fb_width: u32,
   pub fb_height: u32,
   pub fb_scanline: u32,
-  pub arch: arch_union,
+  pub arch: ArchInfo,
   pub mmap: MMapEnt,
 }
 
 #[repr(C)]
 #[derive(Copy, Clone)]
-pub union arch_union {
-  pub x86_64: arch_x86,
-  pub aarch64: arch_aarch64,
+pub union ArchInfo {
+  pub x86_64: Archx86,
+  pub aarch64: ArchArm64,
   _bindgen_union_align: [u64; 8usize],
 }
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct arch_x86 {
+pub struct Archx86 {
   pub acpi_ptr: u64,
   pub smbi_ptr: u64,
   pub efi_ptr: u64,
@@ -74,7 +78,7 @@ pub struct arch_x86 {
 
 #[repr(C)]
 #[derive(Debug, Copy, Clone)]
-pub struct arch_aarch64 {
+pub struct ArchArm64 {
   pub acpi_ptr: u64,
   pub mmio_ptr: u64,
   pub efi_ptr: u64,
@@ -88,7 +92,7 @@ pub struct arch_aarch64 {
 #[doc = " Display text on screen *"]
 #[repr(C, packed)]
 #[derive(Debug, Copy, Clone)]
-pub struct psf2_t {
+pub struct PSF2 {
   pub magic: u32,
   pub version: u32,
   pub headersize: u32,
@@ -101,5 +105,35 @@ pub struct psf2_t {
 }
 
 pub fn bootboot() -> &'static BOOTBOOT {
-  unsafe { &&(*(BOOTBOOT_INFO as *const BOOTBOOT)) }
+  unsafe { (BOOTBOOT_INFO as *const BOOTBOOT).as_ref().unwrap() }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum MMapType {
+  Used,
+  Free,
+  Acpi,
+  MMIO,
+}
+
+impl MMapEnt {
+  pub fn get_type(&self) -> MMapType {
+    match self.size & 0xF {
+      0 => MMapType::Used,
+      1 => MMapType::Free,
+      2 => MMapType::Acpi,
+      3 => MMapType::MMIO,
+      other => panic!("Unknown memory map type {other}"),
+    }
+  }
+
+  pub fn phyadr(&self) -> PhysAddr {
+    PhysAddr::new(align_up(self.ptr, PAGE_SIZE as u64))
+  }
+  pub fn size(&self) -> usize {
+    align_down(self.raw_size() as u64, PAGE_SIZE as u64) as usize
+  }
+  pub fn raw_size(&self) -> usize {
+    self.size as usize & 0xFFFFFFFFFFFFFFF0
+  }
 }

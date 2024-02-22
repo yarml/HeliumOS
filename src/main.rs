@@ -1,12 +1,14 @@
 #![no_std]
 #![no_main]
+#![feature(allocator_api)]
+#![feature(alloc_layout_extra)]
 
-#[allow(dead_code)]
-#[allow(non_snake_case)]
-#[allow(non_camel_case_types)]
+extern crate alloc;
+extern crate core;
 extern crate rlibc;
 extern crate spin;
 
+#[allow(dead_code)]
 mod bootboot;
 mod debug;
 mod interrupts;
@@ -37,6 +39,7 @@ fn _start() -> ! {
 }
 
 #[panic_handler]
-fn panic(_info: &PanicInfo) -> ! {
+fn panic(info: &PanicInfo) -> ! {
+  println!("{}", info);
   loop {}
 }

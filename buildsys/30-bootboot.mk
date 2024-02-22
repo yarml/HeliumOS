@@ -22,7 +22,7 @@ $(BOOTBOOT_SRC_DIR):
 	$(MV) $(BUILD_DIR)bootboot-master-dist/dist/bootboot.h $(BOOTBOOT_DIST_DIR)
 
 $(BOOTBOOT_BIN): $(BOOTBOOT_SRC_DIR)
-	$(MAKE) -C $(BOOTBOOT_SRC_DIR)
+	CC=gcc $(MAKE) -C $(BOOTBOOT_SRC_DIR)
 	$(MKDIR) -p $(dir $(BOOTBOOT_BIN))
 	$(MV) $(BOOTBOOT_DIST_DIR)bootboot.efi $(BOOTBOOT_BIN)
 	$(TOUCH) $(BOOTBOOT_BIN)

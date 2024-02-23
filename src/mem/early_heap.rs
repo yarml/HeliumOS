@@ -4,17 +4,17 @@ use core::{
 };
 
 use linked_list_allocator::LockedHeap;
-use spin::Mutex;
+use spin::RwLock;
 
 const EARLY_HEAP_SIZE: usize = 128 * 1024;
 
-static EARLY_HEAP: Mutex<[u8; EARLY_HEAP_SIZE]> =
-  Mutex::new([0u8; EARLY_HEAP_SIZE]);
+static EARLY_HEAP: RwLock<[u8; EARLY_HEAP_SIZE]> =
+  RwLock::new([0u8; EARLY_HEAP_SIZE]);
 
 static EARLY_ALLOCATOR: LockedHeap = LockedHeap::empty();
 
 pub fn init() {
-  let mut early_heap_guard = EARLY_HEAP.lock();
+  let mut early_heap_guard = EARLY_HEAP.write();
   unsafe {
     EARLY_ALLOCATOR
       .lock()

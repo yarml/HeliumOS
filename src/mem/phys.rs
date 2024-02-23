@@ -4,13 +4,12 @@ use crate::mem::PAGE_SIZE;
 use crate::println;
 use alloc::vec::Vec;
 use core::mem;
-use spin::Mutex;
+use spin::RwLock;
 use x86_64::structures::paging::{
   FrameAllocator, FrameDeallocator, PhysFrame, Size4KiB,
 };
 use x86_64::{align_up, PhysAddr};
 
-// WARNING: Keep size of this struct a multiple of 8 bytes
 #[derive(Clone, Copy)]
 struct SegmentHeader {
   magic: u64,
@@ -137,7 +136,7 @@ pub fn init() {
     pmm_header, header_cursor, header_total_size
   );
 
-  let mut physical_allocator = PHYS_FRAME_ALLOCATOR.lock();
+  let mut physical_allocator = PHYS_FRAME_ALLOCATOR.write();
   physical_allocator.segments = segment_references;
 }
 
@@ -153,8 +152,8 @@ impl PhysicalFrameAllocator {
   }
 }
 
-static PHYS_FRAME_ALLOCATOR: Mutex<PhysicalFrameAllocator> =
-  Mutex::new(PhysicalFrameAllocator::new());
+static PHYS_FRAME_ALLOCATOR: RwLock<PhysicalFrameAllocator> =
+  RwLock::new(PhysicalFrameAllocator::new());
 
 unsafe impl FrameAllocator<Size4KiB> for PhysicalFrameAllocator {
   fn allocate_frame(&mut self) -> Option<PhysFrame<Size4KiB>> {
@@ -186,7 +185,11 @@ unsafe impl FrameAllocator<Size4KiB> for PhysicalFrameAllocator {
 impl FrameDeallocator<Size4KiB> for PhysicalFrameAllocator {
   unsafe fn deallocate_frame(&mut self, frame: PhysFrame<Size4KiB>) {
     // TODO: Stop being lazy and do binary search
-    let segment = match self.segments.iter().find(|seg| seg.in_range(frame.start_address())) {
+    let segment = match self
+      .segments
+      .iter()
+      .find(|seg| seg.in_range(frame.start_address()))
+    {
       None => return, // What are we deallocating???
       Some(segment) => segment,
     };

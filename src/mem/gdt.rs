@@ -1,83 +1,43 @@
-use core::arch::asm;
-use core::mem;
-use modular_bitfield::bitfield;
-use modular_bitfield::specifiers::*;
-use spin::Mutex;
+use lazy_static::lazy_static;
+use x86_64::{
+  registers::segmentation::{Segment, CS, DS, ES, FS, GS, SS},
+  structures::gdt::{Descriptor, GlobalDescriptorTable, SegmentSelector},
+};
 
-#[bitfield]
-pub struct GDTEntry {
-  limit0: B16,
-  base0: B24,
-  accessed: bool,
-  write: bool,
-  direction: bool,
-  exec: bool,
-  nsys: bool, // Must be 1
-  dpl: B2,
-  present: bool,
-  limit1: B4,
-  #[skip]
-  __: B1,
-  lmode: bool,
-  size: bool,
-  granularity: B1,
-  base1: B8,
+struct BasicGlobalDescriptorTable {
+  gdt: GlobalDescriptorTable,
+  code_segment: SegmentSelector,
+  data_segment: SegmentSelector,
 }
 
-#[repr(C, packed)]
-struct GDTReg {
-  limit: u16,
-  base: *const GDTEntry,
+impl BasicGlobalDescriptorTable {
+  fn load(&'static self) {
+    self.gdt.load();
+    unsafe {
+      CS::set_reg(self.code_segment);
+      SS::set_reg(self.data_segment);
+      DS::set_reg(self.data_segment);
+      ES::set_reg(self.data_segment);
+      FS::set_reg(self.data_segment);
+      GS::set_reg(self.data_segment);
+    }
+  }
 }
 
-pub fn gdt(exec: bool, write: bool, dpl: u8) -> GDTEntry {
-  GDTEntry::new()
-    .with_nsys(true)
-    .with_lmode(exec)
-    .with_exec(exec)
-    .with_write(write)
-    .with_dpl(dpl)
-    .with_present(true)
-}
-pub const fn gdt_null() -> GDTEntry {
-  GDTEntry::new()
-}
+lazy_static! {
+  static ref BASIC_GDT: BasicGlobalDescriptorTable = {
+    let mut gdt = GlobalDescriptorTable::new();
+    let code_segment = gdt.add_entry(Descriptor::kernel_code_segment());
+    let data_segment = gdt.add_entry(Descriptor::kernel_data_segment());
 
-pub fn load(table: &[GDTEntry], data_sel: u16, code_sel: u16, tss_sel: u16) {
-  let reg = GDTReg {
-    limit: mem::size_of_val(table) as u16 - 1,
-    base: table.as_ptr(),
-  };
-
-  unsafe {
-    asm! {
-      "lgdt [rdi]",
-      "mov ss, ax",
-      "mov ds, ax",
-      "mov es, ax",
-      "mov fs, ax",
-      "mov gs, ax",
-      "mov ax, cx",
-      "ltr ax",
-      "push rdx",
-      "lea rdx, 2f",
-      "push rdx",
-      "retfq",
-      "2:", // Far return location
-      in("rdi") &reg,
-      in("rax") data_sel,
-      in("rdx") code_sel,
-      in("rcx") tss_sel,
+    BasicGlobalDescriptorTable {
+      gdt,
+      code_segment,
+      data_segment,
     }
   };
 }
 
-static BASIC_GDT: Mutex<[GDTEntry; 3]> =
-  Mutex::new([gdt_null(), gdt_null(), gdt_null()]);
 pub fn basic_init() {
-  let mut basic_gdt_guard = BASIC_GDT.lock();
-  let basic_gdt = basic_gdt_guard.as_mut();
-  basic_gdt[1] = gdt(true, false, 0);
-  basic_gdt[2] = gdt(false, true, 0);
-  load(basic_gdt, 0x10, 0x08, 0x00);
+  BASIC_GDT.load();
 }

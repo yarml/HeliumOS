@@ -116,6 +116,7 @@ In general, the memory layout HeliumOS uses is as follows:
 | 15E1023P896T | 16E          | 128T         | Kernel space memory |
 
 ### Kernel space layout
+The old table (Before Rust rewrite)
 | Start*   | End*     | Size       | Description              |
 | -------- | -------- | ---------- | ------------------------ |
 | 0        | 8M       | 8M         | Vcache memory            |
@@ -131,6 +132,12 @@ In general, the memory layout HeliumOS uses is as follows:
 | 4T       | 5T       | 1T         | Stack table              |
 | 5T       | 112T     | 107T       | Undefined                |
 | 112T     | 128T     | 16T        | Bootboot reserved        |
+
+Current table (After Rust rewrite)
+| Start* | End* | Size | Description            |
+| ------ | ---- | ---- | ---------------------- |
+| 0      | 256G | 256G | Physical memory header |
+| 112T   | 128T | 16T  | Bootboot reserved      |
 
 *Addresses are offseted, the real addresses can be calculated by adding
 15E1023P896T to the addresses in the table*

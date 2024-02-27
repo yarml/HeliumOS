@@ -1,6 +1,8 @@
 use super::KVMSPACE;
-use crate::mem::{phys::PHYS_FRAME_ALLOCATOR, PAGE_SIZE};
-use alloc::slice;
+use crate::mem::{
+  early_heap::EarlyAllocator, phys::PHYS_FRAME_ALLOCATOR, PAGE_SIZE,
+};
+use alloc::{boxed::Box, slice};
 use core::mem;
 use spin::RwLock;
 use x86_64::{
@@ -60,11 +62,7 @@ pub fn init() {
     unsafe { (p1_frame.start_address().as_u64() as *mut PageTable).as_mut() }
       .unwrap();
 
-  let vcache_state = VCacheState {
-    p2_freecount: [512; P2PAGE_COUNT],
-    p2_lazycount: [0; P2PAGE_COUNT],
-    p1_age: [0; P1PAGE_COUNT],
-  };
+  let vcache_state = VCacheState::new();
   let mut vcache = VCache {
     p1: slice::from_mut(p1),
     state: vcache_state,
@@ -125,7 +123,7 @@ static VCACHE: RwLock<Option<VCache>> = RwLock::new(None);
 
 struct VCache<'a> {
   p1: &'a mut [PageTable],
-  state: VCacheState,
+  state: Box<VCacheState, EarlyAllocator>, // Using a box, otherwise this beast eats too much stack
 }
 struct VCacheState {
   p2_freecount: [u16; P2PAGE_COUNT],
@@ -133,8 +131,24 @@ struct VCacheState {
   p1_age: [u16; P1PAGE_COUNT],
 }
 
+impl VCacheState {
+  fn new() -> Box<Self, EarlyAllocator> {
+    Box::new_in(
+      Self {
+        p2_freecount: [512; P2PAGE_COUNT],
+        p2_lazycount: [0; P2PAGE_COUNT],
+        p1_age: [0; P1PAGE_COUNT],
+      },
+      EarlyAllocator,
+    )
+  }
+}
+
 impl<'a> VCache<'a> {
-  fn renew(state: VCacheState, p1: &'a mut [PageTable]) -> Self {
+  fn renew(
+    state: Box<VCacheState, EarlyAllocator>,
+    p1: &'a mut [PageTable],
+  ) -> Self {
     Self { p1, state }
   }
   fn map(&mut self, phy_addr: PhysAddr) -> Result<Page, ()> {

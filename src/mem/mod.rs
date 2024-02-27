@@ -1,9 +1,8 @@
-
 mod early_heap;
 #[allow(dead_code)]
 mod gdt;
 mod phys;
-mod virt;
+pub mod virt;
 
 pub const PAGE_SIZE: usize = 0x1000;
 

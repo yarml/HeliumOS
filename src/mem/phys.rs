@@ -1,4 +1,5 @@
 use super::early_heap::EarlyAllocator;
+use super::virt::mapper::MAPPER;
 use crate::bootboot::{bootboot, MMapEnt, MMapType, BOOTBOOT};
 use crate::mem::PAGE_SIZE;
 use crate::println;
@@ -6,9 +7,13 @@ use alloc::vec::Vec;
 use core::mem;
 use spin::RwLock;
 use x86_64::structures::paging::{
-  FrameAllocator, FrameDeallocator, PhysFrame, Size4KiB,
+  FrameAllocator, FrameDeallocator, Page, PageTableFlags, PhysFrame, Size4KiB,
 };
-use x86_64::{align_up, PhysAddr};
+use x86_64::{align_up, PhysAddr, VirtAddr};
+
+const PHYSHEADER_START: Page<Size4KiB> = unsafe {
+  Page::from_start_address_unchecked(VirtAddr::new_truncate(0xFFFF804000000000))
+};
 
 #[derive(Clone, Copy)]
 struct SegmentHeader {
@@ -48,7 +53,7 @@ impl SegmentHeader {
   }
 }
 
-pub fn init() {
+pub(in crate::mem) fn init() {
   // Just in case I forget
   assert_eq!(core::mem::size_of::<SegmentHeader>() % 8, 0);
 
@@ -138,16 +143,61 @@ pub fn init() {
 
   let mut physical_allocator = PHYS_FRAME_ALLOCATOR.write();
   physical_allocator.segments = segment_references;
+  physical_allocator.size = header_total_size;
+  physical_allocator.phyframe =
+    PhysFrame::from_start_address(pmm_header).unwrap();
+}
+
+pub(super) fn map_header() {
+  let mapper = MAPPER.write();
+
+  // Kernel mapper uses the physical frame allocator
+  // Limit the scope of the lock to prevent a dead lock
+  let (pmm_frame, pmm_size) = {
+    let physallocator = PHYS_FRAME_ALLOCATOR.read();
+    (physallocator.phyframe, physallocator.size)
+  };
+  mapper
+    .map(
+      PHYSHEADER_START,
+      pmm_frame,
+      pmm_size,
+      PageTableFlags::WRITABLE,
+    )
+    .unwrap();
+  let segment_offset = (PHYSHEADER_START.start_address().as_u64()
+    - pmm_frame.start_address().as_u64()) as usize;
+
+  let mut physallocator = PHYS_FRAME_ALLOCATOR.write();
+
+  let offset_segment_iter = physallocator.segments.iter().map(|phys_segment| {
+    let phys_segment = *phys_segment;
+    let phys_segment_ptr = phys_segment as *const SegmentHeader as usize;
+    let offset_segment_ptr = phys_segment_ptr + segment_offset;
+    unsafe { (offset_segment_ptr as *const SegmentHeader).as_ref() }.unwrap()
+  });
+  let mut offset_segments_refs = Vec::new_in(EarlyAllocator);
+  for offset_seg in offset_segment_iter {
+    offset_segments_refs.push(offset_seg);
+  }
+
+  physallocator.segments = offset_segments_refs;
 }
 
 pub struct PhysicalFrameAllocator {
   segments: Vec<&'static SegmentHeader, EarlyAllocator>,
+  size: usize,
+  phyframe: PhysFrame<Size4KiB>,
 }
 
 impl PhysicalFrameAllocator {
   const fn new() -> Self {
     Self {
       segments: Vec::new_in(EarlyAllocator),
+      size: 0,
+      phyframe: unsafe {
+        PhysFrame::from_start_address_unchecked(PhysAddr::zero())
+      },
     }
   }
 }

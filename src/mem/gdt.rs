@@ -38,6 +38,6 @@ lazy_static! {
   };
 }
 
-pub fn basic_init() {
+pub(in crate::mem) fn basic_init() {
   BASIC_GDT.load();
 }

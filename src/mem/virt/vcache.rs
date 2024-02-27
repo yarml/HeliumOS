@@ -1,32 +1,33 @@
-use super::KVMSPACE;
-use crate::mem::{
-  early_heap::EarlyAllocator, phys::PHYS_FRAME_ALLOCATOR, PAGE_SIZE,
-};
+use super::{alloc_substruct, KVMSPACE};
+use crate::mem::{early_heap::EarlyAllocator, PAGE_SIZE};
 use alloc::{boxed::Box, slice};
 use core::mem;
-use spin::RwLock;
+use spin::{rwlock::RwLock, Once};
 use x86_64::{
   registers::control::Cr3,
   structures::paging::{
-    mapper::MapperFlush, page_table::PageTableEntry, FrameAllocator, Page,
-    PageTable, PageTableFlags, PhysFrame, Size4KiB,
+    mapper::MapperFlush, page_table::PageTableEntry, Page, PageTable,
+    PageTableFlags, PhysFrame, Size4KiB,
   },
-  PhysAddr, VirtAddr,
+  VirtAddr,
 };
 
-const START_ADDR: VirtAddr = KVMSPACE;
+pub const START_ADDR: VirtAddr = KVMSPACE;
 const P1PAGE_COUNT: usize = 2048;
 const P2PAGE_COUNT: usize = P1PAGE_COUNT / 512;
-const SIZE: usize = P1PAGE_COUNT * PAGE_SIZE;
+pub const SIZE: usize = P1PAGE_COUNT * PAGE_SIZE;
 
-pub fn init() {
+pub(in crate::mem::virt) fn init() {
   let (p4_frame, _) = Cr3::read();
   let p4 =
     unsafe { (p4_frame.start_address().as_u64() as *mut PageTable).as_mut() }
       .unwrap();
   let p4_entry = &mut p4[START_ADDR.p4_index()];
   if p4_entry.is_unused() {
-    alloc_substruct(p4_entry);
+    alloc_substruct(
+      p4_entry,
+      PageTableFlags::WRITABLE | PageTableFlags::PRESENT,
+    );
   }
 
   let p3 = unsafe {
@@ -38,7 +39,10 @@ pub fn init() {
   let p3_entry = &mut p3[START_ADDR.p3_index()];
 
   if p3_entry.is_unused() {
-    alloc_substruct(p3_entry);
+    alloc_substruct(
+      p3_entry,
+      PageTableFlags::WRITABLE | PageTableFlags::PRESENT,
+    );
   }
 
   let p2_frame = p3_entry.frame().unwrap();
@@ -53,7 +57,10 @@ pub fn init() {
         panic!("VCache target P2 page entries found in invalid state");
       }
 
-      alloc_substruct(p2_entry);
+      alloc_substruct(
+        p2_entry,
+        PageTableFlags::WRITABLE | PageTableFlags::PRESENT,
+      );
     }
   }
 
@@ -75,7 +82,10 @@ pub fn init() {
   // meaning, if the implementation changes, this might break!
   for i in 0..P2PAGE_COUNT {
     let p1_virtaddr = match vcache.map(
-      p1_frame.start_address() + i * 512 * mem::size_of::<PageTableEntry>(),
+      PhysFrame::from_start_address(
+        p1_frame.start_address() + i * 512 * mem::size_of::<PageTableEntry>(),
+      )
+      .unwrap(),
     ) {
       Err(()) => panic!("Could not map VCache P1 table"),
       Ok(page) => page.start_address(),
@@ -97,31 +107,12 @@ pub fn init() {
   let vcache = VCache::renew(vcache.state, p1);
 
   // Now we move this to be the global vcache
-  let mut vcache_glob = VCACHE.write();
-  *vcache_glob = Some(vcache);
+  VCACHE.call_once(|| RwLock::new(vcache));
 }
 
-fn alloc_substruct(entry: &mut PageTableEntry) {
-  let mut allocator = PHYS_FRAME_ALLOCATOR.write();
-  let frame = match allocator.allocate_frame() {
-    None => panic!("Could not allocate memory while initializing VCache"),
-    Some(frame) => frame,
-  };
+pub static VCACHE: Once<RwLock<VCache>> = Once::new();
 
-  // Clear newly allocated frame
-  {
-    let frame_ptr = frame.start_address().as_u64() as *mut u8;
-    let frame_ref = unsafe { slice::from_raw_parts_mut(frame_ptr, PAGE_SIZE) };
-    frame_ref.fill(0);
-  }
-
-  *entry = PageTableEntry::new();
-  entry.set_frame(frame, PageTableFlags::WRITABLE | PageTableFlags::PRESENT);
-}
-
-static VCACHE: RwLock<Option<VCache>> = RwLock::new(None);
-
-struct VCache<'a> {
+pub struct VCache<'a> {
   p1: &'a mut [PageTable],
   state: Box<VCacheState, EarlyAllocator>, // Using a box, otherwise this beast eats too much stack
 }
@@ -151,7 +142,7 @@ impl<'a> VCache<'a> {
   ) -> Self {
     Self { p1, state }
   }
-  fn map(&mut self, phy_addr: PhysAddr) -> Result<Page, ()> {
+  pub fn map(&mut self, physframe: PhysFrame) -> Result<Page, ()> {
     // First pass, look for lazy pages already pointing at this physical address
     for p2i in 0..P2PAGE_COUNT {
       let lazy_count = &mut self.state.p2_lazycount[p2i];
@@ -167,10 +158,7 @@ impl<'a> VCache<'a> {
           Ok(frame) => frame,
           Err(_) => continue,
         };
-        if !p1_entry.is_unused()
-          && *age != 0
-          && frame.start_address() == phy_addr
-        {
+        if !p1_entry.is_unused() && *age != 0 && frame == physframe {
           *age = 0;
           *lazy_count -= 1;
           let page = Page::<Size4KiB>::from_start_address(
@@ -262,7 +250,7 @@ impl<'a> VCache<'a> {
     let target_p1e = &mut self.p1[p2index][p1index];
     *target_p1e = PageTableEntry::new();
     target_p1e.set_frame(
-      PhysFrame::from_start_address(phy_addr).unwrap(),
+      physframe,
       PageTableFlags::WRITABLE
         | PageTableFlags::GLOBAL
         | PageTableFlags::PRESENT,
@@ -274,10 +262,33 @@ impl<'a> VCache<'a> {
 
     Ok(page)
   }
-  fn remap(
+  pub fn map_many<const N: usize>(
+    &mut self,
+    phy_addrs: &[PhysFrame; N],
+  ) -> Result<[Page; N], ()> {
+    let mut result = [None; N];
+    for (index, phyaddr) in phy_addrs.iter().enumerate() {
+      let page = match self.map(*phyaddr) {
+        Ok(page) => page,
+        Err(_) => {
+          // Unmap previously mapped pages and return error
+          for r in result {
+            if let Some(page) = r {
+              self.unmap(page);
+            }
+          }
+          return Err(());
+        }
+      };
+      result[index] = Some(page);
+    }
+
+    Ok(result.map(|maybe| maybe.unwrap()))
+  }
+  pub fn remap(
     &mut self,
     page: Page<Size4KiB>,
-    phys_addr: PhysAddr,
+    physframe: PhysFrame,
   ) -> Result<(), ()> {
     let start_addr = page.start_address();
     if start_addr < START_ADDR || start_addr >= START_ADDR + SIZE {
@@ -288,11 +299,9 @@ impl<'a> VCache<'a> {
 
     let p1_entry = &mut self.p1[target_p2i][start_addr.p1_index()];
 
-    // Already mapped, what does afandi want from calling this function?
+    // Already mapped, afandi 3awez y3mel iih from calling this function?
     if !p1_entry.is_unused()
-      && p1_entry
-        .frame()
-        .is_ok_and(|frame| frame.start_address() == phys_addr)
+      && p1_entry.frame().is_ok_and(|frame| frame == physframe)
     {
       return Ok(());
     }
@@ -300,7 +309,7 @@ impl<'a> VCache<'a> {
     *p1_entry = PageTableEntry::new();
 
     p1_entry.set_frame(
-      PhysFrame::from_start_address(phys_addr).unwrap(),
+      physframe,
       PageTableFlags::WRITABLE
         | PageTableFlags::GLOBAL
         | PageTableFlags::PRESENT,
@@ -309,12 +318,17 @@ impl<'a> VCache<'a> {
 
     Ok(())
   }
-  fn unmap(&mut self, page: Page<Size4KiB>) {
+  pub fn unmap(&mut self, page: Page<Size4KiB>) {
     let target_p2i = Self::p2_index(page);
     let target_p1i = page.p1_index();
 
     self.state.p1_age[target_p2i][usize::from(target_p1i)] = 1;
     self.state.p2_lazycount[target_p2i] += 1;
+  }
+  pub fn unmap_many(&mut self, pages: &[Page<Size4KiB>]) {
+    for page in pages {
+      self.unmap(*page);
+    }
   }
 
   fn p2_index(page: Page<Size4KiB>) -> usize {

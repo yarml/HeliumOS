@@ -13,7 +13,7 @@ static EARLY_HEAP: RwLock<[u8; EARLY_HEAP_SIZE]> =
 
 static EARLY_ALLOCATOR: LockedHeap = LockedHeap::empty();
 
-pub fn init() {
+pub(in crate::mem) fn init() {
   let mut early_heap_guard = EARLY_HEAP.write();
   unsafe {
     EARLY_ALLOCATOR

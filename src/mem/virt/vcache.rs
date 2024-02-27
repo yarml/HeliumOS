@@ -17,7 +17,7 @@ use x86_64::{
 const START_ADDR: VirtAddr = KVMSPACE;
 const P1PAGE_COUNT: usize = 2048;
 const P2PAGE_COUNT: usize = P1PAGE_COUNT / 512;
-// const SIZE: usize = P1PAGE_COUNT * PAGE_SIZE;
+const SIZE: usize = P1PAGE_COUNT * PAGE_SIZE;
 
 pub fn init() {
   let (p4_frame, _) = Cr3::read();
@@ -128,7 +128,7 @@ struct VCache<'a> {
 struct VCacheState {
   p2_freecount: [u16; P2PAGE_COUNT],
   p2_lazycount: [u16; P2PAGE_COUNT],
-  p1_age: [u16; P1PAGE_COUNT],
+  p1_age: [[u16; 512]; P2PAGE_COUNT],
 }
 
 impl VCacheState {
@@ -137,7 +137,7 @@ impl VCacheState {
       Self {
         p2_freecount: [512; P2PAGE_COUNT],
         p2_lazycount: [0; P2PAGE_COUNT],
-        p1_age: [0; P1PAGE_COUNT],
+        p1_age: [[0; 512]; P2PAGE_COUNT],
       },
       EarlyAllocator,
     )
@@ -162,7 +162,7 @@ impl<'a> VCache<'a> {
 
       for p1i in 0..512 {
         let p1_entry = &self.p1[p2i][p1i];
-        let age = &mut self.state.p1_age[p2i * 512 + p1i];
+        let age = &mut self.state.p1_age[p2i][p1i];
         let frame = match p1_entry.frame() {
           Ok(frame) => frame,
           Err(_) => continue,
@@ -217,7 +217,7 @@ impl<'a> VCache<'a> {
               break;
             }
 
-            let age = &mut self.state.p1_age[p2i * 512 + p1i];
+            let age = &mut self.state.p1_age[p2i][p1i];
             if *age != 0 {
               lazy_found_count += 1;
               *age = 0;
@@ -253,7 +253,7 @@ impl<'a> VCache<'a> {
       }
 
       // Mark the page as not lazy
-      self.state.p1_age[p2index * 512 + p1index.unwrap()] = 0;
+      self.state.p1_age[p2index][p1index.unwrap()] = 0;
     }
 
     let p1index = p1index.unwrap();
@@ -273,5 +273,52 @@ impl<'a> VCache<'a> {
     MapperFlush::new(page).flush();
 
     Ok(page)
+  }
+  fn remap(
+    &mut self,
+    page: Page<Size4KiB>,
+    phys_addr: PhysAddr,
+  ) -> Result<(), ()> {
+    let start_addr = page.start_address();
+    if start_addr < START_ADDR || start_addr >= START_ADDR + SIZE {
+      return Err(());
+    }
+
+    let target_p2i = Self::p2_index(page);
+
+    let p1_entry = &mut self.p1[target_p2i][start_addr.p1_index()];
+
+    // Already mapped, what does afandi want from calling this function?
+    if !p1_entry.is_unused()
+      && p1_entry
+        .frame()
+        .is_ok_and(|frame| frame.start_address() == phys_addr)
+    {
+      return Ok(());
+    }
+
+    *p1_entry = PageTableEntry::new();
+
+    p1_entry.set_frame(
+      PhysFrame::from_start_address(phys_addr).unwrap(),
+      PageTableFlags::WRITABLE
+        | PageTableFlags::GLOBAL
+        | PageTableFlags::PRESENT,
+    );
+    MapperFlush::new(page).flush();
+
+    Ok(())
+  }
+  fn unmap(&mut self, page: Page<Size4KiB>) {
+    let target_p2i = Self::p2_index(page);
+    let target_p1i = page.p1_index();
+
+    self.state.p1_age[target_p2i][usize::from(target_p1i)] = 1;
+    self.state.p2_lazycount[target_p2i] += 1;
+  }
+
+  fn p2_index(page: Page<Size4KiB>) -> usize {
+    let start_p2i = START_ADDR.p2_index();
+    usize::from(page.p2_index()) - usize::from(start_p2i)
   }
 }

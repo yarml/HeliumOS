@@ -3,7 +3,7 @@
 
 KERNEL_BIN := $(INITRD_SYSROOT)sys/helium
 KERNEL_SYM := $(INITRD_SYSROOT)sys/ksym
-KERNEL_OUT := $(ROOT_DIR)target/helium/debug/helium
+KERNEL_OUT := $(ROOT_DIR)target/helium/release/helium
 STRIPFLAGS :=  -s -K mmio -K fb -K bootboot -K environment -K initstack
 
 CLEAN += $(INITRD_SYSROOT)sys/
@@ -16,7 +16,7 @@ KERNEL_SRC = $(shell $(FIND) src/ -name "*.rs")
 $(KERNEL_BIN): $(BINUTILS_DEP) $(MKBOOTIMG_BIN) $(LINKER_SCRIPT) $(KERNEL_SRC)
 	$(MKDIR) -p $(@D)
 	$(MKDIR) -p $(OUT_DIR)
-	$(BUILD_CARGO) build
+	$(BUILD_CARGO) build --release
 	$(HOST_OBJCOPY) --only-keep-debug $(KERNEL_OUT) $(OUT_DIR)kernel.dbg
 	$(HOST_OBJCOPY) --strip-debug $(KERNEL_OUT)
 	$(HOST_STRIP) $(STRIPFLAGS) $(KERNEL_OUT)  -o $@

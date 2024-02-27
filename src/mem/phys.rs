@@ -140,7 +140,7 @@ pub fn init() {
   physical_allocator.segments = segment_references;
 }
 
-struct PhysicalFrameAllocator {
+pub struct PhysicalFrameAllocator {
   segments: Vec<&'static SegmentHeader, EarlyAllocator>,
 }
 
@@ -152,7 +152,7 @@ impl PhysicalFrameAllocator {
   }
 }
 
-static PHYS_FRAME_ALLOCATOR: RwLock<PhysicalFrameAllocator> =
+pub static PHYS_FRAME_ALLOCATOR: RwLock<PhysicalFrameAllocator> =
   RwLock::new(PhysicalFrameAllocator::new());
 
 unsafe impl FrameAllocator<Size4KiB> for PhysicalFrameAllocator {

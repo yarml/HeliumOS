@@ -1,7 +1,7 @@
 
 mod early_heap;
 #[allow(dead_code)]
-pub mod gdt;
+mod gdt;
 mod phys;
 mod virt;
 

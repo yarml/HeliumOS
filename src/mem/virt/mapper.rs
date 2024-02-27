@@ -1,4 +1,4 @@
-use core::borrow::BorrowMut;
+use core::{borrow::BorrowMut, mem, slice};
 
 use crate::mem::{
   virt::{
@@ -36,8 +36,22 @@ pub(in crate::mem::virt) fn init() {
   });
 }
 
-static P4TABLE: Once<RwLock<&mut PageTable>> = Once::new();
+pub(in crate::mem::virt) fn remove_identity() {
+  let p4table = P4TABLE.get().unwrap().write();
+  let p4table_raw = unsafe {
+    slice::from_raw_parts_mut(
+      *p4table as *const PageTable as *mut u8,
+      PAGE_SIZE,
+    )
+  };
+  p4table_raw
+    .split_at_mut(256 * mem::size_of::<PageTableEntry>())
+    .0
+    .fill(0);
+  MapperFlushAll::new().flush_all();
+}
 
+static P4TABLE: Once<RwLock<&mut PageTable>> = Once::new();
 pub static MAPPER: RwLock<KernelMapper> = RwLock::new(KernelMapper);
 
 const RLCR3_THRESHOLD: usize = 32;
@@ -111,16 +125,13 @@ impl KernelMapper {
 
       // Poor borrow checker has no clue of the tomfoolery we do here
       // Hopefully it doesn't get optimized away...
-      let p3 =
-        Self::ensure_allocated(p4_entry, page, vc, tmp_pages[0]);
+      let p3 = Self::ensure_allocated(p4_entry, page, vc, tmp_pages[0]);
       let p3_entry = &mut p3[page.p3_index()];
 
-      let p2 =
-        Self::ensure_allocated(p3_entry, page, vc, tmp_pages[1]);
+      let p2 = Self::ensure_allocated(p3_entry, page, vc, tmp_pages[1]);
       let p2_entry = &mut p2[page.p2_index()];
 
-      let p1 =
-        Self::ensure_allocated(p2_entry, page, vc, tmp_pages[0]);
+      let p1 = Self::ensure_allocated(p2_entry, page, vc, tmp_pages[0]);
 
       let p1_entry = &mut p1[page.p1_index()];
 

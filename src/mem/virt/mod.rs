@@ -21,6 +21,7 @@ pub(in crate::mem) fn init() {
   vcache::init();
   mapper::init();
   phys::map_header();
+  mapper::remove_identity();
 }
 
 fn alloc_substruct(

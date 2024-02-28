@@ -14,11 +14,11 @@ static EARLY_HEAP: RwLock<[u8; EARLY_HEAP_SIZE]> =
 static EARLY_ALLOCATOR: LockedHeap = LockedHeap::empty();
 
 pub(in crate::mem) fn init() {
-  let mut early_heap_guard = EARLY_HEAP.write();
+  let mut early_heap = EARLY_HEAP.write();
   unsafe {
     EARLY_ALLOCATOR
       .lock()
-      .init(early_heap_guard.as_mut_ptr(), early_heap_guard.len())
+      .init(early_heap.as_mut_ptr(), early_heap.len())
   }
 }
 
@@ -45,19 +45,3 @@ unsafe impl Allocator for EarlyAllocator {
     }
   }
 }
-
-// Temporary DummyAllocator for a global_allocator, this will be replaced later in development
-struct DummyAllocator;
-
-unsafe impl GlobalAlloc for DummyAllocator {
-  unsafe fn alloc(&self, _layout: Layout) -> *mut u8 {
-    panic!("Using dummy allocator")
-  }
-
-  unsafe fn dealloc(&self, _ptr: *mut u8, _layout: Layout) {
-    panic!("Using dummt allocator")
-  }
-}
-
-#[global_allocator]
-static DUMMY_ALLOCATOR: DummyAllocator = DummyAllocator;

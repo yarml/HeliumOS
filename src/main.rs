@@ -2,6 +2,7 @@
 #![no_main]
 #![feature(allocator_api)]
 #![feature(alloc_layout_extra)]
+#![feature(abi_x86_interrupt)]
 
 extern crate alloc;
 extern crate core;
@@ -15,13 +16,14 @@ mod interrupts;
 mod io;
 mod mem;
 mod proc;
+mod sys;
 
-use core::panic::PanicInfo;
-use interrupts::pic;
+use crate::interrupts::pic;
+use x86_64::instructions::interrupts as x86interrupts;
 
 #[no_mangle]
 fn _start() -> ! {
-  interrupts::disable();
+  x86interrupts::disable();
   {
     if !proc::is_primary() {
       loop {}
@@ -34,12 +36,9 @@ fn _start() -> ! {
   println!("Initializing memory");
   mem::init();
 
-  println!("Loop");
-  loop {}
-}
+  println!("Initializing interrupt table.\n");
+  interrupts::init();
 
-#[panic_handler]
-fn panic(info: &PanicInfo) -> ! {
-  println!("{}", info);
+  println!("Loop");
   loop {}
 }

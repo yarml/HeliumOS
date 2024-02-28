@@ -1,6 +1,7 @@
 mod early_heap;
 #[allow(dead_code)]
 mod gdt;
+mod heap;
 mod phys;
 pub mod virt;
 
@@ -11,4 +12,5 @@ pub fn init() {
   early_heap::init();
   phys::init();
   virt::init();
+  heap::init();
 }

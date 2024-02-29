@@ -12,13 +12,14 @@ extern crate spin;
 #[allow(dead_code)]
 mod bootboot;
 mod debug;
+mod fs;
 mod interrupts;
 mod io;
 mod mem;
 mod proc;
 mod sys;
 
-use crate::interrupts::pic;
+use crate::{fs::initrd, interrupts::pic};
 use x86_64::instructions::interrupts as x86interrupts;
 
 #[no_mangle]
@@ -38,6 +39,9 @@ fn _start() -> ! {
 
   println!("Initializing interrupt table.\n");
   interrupts::init();
+
+  println!("Initializing INITRD.");
+  initrd::init();
 
   println!("Loop");
   loop {}

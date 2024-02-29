@@ -1,14 +1,13 @@
 use core::slice;
 
 use x86_64::{
-  structures::paging::{
-    page_table::PageTableEntry, FrameAllocator, PageTableFlags, PhysFrame,
-  },
+  structures::paging::{page_table::PageTableEntry, PageTableFlags, PhysFrame},
   VirtAddr,
 };
 
 use super::{
-  phys::{self, PHYS_FRAME_ALLOCATOR},
+  palloc,
+  phys::{self},
   PAGE_SIZE,
 };
 
@@ -27,15 +26,15 @@ pub(in crate::mem) fn init() {
 fn alloc_substruct(
   entry: &mut PageTableEntry,
   flags: PageTableFlags,
+  clear_inplace: bool,
 ) -> PhysFrame {
-  let mut allocator = PHYS_FRAME_ALLOCATOR.write();
-  let frame = match allocator.allocate_frame() {
+  let frame = match palloc() {
     None => panic!("Could not allocate memory while initializing VCache"),
     Some(frame) => frame,
   };
 
-  // Clear newly allocated frame
-  {
+  if clear_inplace {
+    // Clear newly allocated frame
     let frame_ptr = frame.start_address().as_u64() as *mut u8;
     let frame_ref = unsafe { slice::from_raw_parts_mut(frame_ptr, PAGE_SIZE) };
     frame_ref.fill(0);

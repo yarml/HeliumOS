@@ -166,17 +166,27 @@ impl KernelMapper {
     vcache: &mut VCache,
     map_to_page: Page<Size4KiB>,
   ) -> &'static mut PageTable {
-    if entry.is_unused() {
+    let created = if entry.is_unused() {
       let mut flags = PageTableFlags::WRITABLE | PageTableFlags::PRESENT;
       if page.start_address() < KVMSPACE {
         flags |= PageTableFlags::USER_ACCESSIBLE;
       }
-      alloc_substruct(entry, flags);
-    }
+      alloc_substruct(entry, flags, false);
+      true
+    } else {
+      false
+    };
 
     let frame = entry.frame().unwrap();
 
     vcache.remap(map_to_page, frame).unwrap();
+
+    // Clear newly allocated frame
+    if created {
+      let ptr = map_to_page.start_address().as_u64() as *mut u8;
+      let page_ref = unsafe { slice::from_raw_parts_mut(ptr, PAGE_SIZE) };
+      page_ref.fill(0);
+    }
 
     unsafe {
       map_to_page

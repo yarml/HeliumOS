@@ -1,19 +1,108 @@
-use core::alloc::{GlobalAlloc, Layout};
+use core::{
+  alloc::{GlobalAlloc, Layout},
+  ops::Add,
+  ptr::null_mut,
+};
+use spin::RwLock;
+use x86_64::{
+  align_up,
+  structures::paging::{Page, PageTableFlags, Size4KiB},
+  VirtAddr,
+};
+
+use crate::mem::{palloc, vmap, PAGE_SIZE};
+
+const START: Page<Size4KiB> = unsafe {
+  Page::from_start_address_unchecked(VirtAddr::new_truncate(0xFFFF808000000000))
+};
+const SIZE: usize = 2 * 1024 * 1024 * 1024; // Maximum size of 2G
+const INIT_SIZE: usize = 32 * 1024; // Start with 32K
 
 pub(in crate::mem) fn init() {
+  let mut allocator = KERNEL_ALLOCATOR.write();
+  let r = allocator.expand(INIT_SIZE);
+  r.unwrap();
 }
 
-struct Allocator;
+static KERNEL_ALLOCATOR: RwLock<KernelAllocator> =
+  RwLock::new(KernelAllocator {
+    size: 0,
+    cursor: 0,
+    start: START,
+  });
 
-unsafe impl GlobalAlloc for Allocator {
-  unsafe fn alloc(&self, _layout: Layout) -> *mut u8 {
-    todo!()
+// FIXME: Come on, bump allocator?? I can do better
+struct KernelAllocator {
+  size: usize,
+  start: Page<Size4KiB>,
+  cursor: usize,
+}
+
+impl KernelAllocator {
+  fn expand(&mut self, delta_size: usize) -> Result<(), ()> {
+    let size =
+      self.size + align_up(delta_size as u64, PAGE_SIZE as u64) as usize;
+    let num_pages = size / PAGE_SIZE;
+    if size > SIZE {
+      return Err(());
+    }
+    if size <= self.size {
+      return Ok(());
+    }
+
+    // Allocate and map new pages
+    let next_page = Page::<Size4KiB>::from_start_address(
+      self.start.start_address() + self.size,
+    )
+    .unwrap();
+
+    for i in 0..num_pages {
+      let page = next_page.add(i as u64);
+      let frame = match palloc() {
+        Some(frame) => frame,
+        None => return Err(()),
+      };
+
+      match vmap(page, frame, PAGE_SIZE, PageTableFlags::WRITABLE) {
+        Err(_) => return Err(()),
+        _ => {}
+      };
+    }
+
+    return Ok(());
+  }
+
+  fn alloc(&mut self, layout: Layout) -> *mut u8 {
+    if layout.align() > PAGE_SIZE {
+      panic!("Unsupported alignment");
+    }
+
+    let cursor = align_up(self.cursor as u64, layout.align() as u64) as usize;
+    if cursor + layout.size() > self.size {
+      let diff = cursor + layout.size() - self.size;
+      let expand_size = if diff > INIT_SIZE { diff } else { INIT_SIZE };
+      match self.expand(expand_size) {
+        Err(_) => return null_mut(),
+        _ => {}
+      };
+    }
+
+    self.cursor = cursor + layout.size();
+    (self.start.start_address().as_u64() as usize + self.cursor) as *mut u8
+  }
+}
+
+struct GlobKernelAllocator;
+
+unsafe impl GlobalAlloc for GlobKernelAllocator {
+  unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+    KERNEL_ALLOCATOR.write().alloc(layout)
   }
 
   unsafe fn dealloc(&self, _ptr: *mut u8, _layout: Layout) {
-    todo!()
+    // 7adretek i7na benesta3mil al bump allocator, dah dealloc howa nafso al nnoop
   }
 }
 
 #[global_allocator]
-static ALLOCATOR: Allocator = Allocator;
+static GLOB_ALLOCATOR: GlobKernelAllocator = GlobKernelAllocator;

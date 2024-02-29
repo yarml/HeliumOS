@@ -1,5 +1,5 @@
 use super::early_heap::EarlyAllocator;
-use super::virt::mapper::MAPPER;
+use super::vmap;
 use crate::bootboot::{bootboot, MMapEnt, MMapType, BOOTBOOT};
 use crate::mem::PAGE_SIZE;
 use crate::println;
@@ -149,22 +149,19 @@ pub(in crate::mem) fn init() {
 }
 
 pub(super) fn map_header() {
-  let mapper = MAPPER.write();
-
   // Kernel mapper uses the physical frame allocator
   // Limit the scope of the lock to prevent a dead lock
   let (pmm_frame, pmm_size) = {
     let physallocator = PHYS_FRAME_ALLOCATOR.read();
     (physallocator.phyframe, physallocator.size)
   };
-  mapper
-    .map(
-      PHYSHEADER_START,
-      pmm_frame,
-      pmm_size,
-      PageTableFlags::WRITABLE,
-    )
-    .unwrap();
+  vmap(
+    PHYSHEADER_START,
+    pmm_frame,
+    pmm_size,
+    PageTableFlags::WRITABLE,
+  )
+  .unwrap();
   let segment_offset = (PHYSHEADER_START.start_address().as_u64()
     - pmm_frame.start_address().as_u64()) as usize;
 

@@ -27,6 +27,7 @@ pub(in crate::mem::virt) fn init() {
     alloc_substruct(
       p4_entry,
       PageTableFlags::WRITABLE | PageTableFlags::PRESENT,
+      true,
     );
   }
 
@@ -42,6 +43,7 @@ pub(in crate::mem::virt) fn init() {
     alloc_substruct(
       p3_entry,
       PageTableFlags::WRITABLE | PageTableFlags::PRESENT,
+      true,
     );
   }
 
@@ -60,6 +62,7 @@ pub(in crate::mem::virt) fn init() {
       alloc_substruct(
         p2_entry,
         PageTableFlags::WRITABLE | PageTableFlags::PRESENT,
+        true,
       );
     }
   }

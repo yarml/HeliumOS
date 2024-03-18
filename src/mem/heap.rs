@@ -1,7 +1,7 @@
 use core::{
   alloc::{GlobalAlloc, Layout},
   ops::Add,
-  ptr::null_mut,
+  ptr::null_mut, slice,
 };
 use spin::RwLock;
 use x86_64::{
@@ -10,7 +10,10 @@ use x86_64::{
   VirtAddr,
 };
 
-use crate::mem::{palloc, vmap, PAGE_SIZE};
+use crate::{
+  mem::{palloc, vmap, PAGE_SIZE},
+  println,
+};
 
 const START: Page<Size4KiB> = unsafe {
   Page::from_start_address_unchecked(VirtAddr::new_truncate(0xFFFF808000000000))
@@ -77,9 +80,13 @@ impl KernelAllocator {
       panic!("Unsupported alignment");
     }
 
-    let cursor = align_up(self.cursor as u64, layout.align() as u64) as usize;
-    if cursor + layout.size() > self.size {
-      let diff = cursor + layout.size() - self.size;
+    let cursor = align_up(
+      self.start.start_address().as_u64() + self.cursor as u64,
+      layout.align() as u64,
+    ) as usize;
+    let rel_cursor = cursor - self.start.start_address().as_u64() as usize;
+    if rel_cursor + layout.size() > self.size {
+      let diff = rel_cursor + layout.size() - self.size;
       let expand_size = if diff > INIT_SIZE { diff } else { INIT_SIZE };
       match self.expand(expand_size) {
         Err(_) => return null_mut(),
@@ -87,8 +94,19 @@ impl KernelAllocator {
       };
     }
 
-    self.cursor = cursor + layout.size();
-    (self.start.start_address().as_u64() as usize + self.cursor) as *mut u8
+    self.cursor = rel_cursor + layout.size();
+    let ptr = cursor as *mut u8;
+    println!(
+      "Alloc => {:?}:{:?} (size={:x}, align={:x})",
+      ptr,
+      unsafe { ptr.add(layout.size()) },
+      layout.size(),
+      layout.align(),
+    );
+    let alloc = unsafe { slice::from_raw_parts_mut(ptr, layout.size()) };
+    alloc.fill(0);
+    assert_eq!(ptr as usize % layout.align(), 0);
+    ptr
   }
 }
 

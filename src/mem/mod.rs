@@ -7,7 +7,7 @@ use self::{
   virt::mapper::{KernelMapError, MAPPER},
 };
 
-mod early_heap;
+pub mod early_heap;
 #[allow(dead_code)]
 mod gdt;
 mod heap;

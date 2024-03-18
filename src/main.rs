@@ -3,6 +3,8 @@
 #![feature(allocator_api)]
 #![feature(alloc_layout_extra)]
 #![feature(abi_x86_interrupt)]
+#![feature(ascii_char_variants)]
+#![feature(ascii_char)]
 
 extern crate alloc;
 extern crate core;
@@ -12,6 +14,7 @@ extern crate spin;
 #[allow(dead_code)]
 mod bootboot;
 mod debug;
+mod feat;
 mod fs;
 mod interrupts;
 mod io;
@@ -37,7 +40,7 @@ fn _start() -> ! {
   println!("Initializing memory");
   mem::init();
 
-  println!("Initializing interrupt table.\n");
+  println!("Initializing interrupt table.");
   interrupts::init();
 
   println!("Initializing INITRD.");

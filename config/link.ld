@@ -8,14 +8,14 @@ KERNEL_OFFSET = 0xffffffffffe02000;
 
 PHDRS
 {
-  boot PT_LOAD FILEHDR PHDRS;                  /* one single loadable segment */
+  boot PT_LOAD FILEHDR PHDRS;
 }
 SECTIONS
 {
     . = 0xffffffffffe02000;
     .text . + SIZEOF_HEADERS : AT(ADDR(.text) - KERNEL_OFFSET + SIZEOF_HEADERS) {
         __text_start = .;
-        KEEP(*(.text.boot)) *(.text .text.* .gnu.linkonce.t*)   /* code */
+        KEEP(*(.text.boot)) *(.text .text.* .gnu.linkonce.t*)
         . = ALIGN(4096);
         __text_end = .;
     } :boot

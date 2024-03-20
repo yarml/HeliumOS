@@ -1,5 +1,4 @@
 #!/bin/sh
-
 # Supposed to run from the docker container!
 
 OBJCOPY=x86_64-elf-objcopy

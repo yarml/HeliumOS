@@ -1,15 +1,56 @@
-use super::prologue;
-use crate::println;
 use x86_64::{
+  addr::VirtAddrNotValid,
   registers::control::Cr2,
-  structures::idt::{InterruptStackFrame, PageFaultErrorCode},
+  structures::{
+    idt::{InterruptStackFrame, PageFaultErrorCode},
+    paging::{Page, PageTableFlags, Size4KiB},
+  },
+};
+
+use crate::{
+  interrupts::exceptions::prologue,
+  mem::{self, heap, valloc},
+  println,
 };
 
 pub extern "x86-interrupt" fn page_fault(
   frame: InterruptStackFrame,
   ec: PageFaultErrorCode,
 ) {
-  let adr = Cr2::read();
+  let adr = match Cr2::read() {
+    Ok(adr) => adr,
+    Err(VirtAddrNotValid(adr)) => {
+      panic!("Tried using an invalid address: {adr:x}")
+    }
+  };
+
+  println!("PageFault");
+
+  // PageFault in kernel heap? Fear not, we will allocate it and return
+  let heap_end = heap::START.start_address() + heap::SIZE as u64;
+  if heap::START.start_address() <= adr && adr < heap_end {
+    let adr = Page::<Size4KiB>::containing_address(adr).start_address();
+    let left = (heap_end - heap::START.start_address()) as usize;
+    let expand = if left > heap::FRAG_SIZE {
+      heap::FRAG_SIZE
+    } else {
+      left
+    };
+
+    println!(
+      "Expanding kernel heap by {} bytes from {:?}",
+      expand,
+      adr.as_ptr::<()>()
+    );
+
+    valloc(
+      Page::from_start_address(adr).unwrap(),
+      expand / mem::PAGE_SIZE,
+      PageTableFlags::WRITABLE,
+    );
+    return;
+  }
+
   prologue(&frame, "Page Fault");
   let operation = if ec.contains(PageFaultErrorCode::CAUSED_BY_WRITE) {
     "write"

@@ -30,3 +30,4 @@ mkbootimg /build/config/bootimg.json helium.img
 cp bootboot.efi /build/out/bootboot.efi
 cp helium /build/out/helium
 cp helium.img /build/out/helium.img
+cp helium.dbg /build/out/helium.dbg

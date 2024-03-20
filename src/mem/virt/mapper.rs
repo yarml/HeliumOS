@@ -79,7 +79,7 @@ impl KernelMapper {
 
     // check that address is not managed by another kernel subsystem
     if vcache::START_ADDR <= page.start_address()
-      && page.start_address() < vcache::START_ADDR + vcache::SIZE
+      && page.start_address() < vcache::START_ADDR + vcache::SIZE as u64
     {
       return Err(KernelMapError::Managed);
     }
@@ -111,11 +111,11 @@ impl KernelMapper {
 
     for i in 0..num_pages {
       let page = Page::<Size4KiB>::from_start_address(
-        page.start_address() + i * PAGE_SIZE,
+        page.start_address() + (i * PAGE_SIZE) as u64,
       )
       .unwrap();
       let physframe = PhysFrame::<Size4KiB>::from_start_address(
-        phys.start_address() + i * PAGE_SIZE,
+        phys.start_address() + (i * PAGE_SIZE) as u64,
       )
       .unwrap();
 

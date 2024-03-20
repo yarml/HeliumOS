@@ -2,7 +2,7 @@
 
 set -e
 
-qemu-system-x86_64 \
+QEMU_CMD=$(echo qemu-system-x86_64 \
     -cpu qemu64 \
     -net none \
     -drive if=pflash,format=raw,unit=0,file=/usr/share/OVMF/OVMF_CODE.fd,readonly=on \
@@ -12,6 +12,12 @@ qemu-system-x86_64 \
     -device ide-hd,drive=sysimg,bus=ahci.0 \
     -debugcon stdio \
     -display none \
-    -vnc :5900 \
     -m $MEMORY \
-    -smp $CPU
+    -smp $CPU \
+    -d cpu_reset \
+    -s -S \
+    -monitor unix:qms,server)
+
+tmux new rust-gdb -tui \; \
+    splitp -h $QEMU_CMD \; \
+    splitp -v sh -c "sleep 1 && socat -,echo=0,icanon=0 unix-connect:qms"

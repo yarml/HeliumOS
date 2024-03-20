@@ -86,7 +86,7 @@ pub(in crate::mem::virt) fn init() {
   for i in 0..P2PAGE_COUNT {
     let p1_virtaddr = match vcache.map(
       PhysFrame::from_start_address(
-        p1_frame.start_address() + i * 512 * mem::size_of::<PageTableEntry>(),
+        p1_frame.start_address() + (i * 512 * mem::size_of::<PageTableEntry>()) as u64,
       )
       .unwrap(),
     ) {
@@ -95,7 +95,7 @@ pub(in crate::mem::virt) fn init() {
     };
 
     // This check has to do with the FIXME above
-    if p1_virtaddr != START_ADDR + PAGE_SIZE * i {
+    if p1_virtaddr != START_ADDR + (PAGE_SIZE * i) as u64 {
       panic!(
         "Time to fix this ugly relianceo n undefined VCache map() behavior"
       );
@@ -165,7 +165,7 @@ impl<'a> VCache<'a> {
           *age = 0;
           *lazy_count -= 1;
           let page = Page::<Size4KiB>::from_start_address(
-            START_ADDR + PAGE_SIZE * (p2i * 512 + p1i),
+            START_ADDR + (PAGE_SIZE * (p2i * 512 + p1i)) as u64,
           )
           .unwrap();
           return Ok(page);
@@ -259,7 +259,7 @@ impl<'a> VCache<'a> {
         | PageTableFlags::PRESENT,
     );
 
-    let virt_addr = START_ADDR + PAGE_SIZE * (p2index * 512 + p1index);
+    let virt_addr = START_ADDR + (PAGE_SIZE * (p2index * 512 + p1index)) as u64;
     let page = Page::<Size4KiB>::from_start_address(virt_addr).unwrap();
     MapperFlush::new(page).flush();
 
@@ -294,7 +294,7 @@ impl<'a> VCache<'a> {
     physframe: PhysFrame,
   ) -> Result<(), ()> {
     let start_addr = page.start_address();
-    if start_addr < START_ADDR || start_addr >= START_ADDR + SIZE {
+    if start_addr < START_ADDR || start_addr >= START_ADDR + SIZE as u64 {
       return Err(());
     }
 

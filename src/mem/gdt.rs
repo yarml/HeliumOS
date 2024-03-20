@@ -27,8 +27,8 @@ impl BasicGlobalDescriptorTable {
 lazy_static! {
   static ref BASIC_GDT: BasicGlobalDescriptorTable = {
     let mut gdt = GlobalDescriptorTable::new();
-    let code_segment = gdt.add_entry(Descriptor::kernel_code_segment());
-    let data_segment = gdt.add_entry(Descriptor::kernel_data_segment());
+    let code_segment = gdt.append(Descriptor::kernel_code_segment());
+    let data_segment = gdt.append(Descriptor::kernel_data_segment());
 
     BasicGlobalDescriptorTable {
       gdt,

@@ -49,7 +49,7 @@ impl SegmentHeader {
   }
 
   pub fn in_range(&self, addr: PhysAddr) -> bool {
-    self.address <= addr && addr < self.address + self.size
+    self.address <= addr && addr < self.address + self.size as u64
   }
 }
 
@@ -113,7 +113,7 @@ pub(in crate::mem) fn init() {
   /* Initialize PMM header & setup the segment header reference vector */
   for segment_tmp in mmap_usable {
     let segment_ptr =
-      (pmm_header + header_cursor).as_u64() as *mut SegmentHeader;
+      (pmm_header + header_cursor as u64).as_u64() as *mut SegmentHeader;
     let segment = unsafe { segment_ptr.as_mut().unwrap() };
     *segment = segment_tmp;
     let bitmap = segment.bitmap();
@@ -222,7 +222,7 @@ unsafe impl FrameAllocator<Size4KiB> for PhysicalFrameAllocator {
       assert_ne!(page_bitindex, 64);
       let page_index = 64 * page_windex + page_bitindex;
       *control_word |= 1 << page_bitindex;
-      let frame_start = segment.address + page_index * PAGE_SIZE;
+      let frame_start = segment.address + (page_index * PAGE_SIZE) as u64;
       return Some(PhysFrame::containing_address(frame_start));
     }
     None

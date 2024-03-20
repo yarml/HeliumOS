@@ -10,7 +10,7 @@ use self::{
 pub mod early_heap;
 #[allow(dead_code)]
 mod gdt;
-mod heap;
+pub mod heap;
 mod phys;
 pub mod virt;
 
@@ -38,4 +38,17 @@ pub fn vmap(
   flags: PageTableFlags,
 ) -> Result<(), KernelMapError> {
   MAPPER.write().map(page, frame, size, flags)
+}
+
+pub fn valloc(page: Page<Size4KiB>, n: usize, flags: PageTableFlags) {
+  for off in 0..n {
+    let frame = match palloc() {
+      Some(frame) => frame,
+      None => panic!("Could not allocate physical frame"),
+    };
+    let page =
+      Page::from_start_address(page.start_address() + (off * PAGE_SIZE) as u64)
+        .unwrap();
+    vmap(page, frame, PAGE_SIZE, flags).expect("Could not map allocated frame");
+  }
 }

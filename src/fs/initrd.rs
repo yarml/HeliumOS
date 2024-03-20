@@ -1,8 +1,6 @@
 use super::tar::{TarEntryType, TarHeader};
-use crate::{
-  bootboot::bootboot, feat::collections::hashmap::HashMap, mem::vmap, println,
-};
-use alloc::string::String;
+use crate::{bootboot::bootboot, mem::vmap};
+use alloc::{collections::BTreeMap, string::String};
 use core::mem;
 use spin::Once;
 use x86_64::{
@@ -17,17 +15,11 @@ const INITRD_START: Page<Size4KiB> = unsafe {
 
 #[derive(Clone, Copy)]
 pub enum InitrdEntry {
-  File(InitrdFile),
+  File(&'static [u8]),
   Directory,
 }
 
-#[derive(Clone, Copy)]
-pub struct InitrdFile {
-  size: usize,
-  content: VirtAddr,
-}
-
-static INITRD: Once<HashMap<String, InitrdEntry>> = Once::new();
+static INITRD: Once<BTreeMap<String, InitrdEntry>> = Once::new();
 
 pub fn init() {
   let bootboot = bootboot();
@@ -44,14 +36,30 @@ pub fn init() {
   )
   .unwrap();
 
-  INITRD.call_once(init_initrd_map);
+  INITRD.call_once(init_map);
 }
 
-fn init_initrd_map() -> HashMap<String, InitrdEntry> {
+pub fn open(path: &str) -> Option<&InitrdEntry> {
+  match INITRD.get() {
+    None => panic!("Initrd not initialized yet and tried to open {}", path),
+    Some(initrd) => initrd.get(path),
+  }
+}
+pub fn open_file(path: &str) -> &[u8] {
+  match open(path) {
+    None => panic!("Initrd file not found: {}", path),
+    Some(entry) => match entry {
+      InitrdEntry::File(file) => file,
+      InitrdEntry::Directory => panic!("Initrd: {} is not a file", path),
+    },
+  }
+}
+
+fn init_map() -> BTreeMap<String, InitrdEntry> {
   let bootboot = bootboot();
   let mut current_header = INITRD_START.start_address().as_ptr::<TarHeader>();
 
-  let mut initrd = HashMap::new();
+  let mut initrd = BTreeMap::new();
 
   // FIXME: Assumes that directories always come before files under them
   loop {
@@ -81,14 +89,9 @@ fn init_initrd_map() -> HashMap<String, InitrdEntry> {
         }
 
         let entry = match ftype {
-          TarEntryType::File => InitrdEntry::File(InitrdFile {
-            size: ch.size(),
-            content: VirtAddr::zero(),
-          }),
+          TarEntryType::File => InitrdEntry::File(ch.content()),
           TarEntryType::Directory => InitrdEntry::Directory,
         };
-
-        println!("Inserting entry {}", &entry_name);
         initrd.insert(entry_name, entry);
       }
     }

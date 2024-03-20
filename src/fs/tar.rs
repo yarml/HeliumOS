@@ -1,5 +1,5 @@
 use alloc::string::String;
-use core::{ascii::Char, ffi::CStr, str::from_utf8};
+use core::{ascii::Char, ffi::CStr, slice, str::from_utf8};
 
 #[repr(C, packed)]
 pub struct TarHeader {
@@ -60,6 +60,12 @@ impl TarHeader {
     filename.push_str(name);
 
     filename
+  }
+
+  pub fn content(&self) -> &[u8] {
+    let header_ptr = self as *const Self;
+    let content_ptr = unsafe { header_ptr.add(1) } as *const u8;
+    unsafe { slice::from_raw_parts(content_ptr, self.size()) }
   }
 
   pub fn size(&self) -> usize {

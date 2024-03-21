@@ -1,10 +1,9 @@
 mod exceptions;
 pub mod pic;
 
+use self::exceptions::{div::div, gprot::gprot, pagefault::page_fault};
 use spin::RwLock;
 use x86_64::structures::idt::InterruptDescriptorTable;
-use self::exceptions::{div::div, gprot::gprot, pagefault::page_fault};
-
 
 static IDT: RwLock<InterruptDescriptorTable> =
   RwLock::new(InterruptDescriptorTable::new());

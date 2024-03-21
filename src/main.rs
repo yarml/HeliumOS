@@ -11,16 +11,18 @@ extern crate core;
 extern crate rlibc;
 extern crate spin;
 
+mod acpi;
 #[allow(dead_code)]
 mod bootboot;
+pub mod cfgtb;
 mod debug;
-mod feat;
 mod fs;
 mod interrupts;
 mod io;
 mod mem;
 mod proc;
 mod sys;
+mod utils;
 
 use crate::{fs::initrd, interrupts::pic};
 use x86_64::instructions::interrupts as x86interrupts;
@@ -45,6 +47,12 @@ fn _start() -> ! {
 
   println!("Initializing INITRD.");
   initrd::init();
+
+  println!("Initializing Config Tables.");
+  cfgtb::init();
+
+  println!("ACPI Lookup.");
+  acpi::init();
 
   println!("Loop");
   loop {}

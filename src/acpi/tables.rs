@@ -1,6 +1,8 @@
 use super::VMemMap;
-use crate::println;
-use crate::{acpi::getvadr, utils::unchecked_cast};
+use crate::{
+  acpi::getvadr, proc::apic::IoApicRedirectionSource,
+  utils::unchecked_cast,
+};
 use core::{mem, ptr, slice, str::from_utf8};
 use x86_64::PhysAddr;
 
@@ -84,6 +86,8 @@ impl Madt {
 }
 
 #[repr(u8)]
+#[allow(dead_code)]
+#[derive(Debug)]
 pub enum MadtType {
   LocalApic = 0,
   IoApic = 1,
@@ -96,25 +100,30 @@ pub enum MadtType {
 
 #[repr(C, packed)]
 pub struct MadtEntryHeader {
-  mtype: MadtType,
-  len: u64,
+  pub mtype: MadtType,
+  len: u8,
 }
 
 #[repr(C, packed)]
 pub struct MadtEntryLocalApic {
   header: MadtEntryHeader,
-  procid: u8,
-  apicid: u8,
+  pub procid: u8,
+  pub apicid: u8,
   flags: u32,
+}
+impl MadtEntryLocalApic {
+  pub fn enabled(&self) -> bool {
+    self.flags != 0
+  }
 }
 
 #[repr(C, packed)]
 pub struct MadtEntryIoApic {
   header: MadtEntryHeader,
-  ioapicid: u8,
+  pub ioapicid: u8,
   res: u8,
-  ioapic_adr: u32,
-  gsib: u32,
+  pub ioapic_adr: u32,
+  pub gsib: u32,
 }
 
 #[repr(C, packed)]
@@ -124,6 +133,18 @@ pub struct MadtEntryIoApicInterruptSourceOverride {
   irq_src: u8,
   gsi: u32,
   flags: u16,
+}
+impl MadtEntryIoApicInterruptSourceOverride {
+  pub fn source(&self) -> IoApicRedirectionSource {
+    if self.bus_src != 0 {
+      IoApicRedirectionSource::Bus(self.bus_src as usize)
+    } else {
+      IoApicRedirectionSource::Irq(self.irq_src as usize)
+    }
+  }
+  pub fn destination(&self) -> usize {
+    self.gsi as usize
+  }
 }
 
 pub enum MadtEntry<'a> {

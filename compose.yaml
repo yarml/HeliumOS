@@ -7,6 +7,7 @@ services:
       - ./out:/build/out:rw
       - ./src:/build/src:ro
       - target:/build/target:rw
+      - registry:/usr/local/cargo/registry:rw
       - ./.cargo:/build/.cargo:ro
       - ./config:/build/config:ro
       - ./Cargo.toml:/build/Cargo.toml:ro
@@ -30,4 +31,5 @@ services:
 
 volumes:
   target:
+  registry:
 

@@ -1,19 +1,16 @@
-use crate::println;
+use crate::{
+  acpi::tables::{MadtEntryIoApic, MadtEntryLocalApicNmi},
+  mem::{self, virt::KVMSPACE},
+};
+use alloc::{collections::BTreeMap, vec::Vec};
 use core::{
   arch::x86_64::__cpuid,
   ptr::{self, addr_of, addr_of_mut},
 };
-
-use alloc::{collections::BTreeMap, vec::Vec};
 use spin::{Once, RwLock};
 use x86_64::{
   structures::paging::{Page, PageTableFlags, PhysFrame, Size4KiB},
   PhysAddr, VirtAddr,
-};
-
-use crate::{
-  acpi::tables::MadtEntryIoApic,
-  mem::{self, virt::KVMSPACE},
 };
 
 const VBASE: Page<Size4KiB> = unsafe {
@@ -26,15 +23,40 @@ static IOAPIC_REDIRECTION: Once<
   RwLock<BTreeMap<IoApicRedirectionSource, usize>>,
 > = Once::new();
 static IOAPIC: Once<RwLock<Vec<IoApicInfo>>> = Once::new();
-static PROCNUM: RwLock<usize> = RwLock::new(0);
+static APIC_CONFIG: Once<RwLock<Vec<LocalApicNmiConfig>>> = Once::new();
+static NUMCORES: RwLock<usize> = RwLock::new(0);
 
-pub fn id() -> u16 {
+pub fn id() -> usize {
   let cpuid = unsafe { __cpuid(1) };
-  (cpuid.ebx >> 24) as u16
+  (cpuid.ebx >> 24) as usize
 }
-pub fn numproc() {
-  let n = PROCNUM.read();
-  println!("Number of proc: {}", n);
+
+pub fn numcores() -> usize {
+  let numcores = NUMCORES.read();
+  *numcores
+}
+
+#[derive(Debug)]
+pub enum LocalApicNmiConfig {
+  All { lint: usize, flags: u16 },
+  Specific { id: usize, lint: usize, flags: u16 },
+}
+
+impl From<&MadtEntryLocalApicNmi> for LocalApicNmiConfig {
+  fn from(entry: &MadtEntryLocalApicNmi) -> Self {
+    if entry.id == 0xFF {
+      Self::All {
+        lint: entry.lint as usize,
+        flags: entry.flags,
+      }
+    } else {
+      Self::Specific {
+        id: entry.id as usize,
+        lint: entry.lint as usize,
+        flags: entry.flags,
+      }
+    }
+  }
 }
 
 #[derive(PartialEq, PartialOrd, Eq, Ord, Debug)]
@@ -121,13 +143,16 @@ pub mod cfgtb {
   use crate::{
     acpi::tables::{
       AcpiHeader, Madt, MadtEntry, MadtEntryIoApic,
-      MadtEntryIoApicInterruptSourceOverride,
+      MadtEntryIoApicInterruptSourceOverride, MadtEntryLocalApicNmi,
     },
     println,
-    proc::apic::PROCNUM,
+    proc::apic::NUMCORES,
   };
 
-  use super::{IoApicInfo, IOAPIC, IOAPIC_REDIRECTION, VBASE};
+  use super::{
+    IoApicInfo, LocalApicNmiConfig, APIC_CONFIG, IOAPIC, IOAPIC_REDIRECTION,
+    VBASE,
+  };
 
   pub fn acpi_handler(table: &AcpiHeader) {
     let madt = Madt::from(table);
@@ -141,12 +166,8 @@ pub mod cfgtb {
             lapic.apicid,
             lapic.enabled()
           );
-          if !lapic.enabled() {
-            continue;
-          }
-          let mut procnum_lock = PROCNUM.write();
-          *procnum_lock += 1;
-          // TODO: Procinfo here
+          let mut numcores = NUMCORES.write();
+          *numcores += 1;
         }
         MadtEntry::IoApic(ioapic) => {
           println!("\tIoApic: ID: {}", ioapic.ioapicid);
@@ -160,11 +181,24 @@ pub mod cfgtb {
           );
           register_ioapic_redirection(iso);
         }
+        MadtEntry::LocalApicNmi(config) => {
+          println!(
+            "\tLocalApicNmiConfig: {:?}",
+            LocalApicNmiConfig::from(config)
+          );
+          register_apic_config(config);
+        }
         MadtEntry::Other(header) => {
           println!("\tUnsupported MADT entry: {:?}", header.mtype)
         }
       }
     }
+  }
+
+  fn register_apic_config(config: &MadtEntryLocalApicNmi) {
+    APIC_CONFIG.call_once(|| RwLock::new(Vec::new()));
+    let mut apic_config_lock = APIC_CONFIG.get().unwrap().write();
+    apic_config_lock.push(LocalApicNmiConfig::from(config));
   }
 
   fn register_ioapic(ioapic: &MadtEntryIoApic) {

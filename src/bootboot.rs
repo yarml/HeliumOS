@@ -26,6 +26,10 @@ pub const BOOTBOOT_INFO: u64 = 0xffffffffffe00000;
 pub const BOOTBOOT_ENV: u64 = 0xffffffffffe01000;
 pub const BOOTBOOT_CORE: u64 = 0xffffffffffe02000;
 
+extern "C" {
+  static initstack: usize;
+}
+
 #[repr(C, packed)]
 #[derive(Debug, Copy, Clone)]
 pub struct MMapEnt {
@@ -106,6 +110,9 @@ pub struct PSF2 {
 
 pub fn bootboot() -> &'static BOOTBOOT {
   unsafe { (BOOTBOOT_INFO as *const BOOTBOOT).as_ref().unwrap() }
+}
+pub fn kernel_stack_size() -> usize {
+  unsafe { &initstack as *const usize as usize }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

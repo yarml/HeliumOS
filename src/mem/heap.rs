@@ -1,3 +1,5 @@
+use core::{alloc::Layout, ptr::NonNull};
+
 use linked_list_allocator::LockedHeap;
 use x86_64::{
   structures::paging::{Page, PageTableFlags, Size4KiB},
@@ -22,6 +24,17 @@ pub(in crate::mem) fn init() {
       .lock()
       .init(START.start_address().as_mut_ptr::<u8>(), SIZE)
   }
+}
+
+// Manual memory management
+pub fn alloc(layout: Layout) -> NonNull<u8> {
+  GLOB_ALLOCATOR
+    .lock()
+    .allocate_first_fit(layout)
+    .expect("Could not allocate heap memory")
+}
+pub fn free(ptr: NonNull<u8>, layout: Layout) {
+  unsafe { GLOB_ALLOCATOR.lock().deallocate(ptr, layout) }
 }
 
 #[global_allocator]

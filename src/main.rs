@@ -33,7 +33,7 @@ fn _start() -> ! {
   x86interrupts::disable();
   {
     if !proc::is_primary() {
-      loop {}
+      proc::init::wait(); // Wait for initialization
     }
   }
 
@@ -55,6 +55,6 @@ fn _start() -> ! {
   println!("ACPI Lookup.");
   acpi::init();
 
-  println!("Loop");
-  loop {}
+  println!("Processor ignition.");
+  proc::init::ignite()
 }

@@ -9,7 +9,7 @@ use self::{
 
 pub mod early_heap;
 #[allow(dead_code)]
-mod gdt;
+pub mod gdt;
 pub mod heap;
 mod phys;
 pub mod virt;

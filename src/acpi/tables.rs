@@ -1,7 +1,6 @@
 use super::VMemMap;
 use crate::{
-  acpi::getvadr, proc::apic::IoApicRedirectionSource,
-  utils::unchecked_cast,
+  acpi::getvadr, proc::apic::IoApicRedirectionSource, utils::unchecked_cast,
 };
 use core::{mem, ptr, slice, str::from_utf8};
 use x86_64::PhysAddr;
@@ -147,10 +146,18 @@ impl MadtEntryIoApicInterruptSourceOverride {
   }
 }
 
+#[repr(C, packed)]
+pub struct MadtEntryLocalApicNmi {
+  pub id: u8,
+  pub flags: u16,
+  pub lint: u8,
+}
+
 pub enum MadtEntry<'a> {
   LocalApic(&'a MadtEntryLocalApic),
   IoApic(&'a MadtEntryIoApic),
   IoApicInterruptSourceOverride(&'a MadtEntryIoApicInterruptSourceOverride),
+  LocalApicNmi(&'a MadtEntryLocalApicNmi),
   Other(&'a MadtEntryHeader),
 }
 
@@ -184,6 +191,9 @@ impl<'a> Iterator for MadtIterator<'a> {
             MadtEntry::IoApicInterruptSourceOverride(unchecked_cast(
               entry_header,
             ))
+          }
+          MadtType::LocalApicNmi => {
+            MadtEntry::LocalApicNmi(unchecked_cast(entry_header))
           }
           _ => MadtEntry::Other(entry_header),
         })

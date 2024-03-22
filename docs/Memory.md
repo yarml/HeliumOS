@@ -132,7 +132,9 @@ The old table (Before Rust rewrite)
 | 1T768G   | 2T       | 256G       | ACPI Tables              |
 | 2T       | 4T       | 2T         | Processor table          |
 | 4T       | 5T       | 1T         | Stack table              |
-| 5T       | 112T     | 107T       | Undefined                |
+| 5T       | 6T       | 1T         | GDT table                |
+| 6T       | 7T       | 1T         | TSS table                |
+| 7T       | 112T     | 105T       | Undefined                |
 | 112T     | 128T     | 16T        | Bootboot reserved        |
 
 

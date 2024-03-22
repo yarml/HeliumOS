@@ -1,7 +1,9 @@
 pub mod apic;
 pub mod task;
 
-use crate::{bootboot::bootboot, mem::virt::KVMSPACE};
+use crate::{
+  bootboot::bootboot, interrupts::ERROR_STACK_SIZE, mem::virt::KVMSPACE,
+};
 use alloc::collections::BTreeMap;
 use core::sync::atomic::AtomicUsize;
 use spin::{Once, RwLock};
@@ -9,7 +11,10 @@ use x86_64::VirtAddr;
 
 static STACK_TABLE_VPTR: VirtAddr =
   VirtAddr::new_truncate(KVMSPACE.as_u64() + 4 * 1024 * 1024 * 1024 * 1024);
-
+static NMI_STACKS_VPTR: VirtAddr =
+  VirtAddr::new_truncate(KVMSPACE.as_u64() + 7 * 1024 * 1024 * 1024 * 1024);
+static DF_STACKS_VPTR: VirtAddr =
+  VirtAddr::new_truncate(KVMSPACE.as_u64() + 7 * 1024 * 1024 * 1024 * 1024);
 static PROC_TABLE: Once<RwLock<BTreeMap<usize, ProcInfo>>> = Once::new();
 
 pub fn is_primary() -> bool {
@@ -23,51 +28,51 @@ struct ProcInfo {
 }
 
 impl ProcInfo {
-  // Unsafe, the caller should make sure the stack table has been allocated
+  // unsafe: The caller should make sure the stack table has been allocated
   pub unsafe fn stack<'a>() -> &'a mut VirtAddr {
     let ptr = STACK_TABLE_VPTR.as_mut_ptr::<VirtAddr>().add(apic::id());
     ptr.as_mut().unwrap()
+  }
+
+  pub fn nmi_stack() -> VirtAddr {
+    NMI_STACKS_VPTR + (ERROR_STACK_SIZE * apic::id()) as u64
+  }
+  pub fn df_stack() -> VirtAddr {
+    DF_STACKS_VPTR + (ERROR_STACK_SIZE * apic::id()) as u64
   }
 }
 
 pub mod init {
   use super::{
     apic::{self, numcores},
-    ProcInfo, PROC_TABLE, STACK_TABLE_VPTR,
+    ProcInfo, DF_STACKS_VPTR, NMI_STACKS_VPTR, PROC_TABLE, STACK_TABLE_VPTR,
   };
-  use crate::println;
   use crate::{
     bootboot::kernel_stack_size,
     interrupts::ERROR_STACK_SIZE,
-    mem::{self, gdt::KernelGlobalDescriptorTable, heap},
+    mem::gdt::KernelGlobalDescriptorTable,
     sys::{self, pause},
   };
+  use crate::{mem::valloc_ktable, println};
   use alloc::collections::BTreeMap;
-  use core::{alloc::Layout, sync::atomic::AtomicUsize};
+  use core::sync::atomic::AtomicUsize;
   use spin::{rwlock::RwLock, Once};
-  use x86_64::{
-    align_up,
-    structures::paging::{Page, PageTableFlags},
-    VirtAddr,
-  };
+  use x86_64::{align_up, VirtAddr};
 
   static IGNITION: Once<()> = Once::new();
 
   pub fn ignite() -> ! {
+    let numcores = numcores();
     // A few things to do before waking up the other procs
     // Like allocating space for the stack table
-    let stack_table_pgn = align_up(
-      (numcores() * core::mem::size_of::<VirtAddr>()) as u64,
-      mem::PAGE_SIZE as u64,
-    ) / mem::PAGE_SIZE as u64;
-    mem::valloc(
-      Page::from_start_address(STACK_TABLE_VPTR).unwrap(),
-      stack_table_pgn as usize,
-      PageTableFlags::WRITABLE,
-    );
+    valloc_ktable::<VirtAddr>(STACK_TABLE_VPTR, numcores);
 
     // Allocating space for the GDT table
     KernelGlobalDescriptorTable::init();
+
+    // Allocating NMI & DF stacks
+    valloc_ktable::<[u8; ERROR_STACK_SIZE]>(NMI_STACKS_VPTR, numcores);
+    valloc_ktable::<[u8; ERROR_STACK_SIZE]>(DF_STACKS_VPTR, numcores);
 
     // TODO: Setting up the list of chores
 
@@ -80,11 +85,11 @@ pub mod init {
   }
 
   // Wait for initialization
-  pub fn wait() {
+  pub fn wait() -> ! {
     while let None = IGNITION.get() {
       pause();
     }
-    wakeup();
+    wakeup()
   }
 
   fn wakeup() -> ! {
@@ -97,16 +102,8 @@ pub mod init {
     *unsafe { ProcInfo::stack() } = stack;
 
     // Allocate the NMI, and DF stacks
-    let nmistack = VirtAddr::new(
-      heap::alloc(Layout::from_size_align(ERROR_STACK_SIZE, 16).unwrap())
-        .as_ptr() as u64
-        + ERROR_STACK_SIZE as u64,
-    );
-    let dfstack = VirtAddr::new(
-      heap::alloc(Layout::from_size_align(ERROR_STACK_SIZE, 16).unwrap())
-        .as_ptr() as u64
-        + ERROR_STACK_SIZE as u64,
-    );
+    let nmistack = ProcInfo::nmi_stack();
+    let dfstack = ProcInfo::df_stack();
 
     unsafe {
       KernelGlobalDescriptorTable::register(stack, nmistack, dfstack);
@@ -120,6 +117,8 @@ pub mod init {
       let mut proc_table = PROC_TABLE.get().unwrap().write();
       proc_table.insert(id, pinfo);
     }
+
+    // waitall();
 
     println!("Done");
     sys::event_loop()
@@ -135,5 +134,19 @@ pub mod init {
       align_up(x_ptr, stack_size)
     };
     VirtAddr::new(stack_base)
+  }
+
+  // Wait until all other processors were inserted into the PROC_TABLE
+  fn waitall() {
+    let numcores = numcores();
+    loop {
+      let proc_table = PROC_TABLE.get().unwrap().read();
+      let initnum = proc_table.keys().count();
+      if numcores == initnum {
+        return;
+      }
+      drop(proc_table);
+      pause();
+    }
   }
 }

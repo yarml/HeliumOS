@@ -1,5 +1,11 @@
-use x86_64::structures::paging::{
-  FrameAllocator, FrameDeallocator, Page, PageTableFlags, PhysFrame, Size4KiB,
+use core::mem;
+
+use x86_64::{
+  align_up,
+  structures::paging::{
+    FrameAllocator, FrameDeallocator, Page, PageTableFlags, PhysFrame, Size4KiB,
+  },
+  VirtAddr,
 };
 
 use self::{
@@ -51,4 +57,17 @@ pub fn valloc(page: Page<Size4KiB>, n: usize, flags: PageTableFlags) {
         .unwrap();
     vmap(page, frame, PAGE_SIZE, flags).expect("Could not map allocated frame");
   }
+}
+
+pub fn valloc_size(page: Page<Size4KiB>, nbytes: usize, flags: PageTableFlags) {
+  let pgn = align_up(nbytes as u64, PAGE_SIZE as u64) as usize / PAGE_SIZE;
+  valloc(page, pgn, flags);
+}
+
+pub fn valloc_ktable<T>(vadr: VirtAddr, n: usize) {
+  valloc_size(
+    Page::from_start_address(vadr).unwrap(),
+    n * mem::size_of::<T>(),
+    PageTableFlags::WRITABLE,
+  );
 }

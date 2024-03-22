@@ -134,7 +134,9 @@ The old table (Before Rust rewrite)
 | 4T       | 5T       | 1T         | Stack table              |
 | 5T       | 6T       | 1T         | GDT table                |
 | 6T       | 7T       | 1T         | TSS table                |
-| 7T       | 112T     | 105T       | Undefined                |
+| 7T       | 8T       | 1T         | NMI stacks               |
+| 8T       | 9T       | 1T         | DF stacks                |
+| 9T       | 112T     | 105T       | Undefined                |
 | 112T     | 128T     | 16T        | Bootboot reserved        |
 
 

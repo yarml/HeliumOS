@@ -1,16 +1,11 @@
-use core::mem;
-
-use super::{valloc, virt::KVMSPACE, PAGE_SIZE};
+use super::{valloc_ktable, virt::KVMSPACE};
 use crate::proc::apic::{self, numcores};
-use alloc::boxed::Box;
 use lazy_static::lazy_static;
 use x86_64::{
-  align_up,
   instructions::tables,
   registers::segmentation::{Segment, CS, DS, ES, FS, GS, SS},
   structures::{
     gdt::{Descriptor, GlobalDescriptorTable, SegmentSelector},
-    paging::{Page, PageTableFlags},
     tss::TaskStateSegment,
   },
   VirtAddr,
@@ -69,28 +64,12 @@ pub struct KernelGlobalDescriptorTable {
 
 impl KernelGlobalDescriptorTable {
   pub fn init() {
+    let numcores = numcores();
     // Allocate & Map GDT_TABLE
-    {
-      let size =
-        (numcores() * mem::size_of::<KernelGlobalDescriptorTable>()) as u64;
-      let pgn = align_up(size, PAGE_SIZE as u64) as usize / PAGE_SIZE;
-      valloc(
-        Page::from_start_address(GDT_TABLE_PTR).unwrap(),
-        pgn,
-        PageTableFlags::WRITABLE,
-      );
-    }
+    valloc_ktable::<KernelGlobalDescriptorTable>(GDT_TABLE_PTR, numcores);
 
     // Allocate & Map TSS_TABLE
-    {
-      let size = (numcores() * mem::size_of::<TaskStateSegment>()) as u64;
-      let pgn = align_up(size, PAGE_SIZE as u64) as usize / PAGE_SIZE;
-      valloc(
-        Page::from_start_address(TSS_TABLE_PTR).unwrap(),
-        pgn,
-        PageTableFlags::WRITABLE,
-      );
-    }
+    valloc_ktable::<TaskStateSegment>(TSS_TABLE_PTR, numcores);
   }
 
   // unsafe: The caller must verify that init() was called before

@@ -1,5 +1,3 @@
-use core::{alloc::Layout, ptr::NonNull};
-
 use linked_list_allocator::LockedHeap;
 use x86_64::{
   structures::paging::{Page, PageTableFlags, Size4KiB},
@@ -18,23 +16,22 @@ pub(in crate::mem) fn init() {
   // The following is a war crime. I am relying on the PageFault interrupt to
   // do memory allocation because I am lazy to write my own allocator that works
   // FIXME:
+  // Well, the war crime came back to bite me, since each core allocates
+  // 4K of heap for their NMI & DF stacks combined, any number of cores
+  // higher than 8 causes the kernel to crash by double PageFault.
+  // I will move the NMI and DF stacks away from the heap, but I want to keep
+  // it documented here what can happen with this way of handling heap expansion
+  // Another problem(serious) that I thought of is if two cores at the same
+  // time get the heap expansion PageFault, the lock of valloc will still not
+  // protect against the speed condition. The first maps the expanded area
+  // to some physical memory, while the other maps it to another area, invalidating
+  // any writes done by the first core. This latter issue is really critical
   valloc(START, FRAG_SIZE / PAGE_SIZE, PageTableFlags::WRITABLE);
   unsafe {
     GLOB_ALLOCATOR
       .lock()
       .init(START.start_address().as_mut_ptr::<u8>(), SIZE)
   }
-}
-
-// Manual memory management
-pub fn alloc(layout: Layout) -> NonNull<u8> {
-  GLOB_ALLOCATOR
-    .lock()
-    .allocate_first_fit(layout)
-    .expect("Could not allocate heap memory")
-}
-pub fn free(ptr: NonNull<u8>, layout: Layout) {
-  unsafe { GLOB_ALLOCATOR.lock().deallocate(ptr, layout) }
 }
 
 #[global_allocator]

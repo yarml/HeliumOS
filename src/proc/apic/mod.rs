@@ -1,6 +1,13 @@
+pub mod regmap;
+
+use crate::interrupts::Vectors;
+use crate::println;
+use crate::proc::apic::regmap::{LocalApicRegisterMap, TimerMode};
 use crate::{
   acpi::tables::{MadtEntryIoApic, MadtEntryLocalApicNmi},
   mem::{self, virt::KVMSPACE},
+  proc::is_primary,
+  sys::pause,
 };
 use alloc::{collections::BTreeMap, vec::Vec};
 use core::{
@@ -9,7 +16,9 @@ use core::{
 };
 use spin::{Once, RwLock};
 use x86_64::{
-  structures::paging::{Page, PageTableFlags, PhysFrame, Size4KiB},
+  structures::paging::{
+    mapper::MapperFlushAll, Page, PageTableFlags, PhysFrame, Size4KiB,
+  },
   PhysAddr, VirtAddr,
 };
 
@@ -26,6 +35,11 @@ static IOAPIC: Once<RwLock<Vec<IoApicInfo>>> = Once::new();
 static APIC_CONFIG: Once<RwLock<Vec<LocalApicNmiConfig>>> = Once::new();
 static NUMCORES: RwLock<usize> = RwLock::new(0);
 
+const APIC_VBASE: VirtAddr = VirtAddr::new_truncate(
+  KVMSPACE.as_u64() + 1024 * 1024 * 1024 * 1024 + 512 * 1024 * 1024 * 1024,
+);
+const APIC_BASE: PhysAddr = PhysAddr::new_truncate(0xFEE00000);
+
 pub fn id() -> usize {
   let cpuid = unsafe { __cpuid(1) };
   (cpuid.ebx >> 24) as usize
@@ -34,6 +48,36 @@ pub fn id() -> usize {
 pub fn numcores() -> usize {
   let numcores = NUMCORES.read();
   *numcores
+}
+
+// Called once per core
+pub(super) fn init() {
+  static MAPPED: Once<()> = Once::new();
+
+  if !is_primary() {
+    while let None = MAPPED.get() {
+      pause()
+    }
+    MapperFlushAll::new().flush_all();
+  } else {
+    println!("Mapping APIC registers: {:x}", APIC_VBASE.as_u64());
+    mem::vmap(
+      Page::from_start_address(APIC_VBASE).unwrap(),
+      PhysFrame::from_start_address(APIC_BASE).unwrap(),
+      mem::PAGE_SIZE,
+      PageTableFlags::empty(),
+    )
+    .expect("Could not map APIC registers into virtual memory");
+    MAPPED.call_once(|| ());
+  }
+
+  let apic_msr = LocalApicRegisterMap::get();
+
+  apic_msr.error_setup(Vectors::LocalApicError.into());
+  apic_msr.spurious_setup(Vectors::LocalApicSpurious.into());
+
+  apic_msr.timer_setup(Vectors::LocalApicTimer.into(), TimerMode::Periodic, 0);
+  apic_msr.timer_reset(10_000_000);
 }
 
 #[derive(Debug)]

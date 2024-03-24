@@ -20,7 +20,7 @@ services:
       dockerfile: containers/debug.dockerfile
     environment:
       MEMORY: 512M
-      CPU: 1
+      CPU: 4
     network_mode: host
     volumes:
       - ./out/helium.img:/vm/helium.img:rw

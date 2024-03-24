@@ -49,7 +49,7 @@ pub mod init {
   };
   use crate::{
     bootboot::kernel_stack_size,
-    interrupts::ERROR_STACK_SIZE,
+    interrupts::{self, ERROR_STACK_SIZE},
     mem::gdt::KernelGlobalDescriptorTable,
     sys::{self, pause},
   };
@@ -118,7 +118,8 @@ pub mod init {
       proc_table.insert(id, pinfo);
     }
 
-    // waitall();
+    interrupts::load();
+    apic::init();
 
     println!("Done");
     sys::event_loop()
@@ -136,17 +137,4 @@ pub mod init {
     VirtAddr::new(stack_base)
   }
 
-  // Wait until all other processors were inserted into the PROC_TABLE
-  fn waitall() {
-    let numcores = numcores();
-    loop {
-      let proc_table = PROC_TABLE.get().unwrap().read();
-      let initnum = proc_table.keys().count();
-      if numcores == initnum {
-        return;
-      }
-      drop(proc_table);
-      pause();
-    }
-  }
 }

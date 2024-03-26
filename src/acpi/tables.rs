@@ -2,7 +2,7 @@ use super::VMemMap;
 use crate::{
   acpi::getvadr, proc::apic::IoApicRedirectionSource, utils::unchecked_cast,
 };
-use core::{mem, ptr, slice, str::from_utf8};
+use core::{mem, ptr, slice};
 use x86_64::PhysAddr;
 
 #[repr(C, packed)]
@@ -24,8 +24,8 @@ impl AcpiHeader {
     };
     slice.iter().fold(0u8, |acc, c| acc.wrapping_add(*c)) == 0
   }
-  pub fn signature(&self) -> &str {
-    from_utf8(&self.signature).expect("ACPI table signature not UTF-8")
+  pub fn signature(&self) -> &[u8] {
+    &self.signature
   }
 }
 
@@ -37,7 +37,7 @@ pub struct Xsdt {
 impl Xsdt {
   pub fn from(header: &AcpiHeader) -> &Xsdt {
     debug_assert!(header.verify_checksum());
-    debug_assert_eq!(header.signature(), "XSDT");
+    debug_assert_eq!(header.signature(), b"XSDT");
     unsafe { unchecked_cast(header) }
   }
 
@@ -72,7 +72,7 @@ pub struct Madt {
 impl Madt {
   pub fn from(header: &AcpiHeader) -> &Madt {
     debug_assert!(header.verify_checksum());
-    debug_assert_eq!(header.signature(), "APIC");
+    debug_assert_eq!(header.signature(), b"APIC");
     unsafe { unchecked_cast(header) }
   }
 

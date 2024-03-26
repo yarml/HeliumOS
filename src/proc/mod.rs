@@ -14,7 +14,7 @@ static STACK_TABLE_VPTR: VirtAddr =
 static NMI_STACKS_VPTR: VirtAddr =
   VirtAddr::new_truncate(KVMSPACE.as_u64() + 7 * 1024 * 1024 * 1024 * 1024);
 static DF_STACKS_VPTR: VirtAddr =
-  VirtAddr::new_truncate(KVMSPACE.as_u64() + 7 * 1024 * 1024 * 1024 * 1024);
+  VirtAddr::new_truncate(KVMSPACE.as_u64() + 8 * 1024 * 1024 * 1024 * 1024);
 static PROC_TABLE: Once<RwLock<BTreeMap<usize, ProcInfo>>> = Once::new();
 
 pub fn is_primary() -> bool {
@@ -45,12 +45,14 @@ impl ProcInfo {
 pub mod init {
   use super::{
     apic::{self, numcores},
+    task::Task,
     ProcInfo, DF_STACKS_VPTR, NMI_STACKS_VPTR, PROC_TABLE, STACK_TABLE_VPTR,
   };
   use crate::{
     bootboot::kernel_stack_size,
     interrupts::{self, ERROR_STACK_SIZE},
     mem::gdt::KernelGlobalDescriptorTable,
+    proc::task,
     sys::{self, pause},
   };
   use crate::{mem::valloc_ktable, println};
@@ -74,10 +76,12 @@ pub mod init {
     valloc_ktable::<[u8; ERROR_STACK_SIZE]>(NMI_STACKS_VPTR, numcores);
     valloc_ktable::<[u8; ERROR_STACK_SIZE]>(DF_STACKS_VPTR, numcores);
 
-    // TODO: Setting up the list of chores
+    // Setting up tasks
+    task::init();
 
     // Initializing the proc table
     PROC_TABLE.call_once(|| RwLock::new(BTreeMap::new()));
+
     // That's it for now
 
     IGNITION.call_once(|| ());
@@ -136,5 +140,4 @@ pub mod init {
     };
     VirtAddr::new(stack_base)
   }
-
 }

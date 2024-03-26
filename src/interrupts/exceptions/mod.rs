@@ -4,7 +4,6 @@ use x86_64::structures::idt::InterruptStackFrame;
 
 pub mod div;
 pub mod gprot;
-pub mod lapic;
 pub mod pagefault;
 
 fn prologue(frame: &InterruptStackFrame, exception: &str) {

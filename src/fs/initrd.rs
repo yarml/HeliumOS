@@ -45,12 +45,12 @@ pub fn open(path: &str) -> Option<&InitrdEntry> {
     Some(initrd) => initrd.get(path),
   }
 }
-pub fn open_file(path: &str) -> &[u8] {
+pub fn open_file(path: &str) -> Option<&[u8]> {
   match open(path) {
-    None => panic!("Initrd file not found: {}", path),
+    None => None,
     Some(entry) => match entry {
-      InitrdEntry::File(file) => file,
-      InitrdEntry::Directory => panic!("Initrd: {} is not a file", path),
+      InitrdEntry::File(file) => Some(file),
+      InitrdEntry::Directory => None,
     },
   }
 }

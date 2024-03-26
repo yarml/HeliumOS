@@ -1,11 +1,10 @@
 mod exceptions;
+mod lapic;
 pub mod pic;
 
-use self::exceptions::{
-  div::div,
-  gprot::gprot,
+use self::{
+  exceptions::{div::div, gprot::gprot, pagefault::page_fault},
   lapic::{error::error, spurious::spurious, timer::timer},
-  pagefault::page_fault,
 };
 use spin::RwLock;
 use x86_64::structures::idt::InterruptDescriptorTable;

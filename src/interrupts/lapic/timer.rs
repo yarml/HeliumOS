@@ -1,11 +1,9 @@
-use crate::{println, proc::apic::regmap::LocalApicRegisterMap};
-
+use crate::proc::{apic::regmap::LocalApicRegisterMap, task};
 use x86_64::structures::idt::InterruptStackFrame;
 
 pub(in crate::interrupts) extern "x86-interrupt" fn timer(
   _frame: InterruptStackFrame,
 ) {
-  println!("Hello");
-
+  task::tick();
   LocalApicRegisterMap::get().eoi();
 }

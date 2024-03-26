@@ -2,6 +2,7 @@ pub mod regmap;
 
 use crate::interrupts::Vectors;
 use crate::println;
+use crate::proc::apic;
 use crate::proc::apic::regmap::{LocalApicRegisterMap, TimerMode};
 use crate::{
   acpi::tables::{MadtEntryIoApic, MadtEntryLocalApicNmi},
@@ -78,6 +79,26 @@ pub(super) fn init() {
 
   apic_msr.timer_setup(Vectors::LocalApicTimer.into(), TimerMode::Periodic, 0);
   apic_msr.timer_reset(10_000_000);
+
+  // Setup LINT0 & LINT1
+  if let Some(apic_config) = APIC_CONFIG.get() {
+    let apic_config_lock = apic_config.read();
+    for cfg in apic_config_lock.iter() {
+      let (lint, flags) = match cfg {
+        LocalApicNmiConfig::All { lint, flags } => (*lint as usize, *flags),
+        LocalApicNmiConfig::Specific { id, lint, flags } => {
+          if *id == apic::id() {
+            (*lint as usize, *flags)
+          } else {
+            continue;
+          }
+        }
+      };
+      apic_msr.lint_setup(lint, flags);
+    }
+  }
+
+  
 }
 
 #[derive(Debug)]

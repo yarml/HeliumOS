@@ -25,17 +25,16 @@ HeliumOS, a hobby x86_64 operating system whose main goals are learning and test
 * [X] Physical memory management
 * [X] Virtual memory management
 * [X] Interrupts
-* [ ] Kernel heap
-* [ ] Filesystems
-* [ ] APIC
+* [X] Kernel heap
+* [X] APIC
 * [ ] Basic device drivers
   * [ ] Framebuffer
   * [ ] Keyboard
   * [ ] Mouse
 * [ ] User space processes
-* [ ] Multiprocessing
-* [ ] System calls
-* [ ] Rework filesystem API.
+  * [ ] System calls
+  * [ ] Multiprocessing
+* [ ] Filesystems
 * [ ] Disk
 * [ ] Power Management
 

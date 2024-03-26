@@ -1,16 +1,14 @@
+use self::{
+  phys::PHYS_FRAME_ALLOCATOR,
+  virt::mapper::{KernelMapError, MAPPER},
+};
 use core::mem;
-
 use x86_64::{
   align_up,
   structures::paging::{
     FrameAllocator, FrameDeallocator, Page, PageTableFlags, PhysFrame, Size4KiB,
   },
   VirtAddr,
-};
-
-use self::{
-  phys::PHYS_FRAME_ALLOCATOR,
-  virt::mapper::{KernelMapError, MAPPER},
 };
 
 pub mod early_heap;
@@ -36,6 +34,11 @@ pub fn palloc() -> Option<PhysFrame<Size4KiB>> {
 pub fn pfree(frame: PhysFrame<Size4KiB>) {
   unsafe { PHYS_FRAME_ALLOCATOR.write().deallocate_frame(frame) }
 }
+pub fn pfree_all(frames: &[PhysFrame<Size4KiB>]) {
+  for frame in frames {
+    pfree(*frame);
+  }
+}
 
 pub fn vmap(
   page: Page<Size4KiB>,
@@ -44,6 +47,16 @@ pub fn vmap(
   flags: PageTableFlags,
 ) -> Result<(), KernelMapError> {
   MAPPER.write().map(page, frame, size, flags)
+}
+pub fn vmap_many(
+  page: Page<Size4KiB>,
+  frames: &[PhysFrame<Size4KiB>],
+  flags: PageTableFlags,
+) {
+  for (i, frame) in frames.iter().enumerate() {
+    vmap(page + i as u64, *frame, PAGE_SIZE, flags)
+      .expect("Failed while mapping many")
+  }
 }
 
 pub fn valloc(page: Page<Size4KiB>, n: usize, flags: PageTableFlags) {

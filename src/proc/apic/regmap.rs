@@ -72,12 +72,22 @@ impl LocalApicRegisterMap {
     self.lvt_errreg[0] = vector as u32;
   }
 
+  pub fn lint_setup(&mut self, lint: usize, flags: u16) {
+    let reg = match lint {
+      0 => &mut self.lvt_lint0reg[0],
+      1 => &mut self.lvt_lint1reg[0],
+      other => panic!("Invalid LINT#{}", other),
+    };
+    *reg = flags as u32;
+  }
+
   pub fn eoi(&mut self) {
     self.eoireg[0] = 0;
   }
 }
 
 #[repr(u8)]
+#[allow(dead_code)]
 pub enum TimerMode {
   OneShot,
   Periodic,

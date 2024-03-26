@@ -48,7 +48,7 @@ fn walk_recursive(
 
   match head.signature() {
     // XSDT never handled by config table
-    "XSDT" => {
+    b"XSDT" => {
       let xsdt = Xsdt::from(head);
       for i in 0..xsdt.len() {
         let next_table = xsdt.at(vmemmap, pgindex, i);
@@ -57,7 +57,7 @@ fn walk_recursive(
     }
     other_sig => {
       if !cfgtb::acpi::call(head.signature(), head) {
-        println!("No ACPI handler for {}", other_sig);
+        println!("No ACPI handler for {:?}", other_sig);
       }
     }
   }

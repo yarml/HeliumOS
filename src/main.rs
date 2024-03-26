@@ -17,6 +17,7 @@ mod acpi;
 mod bootboot;
 pub mod cfgtb;
 mod debug;
+mod elf;
 mod fs;
 mod interrupts;
 mod io;

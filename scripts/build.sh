@@ -21,8 +21,12 @@ $STRIP -s -K mmio -K fb -K bootboot -K environment -K initstack helium.out -o he
 mkbootimg check helium
 
 mkdir -p initrd/sys
+mkdir -p initrd/bin
 
 cp helium initrd/sys/helium
+
+# FIXME: Temporary until userspace build system is complete
+cp /build/target/test initrd/bin/init
 
 mkbootimg /build/config/bootimg.json helium.img
 
@@ -30,3 +34,6 @@ cp bootboot.efi /build/out/bootboot.efi
 cp helium /build/out/helium
 cp helium.img /build/out/helium.img
 cp helium.dbg /build/out/helium.dbg
+
+# FIXME: temporary
+cp /build/target/test /build/out/init

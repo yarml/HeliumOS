@@ -11,6 +11,7 @@ use crate::{
   interrupts::exceptions::prologue,
   mem::{self, heap, valloc},
   println,
+  proc::apic,
 };
 
 pub extern "x86-interrupt" fn page_fault(
@@ -38,7 +39,8 @@ pub extern "x86-interrupt" fn page_fault(
     };
 
     println!(
-      "Expanding kernel heap by {} bytes from {:?}",
+      "[Proc {}] Expanding kernel heap by {} bytes from {:?}",
+      apic::id(),
       expand,
       adr.as_ptr::<()>()
     );

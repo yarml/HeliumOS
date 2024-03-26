@@ -1,5 +1,8 @@
+use super::apic;
+use crate::elf::ElfFile;
+use crate::println;
 use crate::{
-  elf::{self, ProgramType},
+  elf::{self},
   fs::initrd,
   mem::{
     self, palloc, pfree, pfree_all,
@@ -11,11 +14,10 @@ use alloc::{boxed::Box, slice, vec::Vec};
 use spin::{rwlock::RwLock, Once, RwLockWriteGuard};
 use x86_64::{
   align_up,
+  registers::rflags::RFlags,
   structures::paging::{Page, PageTableFlags, PhysFrame, Size4KiB},
   VirtAddr,
 };
-
-use super::apic;
 
 pub const USERSPACE_TOP: VirtAddr = VirtAddr::new_truncate(0x7fff_ffffffff);
 pub const USERSTACK_SIZE: usize = 2 * 1024 * 1024;
@@ -44,14 +46,14 @@ fn tmp_local_reserve(
   offset: usize,
   size: usize,
   frames: &[PhysFrame<Size4KiB>],
-  flags: PageTableFlags,
 ) -> &mut [u8] {
   let start_page = Page::from_start_address(
     TMP_TASKLDMAP + (apic::id() * TMP_TASK_SIZE_PER_PROC) as u64,
   )
   .unwrap();
 
-  vmap_many(start_page, frames, flags);
+  // Maps here are writable, that's why they're mapped to begin with
+  vmap_many(start_page, frames, PageTableFlags::WRITABLE);
 
   let ptr = (start_page.start_address().as_u64() + offset as u64) as *mut u8;
 
@@ -105,17 +107,18 @@ impl Task {
     }
   }
   fn exec_raw(content: &[u8], tasks_lock: TasksLock) -> ExecResult {
-    if let Some(elf) = unsafe { elf::FileHeader::parse(content) } {
+    if let Some(elf) = unsafe { ElfFile::parse(content) } {
       Self::exec(elf, tasks_lock)
     } else {
       ExecResult::ParseError
     }
   }
-  fn exec(elf: &elf::FileHeader, tasks_lock: TasksLock) -> ExecResult {
+  fn exec(elf: ElfFile, tasks_lock: TasksLock) -> ExecResult {
     let mut memory_map = MemoryMap::new();
-    for entry in elf.iter_progheader() {
+    for entry in elf.header.iter_progheader() {
       match entry.ptype {
         elf::ProgramType::Load => {
+          println!("LOAD");
           if entry.align as usize > mem::PAGE_SIZE {
             return ExecResult::LargeAlignment(entry.align as usize);
           }
@@ -130,7 +133,12 @@ impl Task {
           }
           let content =
             match elf.slice(entry.offset as usize, entry.file_size as usize) {
-              None => return ExecResult::LargeSize(entry.file_size as usize),
+              None => {
+                return ExecResult::BinaryEnd(
+                  entry.offset as usize,
+                  entry.file_size as usize,
+                )
+              }
               Some(content) => content,
             };
 
@@ -148,7 +156,6 @@ impl Task {
               (page_start.start_address().as_u64() - entry.vadr) as usize,
               entry.mem_size as usize,
               &frames,
-              flags,
             );
 
             data.fill(0);
@@ -158,7 +165,7 @@ impl Task {
           }
         }
         other => {
-          return ExecResult::UnsupportedDirective(other);
+          return ExecResult::UnsupportedDirective(other as u32);
         }
       }
     }
@@ -171,9 +178,9 @@ impl Task {
     );
 
     let state = TaskState {
-      instruction: elf.entrypoint(),
+      instruction: elf.header.entrypoint(),
       stack: USERSTACK_BOTTOM,
-      rflags: 0x200,
+      rflags: RFlags::INTERRUPT_FLAG,
     };
 
     Task::new_locked(state, memory_map, tasks_lock);
@@ -190,7 +197,8 @@ pub enum ExecResult {
   AllocationError,
   LargeAlignment(usize),
   LargeSize(usize),
-  UnsupportedDirective(ProgramType),
+  BinaryEnd(usize, usize),
+  UnsupportedDirective(u32),
 }
 
 pub struct MemoryMap {
@@ -210,10 +218,11 @@ impl MemoryMap {
     n: usize,
     flags: PageTableFlags,
   ) -> Option<Vec<PhysFrame<Size4KiB>>> {
-    let allocated_frames = Vec::new();
+    let mut allocated_frames = Vec::new();
 
     for _ in 0..n {
       if let Some(frame) = palloc() {
+        allocated_frames.push(frame);
         if let None = self.add_raw(vadr, frame, 1, flags, true) {
           pfree_all(&allocated_frames);
           return None;
@@ -281,5 +290,5 @@ impl Drop for MemoryMapping {
 pub struct TaskState {
   stack: u64,
   instruction: VirtAddr,
-  rflags: u64,
+  rflags: RFlags,
 }

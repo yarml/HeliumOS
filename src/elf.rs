@@ -37,6 +37,36 @@ pub enum Endian {
   MSB,
 }
 
+pub struct ElfFile<'a> {
+  pub header: &'a FileHeader,
+  pub size: usize,
+}
+impl<'a> ElfFile<'a> {
+  pub unsafe fn parse(content: &'a [u8]) -> Option<ElfFile> {
+    let r = (content as *const [u8] as *const FileHeader)
+      .as_ref()
+      .unwrap();
+    if !r.verify() {
+      None
+    } else {
+      Some(Self {
+        header: r,
+        size: content.len(),
+      })
+    }
+  }
+  pub fn slice(&self, offset: usize, size: usize) -> Option<&[u8]> {
+    if offset + size > self.size {
+      None
+    } else {
+      let ptr =
+        unsafe { (self.header as *const FileHeader as *const u8).add(offset) };
+      Some(unsafe { slice::from_raw_parts(ptr, size) })
+    }
+  }
+}
+
+#[repr(C, packed)]
 pub struct FileHeader {
   id: Identification,
   ftype: FileType,
@@ -46,7 +76,7 @@ pub struct FileHeader {
   phoff: u64,
   shoff: u64,
   flags: u32,
-  size: u16,
+  ehsize: u16,
   phent_size: u16,
   pht_len: u16,
   shent_size: u16,
@@ -61,15 +91,6 @@ impl FileHeader {
       && VirtAddr::try_new(self.entry).is_ok()
   }
 
-  pub unsafe fn parse(content: &[u8]) -> Option<&Self> {
-    let r = (content as *const [u8] as *const Self).as_ref().unwrap();
-
-    if !r.verify() {
-      None
-    } else {
-      Some(r)
-    }
-  }
   pub fn entrypoint(&self) -> VirtAddr {
     VirtAddr::new_truncate(self.entry)
   }
@@ -78,15 +99,6 @@ impl FileHeader {
     ProgramHeaderIterator {
       file: self,
       index: 0,
-    }
-  }
-
-  pub fn slice(&self, offset: usize, size: usize) -> Option<&[u8]> {
-    if offset + size > self.size as usize {
-      None
-    } else {
-      let ptr = unsafe { (self as *const Self as *const u8).add(offset) };
-      Some(unsafe { slice::from_raw_parts(ptr, size) })
     }
   }
 }
@@ -105,6 +117,7 @@ impl<'a> Iterator for ProgramHeaderIterator<'a> {
     }
     let current = unsafe {
       ((self.file as *const FileHeader as usize
+        + self.file.phoff as usize
         + self.index * self.file.phent_size as usize)
         as *const ProgramHeader)
         .as_ref()
@@ -139,6 +152,7 @@ pub enum FileMachine {
   Mips4 = 10,
 }
 
+#[repr(C)]
 pub struct ProgramHeader {
   pub ptype: ProgramType,
   flags: u32,

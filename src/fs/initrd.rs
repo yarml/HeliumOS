@@ -1,5 +1,5 @@
 use super::tar::{TarEntryType, TarHeader};
-use crate::{bootboot::bootboot, mem::vmap};
+use crate::{bootboot::bootboot, mem::vmap, println};
 use alloc::{collections::BTreeMap, string::String};
 use core::mem;
 use spin::Once;
@@ -84,10 +84,10 @@ fn init_map() -> BTreeMap<String, InitrdEntry> {
       None => continue,
       Some(ftype) => {
         let entry_name = ch.name();
-        if entry_name.ends_with(".") || entry_name.ends_with("..") {
+        if entry_name.ends_with("/.") || entry_name.ends_with("/..") {
           continue;
         }
-
+        println!("INITRD entry: {}", entry_name);
         let entry = match ftype {
           TarEntryType::File => InitrdEntry::File(ch.content()),
           TarEntryType::Directory => InitrdEntry::Directory,

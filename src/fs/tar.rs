@@ -51,7 +51,7 @@ impl TarHeader {
     let pref_len = self.name_pref.iter().position(|b| *b == 0).unwrap_or(155);
     let name_len = self.name.iter().position(|b| *b == 0).unwrap_or(100);
 
-    let mut filename = String::new();
+    let mut filename = String::from("/");
 
     let pref = from_utf8(&self.name_pref[..pref_len]).unwrap();
     let name = from_utf8(&self.name[..name_len]).unwrap();

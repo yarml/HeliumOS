@@ -1,4 +1,4 @@
-use super::apic;
+use super::{apic, ProcInfo};
 use crate::elf::ElfFile;
 use crate::println;
 use crate::{
@@ -10,7 +10,9 @@ use crate::{
     vmap_many,
   },
 };
-use alloc::{boxed::Box, slice, vec::Vec};
+use alloc::sync::Arc;
+use alloc::{slice, vec::Vec};
+use core::sync::atomic::{AtomicUsize, Ordering};
 use spin::{rwlock::RwLock, Once, RwLockWriteGuard};
 use x86_64::{
   align_up,
@@ -34,9 +36,15 @@ const TMP_TASKLDMAP: VirtAddr =
   VirtAddr::new_truncate(KVMSPACE.as_u64() + 9 * 1024 * 1024 * 1024 * 1024);
 const TMP_TASK_SIZE_PER_PROC: usize = 32 * 1024 * 1024 * 1024;
 
-static TASKS: Once<RwLock<Vec<Box<Task>>>> = Once::new();
+const MAX_TICK_MISS: usize = 10;
 
-type TasksLock<'a, 'b> = &'a mut RwLockWriteGuard<'b, Vec<Box<Task>>>;
+static mut CLOCK: AtomicUsize = AtomicUsize::new(0);
+
+static TASKS: Once<RwLock<TaskList>> = Once::new();
+
+pub type TaskRef = Arc<RwLock<Task>>;
+pub type TaskList = Vec<TaskRef>;
+pub type TasksLock<'a, 'b> = &'a mut RwLockWriteGuard<'b, TaskList>;
 
 pub(super) fn init() {
   TASKS.call_once(|| RwLock::new(Vec::new()));
@@ -61,43 +69,117 @@ fn tmp_local_reserve(
 }
 
 pub fn tick() {
-  let mut tasks_lock = TASKS.get().unwrap().write();
+  let pinfo = ProcInfo::instance();
+  let mut tasks_lock = if pinfo.tick_miss > MAX_TICK_MISS {
+    TASKS.get().unwrap().write()
+  } else {
+    match TASKS.get().unwrap().try_write() {
+      Some(lock) => lock,
+      None => {
+        pinfo.tick_miss += 1;
+        return;
+      }
+    }
+  };
 
-  // If no task is running, run init
+  pinfo.tick_miss = 0;
+
+  // If we got the lock, then this is a clock tick
+  let clock = unsafe { CLOCK.fetch_add(1, Ordering::Relaxed) };
+
+  // If no task exists, run init
   if tasks_lock.len() == 0 {
     match Task::exec_initrd("/bin/init", &mut tasks_lock) {
-      ExecResult::Success => {}
+      ExecResult::Success(id) => {
+        println!("[Proc {}] Start init with ID: {}", apic::id(), id)
+      }
       error => panic!("Could not run /bin/init: {:?}", error),
     }
+  }
+  let tasks_lock = tasks_lock.downgrade();
+
+  if let Some(task_lock) = pinfo.current_task.take_if(|task_lock| {
+    let task = task_lock.write();
+    let TaskState::Running { since } = task.state else {
+      unreachable!()
+    };
+    clock - since >= task.life_expectancy()
+  }) {
+    let mut task = task_lock.write();
+    println!("[Proc {}] Dropping {}", apic::id(), task.id);
+    task.state = TaskState::Pending;
+  }
+
+  // If there is still a task running, then that's it we're done here
+  if let Some(task) = &pinfo.current_task {
+    let t = task.read();
+    println!("[Proc {}] Continuing {}", apic::id(), t.id);
+    return;
+  }
+
+  // No task is running, let's look for one to run
+  // TODO: Shamelessly using CSC1401 way of doing it instead of a binary heap
+  // Figure out how to implement Ord for RwLock<Task>, then change this
+  // to a binary heap
+
+  let mut best_task: Option<(usize, RwLockWriteGuard<'_, Task>)> = None;
+  for (i, task_lock) in tasks_lock.iter().enumerate() {
+    let task = match task_lock.try_write() {
+      Some(task) => task,
+      None => continue,
+    };
+    if task.state != TaskState::Pending {
+      continue;
+    }
+    if let Some((_, btask)) = &mut best_task {
+      if task.priority > btask.priority {
+        *btask = task;
+      }
+    } else {
+      best_task = Some((i, task));
+    }
+  }
+
+  if let Some((index, mut task)) = best_task {
+    // We have a cadidate
+    task.state = TaskState::Running { since: clock };
+    pinfo.current_task = Some(tasks_lock[index].clone());
+    println!("[Proc {}] Running {}", apic::id(), task.id);
   }
 }
 
 pub struct Task {
   id: usize,
   priority: usize,
-  state: TaskState,
+  procstate: TaskProcState,
   memory_map: MemoryMap,
+  state: TaskState,
 }
 
 impl Task {
   fn new_locked(
-    state: TaskState,
+    procstate: TaskProcState,
     memory_map: MemoryMap,
     tasks_lock: TasksLock,
-  ) {
+  ) -> usize {
     static mut IDCOUNT: RwLock<usize> = RwLock::new(0);
 
-    let task = {
+    let (task, id) = {
       let mut idcount_lock = unsafe { IDCOUNT.write() };
       *idcount_lock += 1;
-      Self {
-        id: *idcount_lock,
-        priority: 0,
-        state,
-        memory_map,
-      }
+      (
+        Self {
+          id: *idcount_lock,
+          priority: 0,
+          procstate,
+          memory_map,
+          state: TaskState::Pending,
+        },
+        *idcount_lock,
+      )
     };
-    tasks_lock.push(Box::new(task));
+    tasks_lock.push(Arc::new(RwLock::new(task)));
+    id
   }
   fn exec_initrd(path: &str, tasks_lock: TasksLock) -> ExecResult {
     if let Some(file) = initrd::open_file(path) {
@@ -171,26 +253,36 @@ impl Task {
     }
 
     // Stack
-    memory_map.allocate(
-      Page::from_start_address(USERSTACK_TOP).unwrap(),
-      USERSTACK_SIZE / mem::PAGE_SIZE,
-      PageTableFlags::WRITABLE,
-    );
+    {
+      let page_start = Page::from_start_address(USERSTACK_TOP).unwrap();
+      let pgn = USERSTACK_SIZE / mem::PAGE_SIZE;
+      if let Some(frames) =
+        memory_map.allocate(page_start, pgn, PageTableFlags::WRITABLE)
+      {
+        tmp_local_reserve(0, USERSTACK_SIZE, &frames).fill(0);
+      } else {
+        return ExecResult::AllocationError;
+      }
+    }
 
-    let state = TaskState {
+    let state = TaskProcState {
       instruction: elf.header.entrypoint(),
       stack: USERSTACK_BOTTOM,
       rflags: RFlags::INTERRUPT_FLAG,
     };
 
-    Task::new_locked(state, memory_map, tasks_lock);
-    ExecResult::Success
+    let id = Task::new_locked(state, memory_map, tasks_lock);
+    ExecResult::Success(id)
+  }
+
+  fn life_expectancy(&self) -> usize {
+    (self.priority + 10) * apic::numcores()
   }
 }
 
 #[derive(Debug)]
 pub enum ExecResult {
-  Success,
+  Success(usize),
   FileError,
   ParseError,
   InsecureLoad(usize, usize),
@@ -287,8 +379,15 @@ impl Drop for MemoryMapping {
   }
 }
 
-pub struct TaskState {
+pub struct TaskProcState {
   stack: u64,
   instruction: VirtAddr,
   rflags: RFlags,
+}
+
+#[derive(PartialEq)]
+pub enum TaskState {
+  Running { since: usize },
+  Pending,
+  Blocking,
 }

@@ -5,9 +5,10 @@ use crate::{
   bootboot::bootboot, interrupts::ERROR_STACK_SIZE, mem::virt::KVMSPACE,
 };
 use alloc::collections::BTreeMap;
-use core::sync::atomic::AtomicUsize;
 use spin::{Once, RwLock};
 use x86_64::VirtAddr;
+
+use self::task::TaskRef;
 
 static STACK_TABLE_VPTR: VirtAddr =
   VirtAddr::new_truncate(KVMSPACE.as_u64() + 4 * 1024 * 1024 * 1024 * 1024);
@@ -23,8 +24,8 @@ pub fn is_primary() -> bool {
 
 struct ProcInfo {
   id: usize,
-
-  tick: AtomicUsize,
+  tick_miss: usize,
+  current_task: Option<TaskRef>,
 }
 
 impl ProcInfo {
@@ -40,12 +41,20 @@ impl ProcInfo {
   pub fn df_stack() -> VirtAddr {
     DF_STACKS_VPTR + (ERROR_STACK_SIZE * apic::id()) as u64
   }
+
+  // This should be safe
+  pub fn instance() -> &'static mut ProcInfo {
+    let mut proc_table = PROC_TABLE.get().unwrap().write();
+    unsafe {
+      (proc_table.get_mut(&apic::id()).unwrap() as *mut ProcInfo).as_mut()
+    }
+    .unwrap()
+  }
 }
 
 pub mod init {
   use super::{
     apic::{self, numcores},
-    task::Task,
     ProcInfo, DF_STACKS_VPTR, NMI_STACKS_VPTR, PROC_TABLE, STACK_TABLE_VPTR,
   };
   use crate::{
@@ -57,7 +66,6 @@ pub mod init {
   };
   use crate::{mem::valloc_ktable, println};
   use alloc::collections::BTreeMap;
-  use core::sync::atomic::AtomicUsize;
   use spin::{rwlock::RwLock, Once};
   use x86_64::{align_up, VirtAddr};
 
@@ -115,7 +123,8 @@ pub mod init {
 
     let pinfo = ProcInfo {
       id,
-      tick: AtomicUsize::new(0),
+      tick_miss: 0,
+      current_task: None,
     };
     {
       let mut proc_table = PROC_TABLE.get().unwrap().write();

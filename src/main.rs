@@ -6,6 +6,7 @@
 #![feature(pointer_is_aligned)]
 #![feature(ascii_char_variants)]
 #![feature(ascii_char)]
+#![feature(option_take_if)]
 
 extern crate alloc;
 extern crate core;

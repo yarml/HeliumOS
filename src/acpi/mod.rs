@@ -7,7 +7,7 @@ use crate::{
   mem::{self, virt::KVMSPACE},
   println,
 };
-use alloc::collections::BTreeMap;
+use alloc::{collections::BTreeMap, string::ToString};
 use x86_64::{
   align_up,
   structures::paging::{Page, PageTableFlags, PhysFrame, Size4KiB},
@@ -57,7 +57,10 @@ fn walk_recursive(
     }
     other_sig => {
       if !cfgtb::acpi::call(head.signature(), head) {
-        println!("No ACPI handler for {:?}", other_sig);
+        println!(
+          "No ACPI handler for {}",
+          other_sig.escape_ascii().to_string()
+        );
       }
     }
   }

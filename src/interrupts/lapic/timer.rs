@@ -6,4 +6,5 @@ pub(in crate::interrupts) extern "x86-interrupt" fn timer(
 ) {
   task::tick();
   LocalApicRegisterMap::get().eoi();
+  task::continue_current();
 }

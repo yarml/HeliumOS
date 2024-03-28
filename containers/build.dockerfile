@@ -2,12 +2,12 @@
 FROM rust:1.76.0-bookworm
 
 
-RUN apt update &&\
-    apt -y upgrade &&\
-    apt -y install --no-install-recommends curl \
+RUN apt-get update &&\
+    apt-get -y upgrade &&\
+    apt-get -y install --no-install-recommends curl \
                     build-essential bison flex \
                     libgmp3-dev libmpc-dev libmpfr-dev \
-                    texinfo libisl-dev zip &&\
+                    texinfo libisl-dev zip nasm &&\
     rustup toolchain install nightly-x86_64-unknown-linux-gnu &&\
     rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
 

@@ -1,6 +1,5 @@
 use super::{apic, ProcInfo};
 use crate::elf::ElfFile;
-use crate::println;
 use crate::{
   elf::{self},
   fs::initrd,
@@ -10,8 +9,10 @@ use crate::{
     vmap_many,
   },
 };
+use crate::{println, sys};
 use alloc::sync::Arc;
 use alloc::{slice, vec::Vec};
+use core::arch::asm;
 use core::sync::atomic::{AtomicUsize, Ordering};
 use spin::{rwlock::RwLock, Once, RwLockWriteGuard};
 use x86_64::{
@@ -22,7 +23,7 @@ use x86_64::{
 };
 
 pub const USERSPACE_TOP: VirtAddr = VirtAddr::new_truncate(0x7fff_ffffffff);
-pub const USERSTACK_SIZE: usize = 2 * 1024 * 1024;
+pub const USERSTACK_SIZE: usize = 4 * 1024;
 pub const USERSTACK_BOTTOM: u64 = USERSPACE_TOP.as_u64() + 1;
 pub const USERSTACK_TOP: VirtAddr =
   VirtAddr::new_truncate(USERSTACK_BOTTOM - USERSTACK_SIZE as u64);
@@ -148,6 +149,18 @@ pub fn tick() {
   }
 }
 
+pub fn continue_current() -> ! {
+  let pinfo = ProcInfo::instance();
+
+  if let Some(task_lock) = &pinfo.current_task {
+    let task = task_lock.read();
+    task.memory_map.apply();
+    unsafe { task.procstate.apply() }
+  } else {
+    sys::event_loop()
+  }
+}
+
 pub struct Task {
   id: usize,
   priority: usize,
@@ -265,11 +278,7 @@ impl Task {
       }
     }
 
-    let state = TaskProcState {
-      instruction: elf.header.entrypoint(),
-      stack: USERSTACK_BOTTOM,
-      rflags: RFlags::INTERRUPT_FLAG,
-    };
+    let state = TaskProcState::new(elf.header.entrypoint());
 
     let id = Task::new_locked(state, memory_map, tasks_lock);
     ExecResult::Success(id)
@@ -356,6 +365,12 @@ impl MemoryMap {
 
     self.mappings.last()
   }
+
+  fn apply(&self) {
+    for mapping in &self.mappings {
+      mapping.apply().unwrap()
+    }
+  }
 }
 
 pub struct MemoryMapping {
@@ -379,10 +394,27 @@ impl Drop for MemoryMapping {
   }
 }
 
+#[repr(C)]
 pub struct TaskProcState {
-  stack: u64,
-  instruction: VirtAddr,
-  rflags: RFlags,
+  rax: u64, // Offset 0
+  rbx: u64, // Offset 8
+  rcx: u64, // Offset 16
+  rdx: u64, // Offset 24
+  rsp: u64, // Offset 32; iret handled
+  rbp: u64, // Offset 40
+  rsi: u64, // Offset 48
+  rdi: u64, // Offset 56
+  r8: u64,  // Offset 64
+  r9: u64,  // Offset 72
+  r10: u64, // Offset 80
+  r11: u64, // Offset 88
+  r12: u64, // Offset 96
+  r13: u64, // Offset 104
+  r14: u64, // Offset 112
+  r15: u64, // Offset 120
+
+  rip: VirtAddr,  // Offset 128; iret handled
+  rflags: RFlags, // Offset 136; iret handled
 }
 
 #[derive(PartialEq)]
@@ -390,4 +422,74 @@ pub enum TaskState {
   Running { since: usize },
   Pending,
   Blocking,
+}
+
+impl TaskProcState {
+  pub fn new(entrypoint: VirtAddr) -> Self {
+    Self {
+      rax: 0,
+      rbx: 0,
+      rcx: 0,
+      rdx: 0,
+      rsp: USERSTACK_BOTTOM,
+      rbp: 0,
+      rsi: 0,
+      rdi: 0,
+      r8: 0,
+      r9: 0,
+      r10: 0,
+      r11: 0,
+      r12: 0,
+      r13: 0,
+      r14: 0,
+      r15: 0,
+      rip: entrypoint,
+      rflags: RFlags::INTERRUPT_FLAG,
+    }
+  }
+
+  // Jumps to userspace with the configuration in Self
+  // unsafe: Self's configuration must be valid
+  pub unsafe fn apply(&self) -> ! {
+    asm! {
+      // Setup segment registers
+      "mov ds, ax",
+      "mov es, ax",
+      "mov fs, ax",
+      "mov gs, ax",
+
+      // SS and CS are handled by iret
+
+      "push rax", // SS for iret
+      "add ax, 0x08",
+      "push QWORD PTR [rdi + 32]", // RSP for iret
+      "push QWORD PTR [rdi + 136]", // RFLAGS for iret
+      "push rax", // CS for iret
+      "push QWORD PTR [rdi + 128]", // RIP for iret
+
+      // Now, we load the other registers with their values, RDI is last
+      "mov rax, [rdi + 0]",
+      "mov rbx, [rdi + 8]",
+      "mov rcx, [rdi + 16]",
+      "mov rdx, [rdi + 24]",
+      "mov rbp, [rdi + 40]",
+      "mov rsi, [rdi + 48]",
+      "mov r8, [rdi + 64]",
+      "mov r9, [rdi + 72]",
+      "mov r10, [rdi + 80]",
+      "mov r11, [rdi + 88]",
+      "mov r12, [rdi + 96]",
+      "mov r13, [rdi + 104]",
+      "mov r14, [rdi + 112]",
+      "mov r15, [rdi + 120]",
+      "mov rdi, [rdi + 56]",
+
+      // Hopefully everything works
+      "iretq",
+
+      in("rax") 0x1B,
+      in("rdi") self as *const Self
+    };
+    unreachable!()
+  }
 }

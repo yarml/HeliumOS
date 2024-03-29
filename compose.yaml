@@ -10,6 +10,7 @@ services:
       - registry:/usr/local/cargo/registry:rw
       - ./.cargo:/build/.cargo:ro
       - ./config:/build/config:ro
+      - ./build.rs:/build/build.rs:ro
       - ./Cargo.toml:/build/Cargo.toml:ro
       - ./Cargo.lock:/build/Cargo.lock:rw
       - ./rustfmt.toml:/build/rustfmt.toml:ro

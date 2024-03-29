@@ -26,6 +26,7 @@ version = "0.0.1"
 dependencies = [
  "lazy_static",
  "linked_list_allocator",
+ "nasm-rs",
  "rlibc",
  "spin 0.9.8",
  "x86_64",
@@ -58,6 +59,12 @@ dependencies = [
  "autocfg",
  "scopeguard",
 ]
+
+[[package]]
+name = "nasm-rs"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "12fcfa1bd49e0342ec1d07ed2be83b59963e7acbeb9310e1bb2c07b69dadd959"
 
 [[package]]
 name = "rlibc"

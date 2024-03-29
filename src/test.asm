@@ -4,10 +4,6 @@ section .rodata:
 
 section .text
 _start:
-  push main
-  ret
-
-main:
   ; output(msg)
   mov rax, 0
   mov rdi, msg

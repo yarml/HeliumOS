@@ -11,6 +11,9 @@ rlibc = "1.0.0"
 spin = "0.9.8"
 x86_64 = "0.15.1"
 
+[build-dependencies]
+nasm-rs = "0.3.0"
+
 [profile.dev]
 panic = "abort"
 

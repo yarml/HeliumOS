@@ -1,4 +1,5 @@
 pub mod apic;
+mod syscall;
 pub mod task;
 
 use crate::{
@@ -61,7 +62,7 @@ pub mod init {
     bootboot::kernel_stack_size,
     interrupts::{self, ERROR_STACK_SIZE},
     mem::gdt::KernelGlobalDescriptorTable,
-    proc::task,
+    proc::{syscall, task},
     sys::{self, pause},
   };
   use crate::{mem::valloc_ktable, println};
@@ -133,6 +134,7 @@ pub mod init {
 
     interrupts::load();
     apic::init();
+    syscall::enable();
 
     println!("Done");
     sys::event_loop()

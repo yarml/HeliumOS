@@ -269,9 +269,11 @@ impl Task {
     {
       let page_start = Page::from_start_address(USERSTACK_TOP).unwrap();
       let pgn = USERSTACK_SIZE / mem::PAGE_SIZE;
-      if let Some(frames) =
-        memory_map.allocate(page_start, pgn, PageTableFlags::WRITABLE)
-      {
+      if let Some(frames) = memory_map.allocate(
+        page_start,
+        pgn,
+        PageTableFlags::USER_ACCESSIBLE | PageTableFlags::WRITABLE,
+      ) {
         tmp_local_reserve(0, USERSTACK_SIZE, &frames).fill(0);
       } else {
         return ExecResult::AllocationError;

@@ -14,7 +14,7 @@ QEMU_CMD=$(echo qemu-system-x86_64 \
     -display none \
     -m $MEMORY \
     -smp $CPU \
-    -d cpu_reset \
+    -d int \
     -s -S \
     -monitor unix:qms,server)
 

@@ -55,10 +55,10 @@ pub(in crate::mem) fn basic_init() {
 
 pub struct KernelGlobalDescriptorTable {
   gdt: GlobalDescriptorTable,
-  kcode_seg: SegmentSelector,
-  kdata_seg: SegmentSelector,
-  ucode_seg: SegmentSelector,
-  udata_seg: SegmentSelector,
+  pub kcode_seg: SegmentSelector,
+  pub kdata_seg: SegmentSelector,
+  pub ucode_seg: SegmentSelector,
+  pub udata_seg: SegmentSelector,
   tss_seg: SegmentSelector,
 }
 
@@ -125,7 +125,7 @@ impl KernelGlobalDescriptorTable {
 
   // unsafe: Caller has to verify that the currently
   // loaded GDT is the one managed by this struct
-  pub unsafe fn load_kernel(&self) {
+  unsafe fn load_kernel(&self) {
     CS::set_reg(self.kcode_seg);
     SS::set_reg(self.kdata_seg);
     DS::set_reg(self.kdata_seg);

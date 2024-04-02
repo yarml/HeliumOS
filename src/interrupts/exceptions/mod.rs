@@ -3,8 +3,10 @@ use crate::println;
 use x86_64::structures::idt::InterruptStackFrame;
 
 pub mod div;
+pub mod doublefault;
 pub mod gprot;
 pub mod pagefault;
+pub mod stacksegfault;
 
 fn prologue(frame: &InterruptStackFrame, exception: &str) {
   println!("[Proc ] [Exception: {}]", exception);

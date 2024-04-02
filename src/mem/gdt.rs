@@ -1,5 +1,8 @@
 use super::{valloc_ktable, virt::KVMSPACE};
-use crate::proc::apic::{self, numcores};
+use crate::{
+  println,
+  proc::apic::{self, numcores},
+};
 use lazy_static::lazy_static;
 use x86_64::{
   instructions::tables,
@@ -67,6 +70,16 @@ impl KernelGlobalDescriptorTable {
     let numcores = numcores();
     // Allocate & Map GDT_TABLE
     valloc_ktable::<KernelGlobalDescriptorTable>(GDT_TABLE_PTR, numcores);
+
+    println!(
+      "Allocating {} bytes for Kernel Global Descriptor Table.",
+      core::mem::size_of::<KernelGlobalDescriptorTable>() * numcores
+    );
+    println!(
+      "Because size of one Kernel Global Descriptor Table is {}, and we have {} cores.",
+      core::mem::size_of::<KernelGlobalDescriptorTable>(),
+      numcores
+    );
 
     // Allocate & Map TSS_TABLE
     valloc_ktable::<TaskStateSegment>(TSS_TABLE_PTR, numcores);

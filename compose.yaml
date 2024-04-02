@@ -24,8 +24,7 @@ services:
       CPU: 1
     network_mode: host
     volumes:
-      - ./out/helium.img:/vm/helium.img:rw
-      - ./out/helium.dbg:/vm/helium.dbg:ro
+      - ./out:/vm:rw
       - ./config/gdbinit:/root/.gdbinit:ro
       - ./config/tmux.conf:/root/.tmux.conf:ro
       - ./src:/build/src:ro

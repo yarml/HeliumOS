@@ -37,10 +37,10 @@ impl ProcInfo {
   }
 
   pub fn nmi_stack() -> VirtAddr {
-    NMI_STACKS_VPTR + (ERROR_STACK_SIZE * apic::id()) as u64
+    NMI_STACKS_VPTR + (ERROR_STACK_SIZE * (apic::id() + 1)) as u64
   }
   pub fn df_stack() -> VirtAddr {
-    DF_STACKS_VPTR + (ERROR_STACK_SIZE * apic::id()) as u64
+    DF_STACKS_VPTR + (ERROR_STACK_SIZE * (apic::id() + 1)) as u64
   }
 
   // This should be safe

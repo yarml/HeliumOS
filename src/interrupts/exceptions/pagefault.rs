@@ -25,8 +25,6 @@ pub extern "x86-interrupt" fn page_fault(
     }
   };
 
-  println!("PageFault");
-
   // PageFault in kernel heap? Fear not, we will allocate it and return
   let heap_end = heap::START.start_address() + heap::SIZE as u64;
   if heap::START.start_address() <= adr && adr < heap_end {

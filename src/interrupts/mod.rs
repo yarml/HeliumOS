@@ -3,13 +3,20 @@ mod lapic;
 pub mod pic;
 
 use self::{
-  exceptions::{div::div, gprot::gprot, pagefault::page_fault},
+  exceptions::{
+    div::div, doublefault::doublefault, gprot::gprot, pagefault::page_fault,
+    stacksegfault::stacksegfault,
+  },
   lapic::{error::error, spurious::spurious, timer::timer},
 };
+use crate::println;
 use spin::RwLock;
-use x86_64::structures::idt::InterruptDescriptorTable;
+use x86_64::{
+  structures::idt::{InterruptDescriptorTable, InterruptStackFrame},
+  PrivilegeLevel,
+};
 
-pub const ERROR_STACK_SIZE: usize = 2 * 1024;
+pub const ERROR_STACK_SIZE: usize = 8 * 1024;
 
 #[repr(u8)]
 pub enum Vectors {
@@ -33,10 +40,25 @@ pub fn init() {
   idt.divide_error.set_handler_fn(div);
   idt.general_protection_fault.set_handler_fn(gprot);
   idt.page_fault.set_handler_fn(page_fault);
+  idt.stack_segment_fault.set_handler_fn(stacksegfault);
+  unsafe {
+    idt
+      .double_fault
+      .set_handler_fn(doublefault)
+      .set_stack_index(1)
+  };
+
+  idt[32]
+    .set_handler_fn(testsyscall)
+    .set_privilege_level(PrivilegeLevel::Ring3);
 
   idt[Vectors::LocalApicError as u8].set_handler_fn(error);
   idt[Vectors::LocalApicSpurious as u8].set_handler_fn(spurious);
   idt[Vectors::LocalApicTimer as u8].set_handler_fn(timer);
+}
+
+extern "x86-interrupt" fn testsyscall(_frame: InterruptStackFrame) {
+  println!("Hello!!!");
 }
 
 pub fn load() {

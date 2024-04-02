@@ -1,5 +1,7 @@
 use super::{apic, ProcInfo};
 use crate::elf::ElfFile;
+use crate::println;
+use crate::sys;
 use crate::{
   elf::{self},
   fs::initrd,
@@ -9,7 +11,6 @@ use crate::{
     vmap_many,
   },
 };
-use crate::{println, sys};
 use alloc::sync::Arc;
 use alloc::{slice, vec::Vec};
 use core::arch::asm;
@@ -23,8 +24,8 @@ use x86_64::{
 };
 
 pub const USERSPACE_TOP: VirtAddr = VirtAddr::new_truncate(0x7fff_ffffffff);
-pub const USERSTACK_SIZE: usize = 4 * 1024;
-pub const USERSTACK_BOTTOM: u64 = USERSPACE_TOP.as_u64() + 1;
+pub const USERSTACK_SIZE: usize = 512 * 1024;
+pub const USERSTACK_BOTTOM: u64 = USERSPACE_TOP.as_u64() + 1 - 1024 * 1024;
 pub const USERSTACK_TOP: VirtAddr =
   VirtAddr::new_truncate(USERSTACK_BOTTOM - USERSTACK_SIZE as u64);
 
@@ -107,7 +108,7 @@ pub fn tick() {
     clock - since >= task.life_expectancy()
   }) {
     let mut task = task_lock.write();
-    println!("[Proc {}] Dropping {}", apic::id(), task.id);
+    println!("[Proc {}] Releasing {}", apic::id(), task.id);
     task.state = TaskState::Pending;
   }
 
@@ -274,6 +275,7 @@ impl Task {
         pgn,
         PageTableFlags::USER_ACCESSIBLE | PageTableFlags::WRITABLE,
       ) {
+        println!("{}", frames.len());
         tmp_local_reserve(0, USERSTACK_SIZE, &frames).fill(0);
       } else {
         return ExecResult::AllocationError;
@@ -288,6 +290,12 @@ impl Task {
 
   fn life_expectancy(&self) -> usize {
     (self.priority + 10) * apic::numcores()
+  }
+}
+
+impl Drop for Task {
+  fn drop(&mut self) {
+    println!("Dropping {}", self.id);
   }
 }
 
@@ -323,10 +331,10 @@ impl MemoryMap {
   ) -> Option<Vec<PhysFrame<Size4KiB>>> {
     let mut allocated_frames = Vec::new();
 
-    for _ in 0..n {
+    for i in 0..n {
       if let Some(frame) = palloc() {
         allocated_frames.push(frame);
-        if let None = self.add_raw(vadr, frame, 1, flags, true) {
+        if let None = self.add_raw(vadr + i as u64, frame, 1, flags, true) {
           pfree_all(&allocated_frames);
           return None;
         }
@@ -423,7 +431,6 @@ pub struct TaskProcState {
 pub enum TaskState {
   Running { since: usize },
   Pending,
-  Blocking,
 }
 
 impl TaskProcState {

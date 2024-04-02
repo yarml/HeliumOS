@@ -14,4 +14,4 @@ _start:
   mov rdi, 42
   syscall
 
-
+  int 32

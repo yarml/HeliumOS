@@ -1,0 +1,26 @@
+set disassembly-flavor intel
+set logging enabled on
+set trace-commands on
+set disassemble-next-line on
+
+add-symbol-file /vm/helium.dbg
+
+target remote | qemu-system-x86_64 \
+    -cpu qemu64 \
+    -net none \
+    -drive if=pflash,format=raw,unit=0,file=/usr/share/OVMF/OVMF_CODE.fd,readonly=on \
+    -drive if=pflash,format=raw,unit=1,file=/usr/share/OVMF/OVMF_VARS.fd \
+    -drive id=sysimg,if=none,format=raw,file=/vm/helium.img \
+    -device ahci,id=ahci \
+    -device ide-hd,drive=sysimg,bus=ahci.0 \
+    -display none \
+    -net none \
+    -m $MEMORY \
+    -smp $CPU \
+    -d int,cpu_reset \
+    -gdb stdio -S \
+    -monitor telnet:127.0.0.1:5544,server,nowait \
+    -debugcon telnet:127.0.0.1:5545,server,nowait
+
+break _start
+continue

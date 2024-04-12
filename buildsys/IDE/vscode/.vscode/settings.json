@@ -1,8 +1,0 @@
-{
-  "files.associations": {
-    "*.asm": "nasm",
-    "*.h": "c",
-    "*.inc": "c"
-  },
-  "rust-analyzer.linkedProjects": ["tools/upconfig/Cargo.toml"]
-}

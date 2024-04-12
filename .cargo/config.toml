@@ -1,0 +1,8 @@
+[build]
+target = "config/helium.json"
+
+[target.'cfg(target_os = "none")']
+runner = "make run-qemu"
+
+[unstable]
+build-std = ["core", "compiler_builtins", "alloc"]

@@ -1,3 +1,5 @@
+Warning: May be out of date.
+
 # Overview
 One of the most fundamental jobs of the operating system is managing memory.
 In x86, memory management has multiple layers. To manage memory, an operating
@@ -116,21 +118,28 @@ In general, the memory layout HeliumOS uses is as follows:
 | 15E1023P896T | 16E          | 128T         | Kernel space memory |
 
 ### Kernel space layout
-| Start*   | End*     | Size       | Description              |
-| -------- | -------- | ---------- | ------------------------ |
-| 0        | 8M       | 8M         | Vcache memory            |
-| 8M       | 256G     | 255G1016M  | Undefined                |
-| 256G     | 512G     | 256G       | Physical memory header   |
-| 512G     | 1T       | 512G       | Kernel Heap              |
-| 1T       | 1T512G   | 512G       | initrd                   |
-| 1T512G   | 1T512G4K | 4K         | LAPIC registers          |
-| 1T512G4K | 1T513G   | 1023M1024K | Undefined                |
-| 1T513G   | 1T768G   | 255G       | IOAPIC control registers |
-| 1T768G   | 2T       | 256G       | ACPI Tables              |
-| 2T       | 4T       | 2T         | Processor table          |
-| 4T       | 5T       | 1T         | Stack table              |
-| 5T       | 112T     | 107T       | Undefined                |
-| 112T     | 128T     | 16T        | Bootboot reserved        |
+The old table (Before Rust rewrite)
+| Start*   | End*     | Size       | Description                |
+| -------- | -------- | ---------- | -------------------------- |
+| 0        | 8M       | 8M         | Vcache memory              |
+| 8M       | 256G     | 255G1016M  | Undefined                  |
+| 256G     | 512G     | 256G       | Physical memory header     |
+| 512G     | 1T       | 512G       | Kernel Heap                |
+| 1T       | 1T512G   | 512G       | initrd                     |
+| 1T512G   | 1T512G4K | 4K         | LAPIC registers            |
+| 1T512G4K | 1T513G   | 1023M1024K | Undefined                  |
+| 1T513G   | 1T768G   | 255G       | IOAPIC control registers   |
+| 1T768G   | 2T       | 256G       | ACPI Tables                |
+| 2T       | 4T       | 2T         | Processor table            |
+| 4T       | 5T       | 1T         | Stack table                |
+| 5T       | 6T       | 1T         | GDT table                  |
+| 6T       | 7T       | 1T         | TSS table                  |
+| 7T       | 8T       | 1T         | NMI stacks                 |
+| 8T       | 9T       | 1T         | DF stacks                  |
+| 9T       | 13T      | 4T         | Temporary task loading map |
+| 13T      | 112T     | 101T       | Undefined                  |
+| 112T     | 128T     | 16T        | Bootboot reserved          |
+
 
 *Addresses are offseted, the real addresses can be calculated by adding
 15E1023P896T to the addresses in the table*

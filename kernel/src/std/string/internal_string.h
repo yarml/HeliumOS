@@ -1,6 +1,0 @@
-#ifndef CSTD_INTERNAL_STRING_H
-#define CSTD_INTERNAL_STRING_H
-
-#define MASS_OP_MIN_BYTES (64)
-
-#endif

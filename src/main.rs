@@ -3,7 +3,6 @@
 #![feature(allocator_api)]
 #![feature(alloc_layout_extra)]
 #![feature(abi_x86_interrupt)]
-#![feature(pointer_is_aligned)]
 #![feature(ascii_char_variants)]
 #![feature(ascii_char)]
 #![feature(option_take_if)]

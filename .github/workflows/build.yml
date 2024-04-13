@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [ "rust-rewrite" ]
+    branches: [ "master" ]
 
 jobs:
   build:

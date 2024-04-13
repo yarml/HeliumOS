@@ -8,8 +8,8 @@ RUN apt-get update &&\
                     build-essential bison flex \
                     libgmp3-dev libmpc-dev libmpfr-dev \
                     texinfo libisl-dev zip nasm &&\
-    rustup toolchain install nightly-x86_64-unknown-linux-gnu &&\
-    rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
+    rustup toolchain install nightly-2024-04-13-x86_64-unknown-linux-gnu &&\
+    rustup component add rust-src --toolchain nightly-2024-04-13-x86_64-unknown-linux-gnu
 
 WORKDIR /tmp
 

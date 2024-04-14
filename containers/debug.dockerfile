@@ -4,7 +4,7 @@ ARG CPU MEMORY
 
 RUN apt-get update &&\
     apt-get -y upgrade &&\
-    apt-get -y install --no-install-recommends qemu-system ovmf gdb
+    apt-get -y install --no-install-recommends qemu-system ovmf gdb tmux socat
 
-WORKDIR /vm/
-ENTRYPOINT [ "rust-gdb" ]
+COPY --chmod=0755 ./scripts/debug.sh /vm/debug.sh
+ENTRYPOINT [ "/vm/debug.sh" ]

@@ -24,12 +24,11 @@ services:
       CPU: 1
     network_mode: host
     volumes:
-      - ./out:/vm:rw
+      - ./out/helium.img:/vm/helium.img:rw
+      - ./out/helium.dbg:/vm/helium.dbg:ro
       - ./config/gdbinit:/root/.gdbinit:ro
       - ./config/tmux.conf:/root/.tmux.conf:ro
       - ./src:/build/src:ro
-
 volumes:
   target:
   registry:
-

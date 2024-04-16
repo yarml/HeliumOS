@@ -95,7 +95,7 @@ impl KernelGlobalDescriptorTable {
 
   // unsafe: The caller must ensure that init() was called before
   pub unsafe fn tss() -> &'static mut TaskStateSegment {
-    let ptr = GDT_TABLE_PTR
+    let ptr = TSS_TABLE_PTR
       .as_mut_ptr::<TaskStateSegment>()
       .add(apic::id());
     ptr.as_mut().unwrap()

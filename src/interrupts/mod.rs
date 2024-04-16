@@ -9,12 +9,8 @@ use self::{
   },
   lapic::{error::error, spurious::spurious, timer::timer},
 };
-use crate::println;
 use spin::RwLock;
-use x86_64::{
-  structures::idt::{InterruptDescriptorTable, InterruptStackFrame},
-  PrivilegeLevel,
-};
+use x86_64::structures::idt::InterruptDescriptorTable;
 
 pub const ERROR_STACK_SIZE: usize = 8 * 1024;
 
@@ -48,17 +44,9 @@ pub fn init() {
       .set_stack_index(1)
   };
 
-  idt[32]
-    .set_handler_fn(testsyscall)
-    .set_privilege_level(PrivilegeLevel::Ring3);
-
   idt[Vectors::LocalApicError as u8].set_handler_fn(error);
   idt[Vectors::LocalApicSpurious as u8].set_handler_fn(spurious);
   idt[Vectors::LocalApicTimer as u8].set_handler_fn(timer);
-}
-
-extern "x86-interrupt" fn testsyscall(_frame: InterruptStackFrame) {
-  println!("Hello!!!");
 }
 
 pub fn load() {

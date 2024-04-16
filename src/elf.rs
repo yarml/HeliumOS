@@ -22,6 +22,7 @@ impl Identification {
 }
 
 #[repr(u8)]
+#[allow(dead_code)]
 #[derive(PartialEq)]
 pub enum Class {
   None,
@@ -30,6 +31,7 @@ pub enum Class {
 }
 
 #[repr(u8)]
+#[allow(dead_code)]
 #[derive(PartialEq)]
 pub enum Endian {
   None,
@@ -131,6 +133,7 @@ impl<'a> Iterator for ProgramHeaderIterator<'a> {
 }
 
 #[repr(u16)]
+#[allow(dead_code)]
 pub enum FileType {
   None,
   Relocatable,
@@ -140,6 +143,7 @@ pub enum FileType {
 }
 
 #[repr(u16)]
+#[allow(dead_code)]
 pub enum FileMachine {
   None,
   M32,
@@ -165,15 +169,15 @@ pub struct ProgramHeader {
 }
 
 impl ProgramHeader {
-  pub fn executable(&self) -> bool {
-    (self.flags & 1) != 0
-  }
+  // pub fn executable(&self) -> bool {
+  //   (self.flags & 1) != 0
+  // }
   pub fn writable(&self) -> bool {
     (self.flags & 2) != 0
   }
-  pub fn readable(&self) -> bool {
-    (self.flags & 4) != 0
-  }
+  // pub fn readable(&self) -> bool {
+  //   (self.flags & 4) != 0
+  // }
 
   pub fn memory_flags(&self) -> PageTableFlags {
     let mut flags = PageTableFlags::empty();
@@ -187,6 +191,7 @@ impl ProgramHeader {
 }
 
 #[repr(u32)]
+#[allow(dead_code)]
 #[derive(Debug, Clone, Copy)]
 pub enum ProgramType {
   Null,

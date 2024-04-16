@@ -11,6 +11,8 @@ HeliumOS, a hobby x86_64 operating system whose main goals are learning and test
 
 ![HeliumOS Screenshot](/docs/screenshot.png)
 
+*Picture taken before Rust rewrite, the OS does not look like this yet again.*
+
 # Index
 - [HeliumOS](#heliumos)
 - [Index](#index)
@@ -27,13 +29,14 @@ HeliumOS, a hobby x86_64 operating system whose main goals are learning and test
 * [X] Interrupts
 * [X] Kernel heap
 * [X] APIC
+* [ ] User space processes
+  * [X] System calls basics
+  * [ ] Scheduling
 * [ ] Basic device drivers
   * [ ] Framebuffer
   * [ ] Keyboard
   * [ ] Mouse
-* [ ] User space processes
-  * [ ] System calls
-  * [ ] Multiprocessing
+* [ ] System Call API
 * [ ] Filesystems
 * [ ] Disk
 * [ ] Power Management
@@ -52,7 +55,8 @@ To build the kernel, run `docker compose run build`. Note however, that in the f
 
 The output of the above command are the files in the `out/` directory, the most interesting of which is `out/helium.img`, which can be burned on a USB stick, or tossed into a VM.
 
-There is also support for a qemu virtual machine that is containerized, althoug it is not convenient to use. You can run the Qemu vm with `docker compose run qemu`, then with a VNC client connect to `localhost:11800`.
+To ease the debugging of the development, you can run a Qemu in container alongside gdb, and see all debug output of the operating system
+with `docker compose run debug`. Recommendation: Do this on a large enough terminal window.
 
 # Documentation
 Documentation for the different sub-components of HeliumOS can be found in [docs/](docs/), albeit it is not always up to date.

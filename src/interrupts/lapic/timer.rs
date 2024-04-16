@@ -7,5 +7,5 @@ pub(in crate::interrupts) extern "x86-interrupt" fn timer(
   interrupts::disable();
   task::tick();
   LocalApicRegisterMap::get().eoi();
-  task::continue_current();
+  unsafe { task::continue_current() };
 }

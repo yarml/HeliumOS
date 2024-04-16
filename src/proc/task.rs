@@ -73,10 +73,10 @@ fn tmp_local_reserve(
 
 pub fn tick() {
   let pinfo = ProcInfo::instance();
-  let mut tasks_lock = if pinfo.tick_miss > MAX_TICK_MISS {
-    TASKS.get().unwrap().write()
+  let tasks_lock = if pinfo.tick_miss > MAX_TICK_MISS {
+    TASKS.get().unwrap().upgradeable_read()
   } else {
-    match TASKS.get().unwrap().try_write() {
+    match TASKS.get().unwrap().try_upgradeable_read() {
       Some(lock) => lock,
       None => {
         pinfo.tick_miss += 1;
@@ -91,15 +91,18 @@ pub fn tick() {
   let clock = unsafe { CLOCK.fetch_add(1, Ordering::Relaxed) };
 
   // If no task exists, run init
-  if tasks_lock.len() == 0 {
+  let tasks_lock = if tasks_lock.len() == 0 {
+    let mut tasks_lock = tasks_lock.upgrade();
     match Task::exec_initrd("/bin/init", &mut tasks_lock) {
       ExecResult::Success(id) => {
         println!("[Proc {}] Start init with ID: {}", apic::id(), id)
       }
       error => panic!("Could not run /bin/init: {:?}", error),
     }
-  }
-  let tasks_lock = tasks_lock.downgrade();
+    tasks_lock.downgrade()
+  } else {
+    tasks_lock.downgrade()
+  };
 
   if let Some(task_lock) = pinfo.current_task.take_if(takif) {
     let mut task = task_lock.write();
@@ -145,20 +148,26 @@ pub fn tick() {
   }
 }
 
-pub fn continue_current() -> ! {
+// unsafe: Caller must manually drop any lock they are holding
+pub unsafe fn continue_current() -> ! {
   let pinfo = ProcInfo::instance();
 
   if let Some(task_lock) = &pinfo.current_task {
     let task = task_lock.read();
     task.memory_map.apply();
-    unsafe { task.procstate.apply() }
+    // FIXME: Now this is tricky, apply() will not give a chance for the lock to release,
+    // As such, we should release it by ourselves, and there is a small time frame
+    // Where if another processor writes to the task state, we could be fucked.
+    let state =
+      unsafe { (&task.procstate as *const TaskProcState).as_ref() }.unwrap();
+    drop(task);
+    unsafe { state.apply() };
   } else {
     sys::event_loop()
   }
 }
 
 fn takif(task_lock: &mut TaskRef) -> bool {
-  println!("{:?}", task_lock);
   let task = task_lock.write();
   let TaskState::Running { since } = task.state else {
     unreachable!()
@@ -342,7 +351,10 @@ impl MemoryMap {
     for i in 0..n {
       if let Some(frame) = palloc() {
         allocated_frames.push(frame);
-        if self.add_raw(vadr + i as u64, frame, 1, flags, true).is_none() {
+        if self
+          .add_raw(vadr + i as u64, frame, 1, flags, true)
+          .is_none()
+        {
           pfree_all(&allocated_frames);
           return None;
         }
@@ -437,8 +449,7 @@ pub struct TaskProcState {
   rflags: RFlags, // Offset 136; iret handled
 }
 
-#[derive(Debug)]
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 pub enum TaskState {
   Running { since: usize },
   Pending,

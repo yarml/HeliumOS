@@ -1,15 +1,18 @@
 
-FROM rust:1.76.0-bookworm
+FROM rust:1.77.2-bookworm
 
+COPY ./rust-toolchain /build/env/rust-toolchain
+COPY --chmod=0755 ./config/env/common.sh /build/env/common.sh
 
-RUN apt-get update &&\
+RUN . /build/env/common.sh && \
+    apt-get update &&\
     apt-get -y upgrade &&\
     apt-get -y install --no-install-recommends curl \
                     build-essential bison flex \
                     libgmp3-dev libmpc-dev libmpfr-dev \
                     texinfo libisl-dev zip nasm &&\
-    rustup toolchain install nightly-2024-04-13-x86_64-unknown-linux-gnu &&\
-    rustup component add rust-src --toolchain nightly-2024-04-13-x86_64-unknown-linux-gnu
+    rustup toolchain install ${RUST_TOOLCHAIN} &&\
+    rustup component add rust-src --toolchain ${RUST_TOOLCHAIN}
 
 WORKDIR /tmp
 

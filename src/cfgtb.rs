@@ -38,7 +38,7 @@ pub mod acpi {
           handler(table);
         }
 
-        list.len() != 0
+        !list.is_empty()
       }
       _ => false,
     }

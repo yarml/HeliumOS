@@ -190,7 +190,7 @@ impl<'a> VCache<'a> {
       }
     }
 
-    if let None = p2index {
+    if p2index.is_none() {
       if lazy_pages_count == 0 {
         // No free pages were found, and no lazy pages can be freed either
         return Err(());
@@ -234,7 +234,7 @@ impl<'a> VCache<'a> {
     self.state.p2_freecount[p2index] -= 1;
 
     // If we went through lazy page invalidation, we already have a target_p1e
-    if let None = p1index {
+    if p1index.is_none() {
       for p1i in 0..512 {
         let flags = self.p1[p2index][p1i].flags();
         if !flags.contains(PageTableFlags::PRESENT) {
@@ -275,10 +275,8 @@ impl<'a> VCache<'a> {
         Ok(page) => page,
         Err(_) => {
           // Unmap previously mapped pages and return error
-          for r in result {
-            if let Some(page) = r {
-              self.unmap(page);
-            }
+          for page in result.into_iter().flatten() {
+            self.unmap(page);
           }
           return Err(());
         }

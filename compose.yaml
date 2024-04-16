@@ -19,15 +19,15 @@ services:
     build:
       context: ./
       dockerfile: containers/debug.dockerfile
-    environment:
-      MEMORY: 512M
-      CPU: 1
+    env_file:
+      - ./config/env/debug.env
     network_mode: host
     volumes:
+      - registry:/usr/local/cargo/registry:rw
       - ./out/helium.img:/vm/helium.img:rw
       - ./out/helium.dbg:/vm/helium.dbg:ro
-      - ./config/gdbinit:/root/.gdbinit:ro
       - ./config/tmux.conf:/root/.tmux.conf:ro
+      - ./config/gdbinit:/root/.gdbinit:ro
       - ./src:/build/src:ro
 volumes:
   target:

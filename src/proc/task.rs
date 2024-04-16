@@ -52,6 +52,7 @@ pub(super) fn init() {
   TASKS.call_once(|| RwLock::new(Vec::new()));
 }
 
+#[allow(clippy::mut_from_ref)]
 fn tmp_local_reserve(
   offset: usize,
   size: usize,
@@ -100,13 +101,7 @@ pub fn tick() {
   }
   let tasks_lock = tasks_lock.downgrade();
 
-  if let Some(task_lock) = pinfo.current_task.take_if(|task_lock| {
-    let task = task_lock.write();
-    let TaskState::Running { since } = task.state else {
-      unreachable!()
-    };
-    clock - since >= task.life_expectancy()
-  }) {
+  if let Some(task_lock) = pinfo.current_task.take_if(takif) {
     let mut task = task_lock.write();
     println!("[Proc {}] Releasing {}", apic::id(), task.id);
     task.state = TaskState::Pending;
@@ -162,6 +157,17 @@ pub fn continue_current() -> ! {
   }
 }
 
+fn takif(task_lock: &mut TaskRef) -> bool {
+  println!("{:?}", task_lock);
+  let task = task_lock.write();
+  let TaskState::Running { since } = task.state else {
+    unreachable!()
+  };
+  let clock = unsafe { *CLOCK.get_mut() };
+  clock - since >= task.life_expectancy()
+}
+
+#[derive(Debug)]
 pub struct Task {
   id: usize,
   priority: usize,
@@ -300,6 +306,7 @@ impl Drop for Task {
 }
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum ExecResult {
   Success(usize),
   FileError,
@@ -312,6 +319,7 @@ pub enum ExecResult {
   UnsupportedDirective(u32),
 }
 
+#[derive(Debug)]
 pub struct MemoryMap {
   mappings: Vec<MemoryMapping>,
 }
@@ -334,7 +342,7 @@ impl MemoryMap {
     for i in 0..n {
       if let Some(frame) = palloc() {
         allocated_frames.push(frame);
-        if let None = self.add_raw(vadr + i as u64, frame, 1, flags, true) {
+        if self.add_raw(vadr + i as u64, frame, 1, flags, true).is_none() {
           pfree_all(&allocated_frames);
           return None;
         }
@@ -347,15 +355,15 @@ impl MemoryMap {
     Some(allocated_frames)
   }
 
-  pub fn add(
-    &mut self,
-    vadr: Page<Size4KiB>,
-    padr: PhysFrame<Size4KiB>,
-    n: usize,
-    flags: PageTableFlags,
-  ) -> Option<&MemoryMapping> {
-    self.add_raw(vadr, padr, n, flags, false)
-  }
+  // pub fn add(
+  //   &mut self,
+  //   vadr: Page<Size4KiB>,
+  //   padr: PhysFrame<Size4KiB>,
+  //   n: usize,
+  //   flags: PageTableFlags,
+  // ) -> Option<&MemoryMapping> {
+  //   self.add_raw(vadr, padr, n, flags, false)
+  // }
 
   fn add_raw(
     &mut self,
@@ -383,6 +391,7 @@ impl MemoryMap {
   }
 }
 
+#[derive(Debug)]
 pub struct MemoryMapping {
   vadr: Page<Size4KiB>,
   padr: PhysFrame<Size4KiB>,
@@ -404,6 +413,7 @@ impl Drop for MemoryMapping {
   }
 }
 
+#[derive(Debug)]
 #[repr(C)]
 pub struct TaskProcState {
   rax: u64, // Offset 0
@@ -427,6 +437,7 @@ pub struct TaskProcState {
   rflags: RFlags, // Offset 136; iret handled
 }
 
+#[derive(Debug)]
 #[derive(PartialEq)]
 pub enum TaskState {
   Running { since: usize },

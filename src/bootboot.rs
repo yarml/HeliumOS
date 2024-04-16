@@ -2,7 +2,7 @@ use x86_64::{align_down, align_up, PhysAddr};
 
 use crate::mem::PAGE_SIZE;
 
-pub const BOOTBOOT_MAGIC: &'static [u8; 5usize] = b"BOOT\0";
+pub const BOOTBOOT_MAGIC: &[u8; 5usize] = b"BOOT\0";
 pub const PROTOCOL_MINIMAL: u32 = 0;
 pub const PROTOCOL_STATIC: u32 = 1;
 pub const PROTOCOL_DYNAMIC: u32 = 2;
@@ -39,7 +39,7 @@ pub struct MMapEnt {
 
 #[repr(C, packed)]
 #[derive(Copy, Clone)]
-pub struct BOOTBOOT {
+pub struct BootBoot {
   pub magic: [u8; 4usize],
   pub size: u32,
   pub protocol: u8,
@@ -108,8 +108,8 @@ pub struct PSF2 {
   pub glyphs: u8,
 }
 
-pub fn bootboot() -> &'static BOOTBOOT {
-  unsafe { (BOOTBOOT_INFO as *const BOOTBOOT).as_ref().unwrap() }
+pub fn bootboot() -> &'static BootBoot {
+  unsafe { (BOOTBOOT_INFO as *const BootBoot).as_ref().unwrap() }
 }
 pub fn kernel_stack_size() -> usize {
   unsafe { &initstack as *const usize as usize }
@@ -120,7 +120,7 @@ pub enum MMapType {
   Used,
   Free,
   Acpi,
-  MMIO,
+  MemoryMappedIO,
 }
 
 impl MMapEnt {
@@ -129,7 +129,7 @@ impl MMapEnt {
       0 => MMapType::Used,
       1 => MMapType::Free,
       2 => MMapType::Acpi,
-      3 => MMapType::MMIO,
+      3 => MMapType::MemoryMappedIO,
       other => panic!("Unknown memory map type {other}"),
     }
   }

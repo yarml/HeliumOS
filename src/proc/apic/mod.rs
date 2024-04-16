@@ -56,7 +56,7 @@ pub(super) fn init() {
   static MAPPED: Once<()> = Once::new();
 
   if !is_primary() {
-    while let None = MAPPED.get() {
+    while MAPPED.get().is_none() {
       pause()
     }
     MapperFlushAll::new().flush_all();
@@ -85,10 +85,10 @@ pub(super) fn init() {
     let apic_config_lock = apic_config.read();
     for cfg in apic_config_lock.iter() {
       let (lint, flags) = match cfg {
-        LocalApicNmiConfig::All { lint, flags } => (*lint as usize, *flags),
+        LocalApicNmiConfig::All { lint, flags } => (*lint, *flags),
         LocalApicNmiConfig::Specific { id, lint, flags } => {
           if *id == apic::id() {
-            (*lint as usize, *flags)
+            (*lint, *flags)
           } else {
             continue;
           }
@@ -131,10 +131,10 @@ pub enum IoApicRedirectionSource {
 }
 
 struct IoApicInfo {
-  regmap: &'static mut IoApicRegisterMap,
-  id: usize,
-  irq_base: usize,
-  len: usize,
+  _regmap: &'static mut IoApicRegisterMap,
+  _id: usize,
+  _irq_base: usize,
+  _len: usize,
 }
 
 impl IoApicInfo {
@@ -159,10 +159,10 @@ impl IoApicInfo {
     let len = regmap.maxredent() + 1;
 
     Self {
-      regmap,
-      id: entry.ioapicid as usize,
-      irq_base: entry.gsib as usize,
-      len,
+      _regmap: regmap,
+      _id: entry.ioapicid as usize,
+      _irq_base: entry.gsib as usize,
+      _len: len,
     }
   }
 }
@@ -190,15 +190,15 @@ impl IoApicRegisterMap {
     }
   }
 
-  pub fn id(&mut self) -> usize {
-    ((self.read(0) >> 24) & 0xF) as usize
-  }
+  // pub fn id(&mut self) -> usize {
+  //   ((self.read(0) >> 24) & 0xF) as usize
+  // }
   pub fn maxredent(&mut self) -> usize {
     ((self.read(1) >> 16) & 0xFF) as usize
   }
-  pub fn version(&mut self) -> usize {
-    (self.read(1) & 0xFF) as usize
-  }
+  // pub fn version(&mut self) -> usize {
+  //   (self.read(1) & 0xFF) as usize
+  // }
 }
 
 pub mod cfgtb {

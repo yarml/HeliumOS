@@ -115,5 +115,5 @@ fn map_table(
   }
 
   vmemmap.insert(frame, page);
-  return table;
+  table
 }

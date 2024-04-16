@@ -24,7 +24,7 @@ pub fn is_primary() -> bool {
 }
 
 struct ProcInfo {
-  id: usize,
+  _id: usize,
   tick_miss: usize,
   current_task: Option<TaskRef>,
 }
@@ -99,7 +99,7 @@ pub mod init {
 
   // Wait for initialization
   pub fn wait() -> ! {
-    while let None = IGNITION.get() {
+    while IGNITION.get().is_none() {
       pause();
     }
     wakeup()
@@ -123,7 +123,7 @@ pub mod init {
     }
 
     let pinfo = ProcInfo {
-      id,
+      _id: id,
       tick_miss: 0,
       current_task: None,
     };

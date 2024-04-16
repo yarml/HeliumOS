@@ -2,7 +2,6 @@ use crate::{mem::gdt::KernelGlobalDescriptorTable, println};
 use num_derive::FromPrimitive;
 use num_traits::FromPrimitive;
 use x86_64::{
-  instructions::interrupts,
   registers::{
     control::{Efer, EferFlags},
     model_specific::{LStar, Star},
@@ -29,12 +28,12 @@ fn syscall1_adr() -> VirtAddr {
 
 #[no_mangle]
 extern "C" fn syscall_handle_2(
-  rdi: u64,
-  rsi: u64,
-  rdx: u64,
-  rcx: u64,
-  r8: u64,
-  r9: u64,
+  _rdi: u64,
+  _rsi: u64,
+  _rdx: u64,
+  _rcx: u64,
+  _r8: u64,
+  _r9: u64,
   rax: u64,
 ) -> SyscallResult {
   println!("Syscall!");
@@ -44,20 +43,21 @@ extern "C" fn syscall_handle_2(
   };
 
   match syscall {
-    Syscall::Write => println!("Write"),
+    Syscall::Write => {
+      println!("Write");
+      SyscallResult::Sucess
+    }
     Syscall::Exit => {
       println!("Exit");
+      SyscallResult::Sucess
     }
   }
-
-  SyscallResult::Sucess
 }
 
 #[repr(u64)]
 enum SyscallResult {
   Sucess,
   InvalidSyscall,
-  Error,
 }
 
 #[derive(FromPrimitive)]

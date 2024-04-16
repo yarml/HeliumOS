@@ -18,6 +18,6 @@ QEMU_CMD=$(echo qemu-system-x86_64 \
     -s -S \
     -monitor unix:qms,server)
 
-tmux new rust-gdb -tui \; \
+tmux new sh -c "sleep 1 && rust-gdb -tui" \; \
     splitp -h $QEMU_CMD \; \
     splitp -v sh -c "sleep 1 && socat -,echo=0,icanon=0 unix-connect:qms"

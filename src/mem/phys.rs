@@ -1,6 +1,6 @@
 use super::early_heap::EarlyAllocator;
 use super::vmap;
-use crate::bootboot::{bootboot, MMapEnt, MMapType, BOOTBOOT};
+use crate::bootboot::{bootboot, MMapEnt, MMapType, BootBoot};
 use crate::mem::PAGE_SIZE;
 use crate::println;
 use alloc::vec::Vec;
@@ -42,6 +42,8 @@ impl SegmentHeader {
   pub fn bitmap_u64len(&self) -> usize {
     self.bitmap_size() / 8
   }
+
+  #[allow(clippy::mut_from_ref)]
   pub fn bitmap(&self) -> &mut [u64] {
     let self_ptr = self as *const SegmentHeader;
     let bitmap_ptr = unsafe { self_ptr.add(1) } as *mut u64;
@@ -59,7 +61,7 @@ pub(in crate::mem) fn init() {
 
   let bootboot = bootboot();
 
-  let mmap_len = (bootboot.size as usize - mem::size_of::<BOOTBOOT>())
+  let mmap_len = (bootboot.size as usize - mem::size_of::<BootBoot>())
     / mem::size_of::<MMapEnt>()
     + 1;
 
@@ -102,12 +104,12 @@ pub(in crate::mem) fn init() {
     }
   }
 
-  if let None = pmm_header {
+  if pmm_header.is_none() {
     panic!("Could not find a place for the PMM header");
   }
 
   let pmm_header = pmm_header.unwrap();
-  let mut header_cursor = 0 as usize;
+  let mut header_cursor = 0usize;
 
   let mut segment_references = Vec::new_in(EarlyAllocator);
   /* Initialize PMM header & setup the segment header reference vector */
@@ -211,8 +213,7 @@ unsafe impl FrameAllocator<Size4KiB> for PhysicalFrameAllocator {
       let (page_windex, control_word) = match bitmap
         .iter_mut()
         .enumerate()
-        .filter(|(_, control_word)| **control_word != u64::MAX)
-        .next()
+        .find(|(_, control_word)| **control_word != u64::MAX)
       {
         Some(result) => result,
         None => continue,

@@ -16,14 +16,15 @@ pub const ERROR_STACK_SIZE: usize = 8 * 1024;
 
 #[repr(u8)]
 pub enum Vectors {
+  TestInterrupt = 0x20,
   LocalApicError = 0xFD,
   LocalApicSpurious = 0xFF,
   LocalApicTimer = 0xF0,
 }
 
-impl Into<u8> for Vectors {
-  fn into(self) -> u8 {
-    self as u8
+impl From<Vectors> for u8 {
+  fn from(value: Vectors) -> Self {
+    value as u8
   }
 }
 

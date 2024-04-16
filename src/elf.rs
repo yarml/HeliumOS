@@ -16,7 +16,7 @@ impl Identification {
   pub fn verify(&self) -> bool {
     &self.magic == b"\x7fELF"
       && self.class == Class::Class64
-      && self.endian == Endian::LSB
+      && self.endian == Endian::LeastSignificantByte
       && self.version == 1
   }
 }
@@ -35,8 +35,8 @@ pub enum Class {
 #[derive(PartialEq)]
 pub enum Endian {
   None,
-  LSB,
-  MSB,
+  LeastSignificantByte,
+  MostSignificantByte,
 }
 
 pub struct ElfFile<'a> {

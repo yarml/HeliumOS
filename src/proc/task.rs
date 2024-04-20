@@ -1,5 +1,6 @@
 use super::{apic, ProcInfo};
 use crate::elf::ElfFile;
+use crate::mem::gdt::KernelGlobalDescriptorTable;
 use crate::println;
 use crate::sys;
 use crate::{
@@ -13,6 +14,7 @@ use crate::{
 };
 use alloc::sync::Arc;
 use alloc::{slice, vec::Vec};
+use x86_64::structures::gdt::SegmentSelector;
 use core::arch::asm;
 use core::sync::atomic::{AtomicUsize, Ordering};
 use spin::{rwlock::RwLock, Once, RwLockWriteGuard};
@@ -71,7 +73,7 @@ fn tmp_local_reserve(
   unsafe { slice::from_raw_parts_mut(ptr, size) }
 }
 
-pub fn tick() {
+pub fn tick(proc_state: &TaskProcState) {
   let pinfo = ProcInfo::instance();
   let tasks_lock = if pinfo.tick_miss > MAX_TICK_MISS {
     TASKS.get().unwrap().upgradeable_read()
@@ -90,6 +92,12 @@ pub fn tick() {
   // If we got the lock, then this is a clock tick
   let clock = unsafe { CLOCK.fetch_add(1, Ordering::Relaxed) };
 
+  // Save task state, if there was a task that is
+  if let Some(task_lock) = &pinfo.current_task {
+    let mut task = task_lock.write();
+    task.procstate = *proc_state;
+  }
+
   // If no task exists, run init
   let tasks_lock = if tasks_lock.len() == 0 {
     let mut tasks_lock = tasks_lock.upgrade();
@@ -104,7 +112,14 @@ pub fn tick() {
     tasks_lock.downgrade()
   };
 
-  if let Some(task_lock) = pinfo.current_task.take_if(takif) {
+  if let Some(task_lock) = pinfo.current_task.take_if(|task_lock| {
+    let task = task_lock.read();
+    let TaskState::Running { since } = task.state else {
+      unreachable!()
+    };
+    let clock = unsafe { *CLOCK.get_mut() };
+    clock - since >= task.life_expectancy()
+  }) {
     let mut task = task_lock.write();
     println!("[Proc {}] Releasing {}", apic::id(), task.id);
     task.state = TaskState::Pending;
@@ -165,15 +180,6 @@ pub unsafe fn continue_current() -> ! {
   } else {
     sys::event_loop()
   }
-}
-
-fn takif(task_lock: &mut TaskRef) -> bool {
-  let task = task_lock.write();
-  let TaskState::Running { since } = task.state else {
-    unreachable!()
-  };
-  let clock = unsafe { *CLOCK.get_mut() };
-  clock - since >= task.life_expectancy()
 }
 
 #[derive(Debug)]
@@ -425,8 +431,14 @@ impl Drop for MemoryMapping {
   }
 }
 
-#[derive(Debug)]
-#[repr(C)]
+#[derive(Debug, PartialEq)]
+pub enum TaskState {
+  Running { since: usize },
+  Pending,
+}
+
+#[derive(Debug, Clone, Copy)]
+#[repr(C, packed)]
 pub struct TaskProcState {
   rax: u64, // Offset 0
   rbx: u64, // Offset 8
@@ -447,16 +459,15 @@ pub struct TaskProcState {
 
   rip: VirtAddr,  // Offset 128; iret handled
   rflags: RFlags, // Offset 136; iret handled
-}
 
-#[derive(Debug, PartialEq)]
-pub enum TaskState {
-  Running { since: usize },
-  Pending,
+  code_seg: SegmentSelector, // Offset 144
+  data_seg: SegmentSelector, // Offset 146
+  // Offset 148
 }
 
 impl TaskProcState {
   pub fn new(entrypoint: VirtAddr) -> Self {
+    let kgdt = unsafe { KernelGlobalDescriptorTable::entry() };
     Self {
       rax: 0,
       rbx: 0,
@@ -476,12 +487,16 @@ impl TaskProcState {
       r15: 0,
       rip: entrypoint,
       rflags: RFlags::INTERRUPT_FLAG,
+      code_seg: kgdt.ucode_seg,
+      data_seg: kgdt.udata_seg,
     }
   }
 
   // Jumps to userspace with the configuration in Self
   // unsafe: Self's configuration must be valid
   pub unsafe fn apply(&self) -> ! {
+    let data_seg = self.data_seg.0;
+    let code_seg = self.code_seg.0;
     asm! {
       // Setup segment registers
       "mov ds, ax",
@@ -492,10 +507,9 @@ impl TaskProcState {
       // SS and CS are handled by iret
 
       "push rax", // SS for iret
-      "add ax, 0x08",
       "push QWORD PTR [rdi + 32]", // RSP for iret
       "push QWORD PTR [rdi + 136]", // RFLAGS for iret
-      "push rax", // CS for iret
+      "push rcx", // CS for iret
       "push QWORD PTR [rdi + 128]", // RIP for iret
 
       // Now, we load the other registers with their values, RDI is last
@@ -518,7 +532,8 @@ impl TaskProcState {
       // Hopefully everything works
       "iretq",
 
-      in("rax") 0x1B,
+      in("rax") data_seg,
+      in("rcx") code_seg,
       in("rdi") self as *const Self
     };
     unreachable!()

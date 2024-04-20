@@ -7,7 +7,7 @@ use self::{
     div::div, doublefault::doublefault, gprot::gprot, pagefault::page_fault,
     stacksegfault::stacksegfault,
   },
-  lapic::{error::error, spurious::spurious, timer::timer},
+  lapic::{error::error, spurious::spurious, timer::timer_inter_1_adr},
 };
 use spin::RwLock;
 use x86_64::structures::idt::InterruptDescriptorTable;
@@ -47,7 +47,9 @@ pub fn init() {
 
   idt[Vectors::LocalApicError as u8].set_handler_fn(error);
   idt[Vectors::LocalApicSpurious as u8].set_handler_fn(spurious);
-  idt[Vectors::LocalApicTimer as u8].set_handler_fn(timer);
+  unsafe {
+    idt[Vectors::LocalApicTimer as u8].set_handler_addr(timer_inter_1_adr())
+  };
 }
 
 pub fn load() {

@@ -5,14 +5,13 @@ services:
       dockerfile: containers/build.dockerfile
     volumes:
       - ./out:/build/out:rw
-      - ./src:/build/src:ro
-      - target:/build/target:rw
+      - ./kernel:/build/kernel:ro
+      - ./userspace:/build/userspace:ro
+      - target-kernel:/build/kernel/target:rw
+      - target-userspace:/build/userspace/target:rw
       - registry:/usr/local/cargo/registry:rw
       - ./.cargo:/build/.cargo:ro
       - ./config:/build/config:ro
-      - ./build.rs:/build/build.rs:ro
-      - ./Cargo.toml:/build/Cargo.toml:ro
-      - ./Cargo.lock:/build/Cargo.lock:rw
       - ./rustfmt.toml:/build/rustfmt.toml:ro
       - ./rust-toolchain:/build/rust-toolchain:ro
   debug:
@@ -24,11 +23,13 @@ services:
     network_mode: host
     volumes:
       - registry:/usr/local/cargo/registry:rw
-      - ./out/helium.img:/vm/helium.img:rw
-      - ./out/helium.dbg:/vm/helium.dbg:ro
+      - ./out/helium.iso:/vm/helium.iso:rw
+      - ./out/kernel.dbg:/vm/kernel.dbg:ro
       - ./config/tmux.conf:/root/.tmux.conf:ro
       - ./config/gdbinit:/root/.gdbinit:ro
-      - ./src:/build/src:ro
+      - ./kernel:/build/kernel:ro
+      - ./userspace:/build/userspace:ro
 volumes:
-  target:
+  target-kernel:
+  target-userspace:
   registry:

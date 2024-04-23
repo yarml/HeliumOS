@@ -14,7 +14,6 @@ use crate::{
 };
 use alloc::sync::Arc;
 use alloc::{slice, vec::Vec};
-use x86_64::structures::gdt::SegmentSelector;
 use core::arch::asm;
 use core::sync::atomic::{AtomicUsize, Ordering};
 use spin::{rwlock::RwLock, Once, RwLockWriteGuard};
@@ -270,7 +269,7 @@ impl Task {
             / mem::PAGE_SIZE;
           if let Some(frames) = memory_map.allocate(page_start, pgn, flags) {
             let data = tmp_local_reserve(
-              (page_start.start_address().as_u64() - entry.vadr) as usize,
+              (entry.vadr - page_start.start_address().as_u64()) as usize,
               entry.mem_size as usize,
               &frames,
             );
@@ -282,7 +281,7 @@ impl Task {
           }
         }
         other => {
-          return ExecResult::UnsupportedDirective(other as u32);
+          println!("Unsupported Directive: {}", other as u64);
         }
       }
     }
@@ -440,11 +439,15 @@ pub enum TaskState {
 #[derive(Debug, Clone, Copy)]
 #[repr(C, packed)]
 pub struct TaskProcState {
-  rax: u64, // Offset 0
-  rbx: u64, // Offset 8
-  rcx: u64, // Offset 16
-  rdx: u64, // Offset 24
-  rsp: u64, // Offset 32; iret handled
+  // These are here first so that assembly saving them can be kept simple
+  rip: u64, // Offset 0
+  rflags: u64, // Offset 8
+  
+  code_seg: u64, // Offset 16
+  data_seg: u64, // Offset 24
+
+  rsp: u64, // Offset 32
+
   rbp: u64, // Offset 40
   rsi: u64, // Offset 48
   rdi: u64, // Offset 56
@@ -455,14 +458,14 @@ pub struct TaskProcState {
   r12: u64, // Offset 96
   r13: u64, // Offset 104
   r14: u64, // Offset 112
+  
+  // These need to be last, makes the assembly easier
   r15: u64, // Offset 120
-
-  rip: VirtAddr,  // Offset 128; iret handled
-  rflags: RFlags, // Offset 136; iret handled
-
-  code_seg: SegmentSelector, // Offset 144
-  data_seg: SegmentSelector, // Offset 146
-  // Offset 148
+  rax: u64, // Offset 128
+  rbx: u64, // Offset 136
+  rcx: u64, // Offset 144
+  rdx: u64, // Offset 152
+  // Offset 160
 }
 
 impl TaskProcState {
@@ -485,18 +488,18 @@ impl TaskProcState {
       r13: 0,
       r14: 0,
       r15: 0,
-      rip: entrypoint,
-      rflags: RFlags::INTERRUPT_FLAG,
-      code_seg: kgdt.ucode_seg,
-      data_seg: kgdt.udata_seg,
+      rip: entrypoint.as_u64(),
+      rflags: RFlags::INTERRUPT_FLAG.bits(),
+      code_seg: kgdt.ucode_seg.0 as u64,
+      data_seg: kgdt.udata_seg.0 as u64,
     }
   }
 
   // Jumps to userspace with the configuration in Self
   // unsafe: Self's configuration must be valid
   pub unsafe fn apply(&self) -> ! {
-    let data_seg = self.data_seg.0;
-    let code_seg = self.code_seg.0;
+    let data_seg = self.data_seg;
+    let code_seg = self.code_seg;
     asm! {
       // Setup segment registers
       "mov ds, ax",
@@ -508,15 +511,15 @@ impl TaskProcState {
 
       "push rax", // SS for iret
       "push QWORD PTR [rdi + 32]", // RSP for iret
-      "push QWORD PTR [rdi + 136]", // RFLAGS for iret
+      "push QWORD PTR [rdi + 8]", // RFLAGS for iret
       "push rcx", // CS for iret
-      "push QWORD PTR [rdi + 128]", // RIP for iret
+      "push QWORD PTR [rdi + 0]", // RIP for iret
 
       // Now, we load the other registers with their values, RDI is last
-      "mov rax, [rdi + 0]",
-      "mov rbx, [rdi + 8]",
-      "mov rcx, [rdi + 16]",
-      "mov rdx, [rdi + 24]",
+      "mov rax, [rdi + 128]",
+      "mov rbx, [rdi + 136]",
+      "mov rcx, [rdi + 144]",
+      "mov rdx, [rdi + 152]",
       "mov rbp, [rdi + 40]",
       "mov rsi, [rdi + 48]",
       "mov r8, [rdi + 64]",

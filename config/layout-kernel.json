@@ -20,6 +20,6 @@
   "no-default-libraries": true,
   "position-independent-executables": false,
   "pre-link-args": {
-    "ld.lld": ["--script=./config/link.ld"]
+    "ld.lld": ["--script=../config/link-kernel.ld"]
   }
 }

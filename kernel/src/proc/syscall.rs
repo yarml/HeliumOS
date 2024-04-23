@@ -1,5 +1,5 @@
 use crate::{mem::gdt::KernelGlobalDescriptorTable, println};
-use num_derive::FromPrimitive;
+use helium_syscall::{Syscall, SyscallResult};
 use num_traits::FromPrimitive;
 use x86_64::{
   registers::{
@@ -36,33 +36,19 @@ extern "C" fn syscall_handle_2(
   _r9: u64,
   rax: u64,
 ) -> SyscallResult {
-  println!("Syscall!");
   let syscall = match Syscall::from_u64(rax) {
-    None => return SyscallResult::InvalidSyscall,
+    None => return SyscallResult::Invalid,
     Some(syscall) => syscall,
   };
 
   match syscall {
     Syscall::Write => {
       println!("Write");
-      SyscallResult::Sucess
+      SyscallResult::Success
     }
     Syscall::Exit => {
       println!("Exit");
-      SyscallResult::Sucess
+      SyscallResult::Success
     }
   }
-}
-
-#[repr(u64)]
-enum SyscallResult {
-  Sucess,
-  InvalidSyscall,
-}
-
-#[derive(FromPrimitive)]
-#[repr(u64)]
-enum Syscall {
-  Write,
-  Exit,
 }

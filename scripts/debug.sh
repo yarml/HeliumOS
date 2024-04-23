@@ -7,14 +7,14 @@ QEMU_CMD=$(echo qemu-system-x86_64 \
     -net none \
     -drive if=pflash,format=raw,unit=0,file=/usr/share/OVMF/OVMF_CODE.fd,readonly=on \
     -drive if=pflash,format=raw,unit=1,file=/usr/share/OVMF/OVMF_VARS.fd \
-    -drive id=sysimg,if=none,format=raw,file=/vm/helium.img \
+    -drive id=sysimg,if=none,format=raw,file=/vm/helium.iso \
     -device ahci,id=ahci \
     -device ide-hd,drive=sysimg,bus=ahci.0 \
     -debugcon stdio \
     -display none \
     -m $MEMORY \
     -smp $CPU \
-    -d int \
+    \
     -s -S \
     -monitor unix:qms,server)
 

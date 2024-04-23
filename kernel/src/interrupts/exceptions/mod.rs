@@ -1,4 +1,4 @@
-use crate::println;
+use crate::{println, proc::apic};
 
 use x86_64::structures::idt::InterruptStackFrame;
 
@@ -9,7 +9,7 @@ pub mod pagefault;
 pub mod stacksegfault;
 
 fn prologue(frame: &InterruptStackFrame, exception: &str) {
-  println!("[Proc ] [Exception: {}]", exception);
+  println!("[Proc {}] [Exception: {}]", apic::id(), exception);
   println!("IP: {:?}", frame.instruction_pointer.as_ptr::<*const ()>());
   println!("SP: {:?}", frame.stack_pointer.as_ptr::<*const ()>());
   println!("CS: {:x}", frame.code_segment.0);

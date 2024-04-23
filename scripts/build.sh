@@ -7,35 +7,35 @@ LD=x86_64-elf-ld
 OBJCOPY=x86_64-elf-objcopy
 STRIP=x86_64-elf-strip
 
-cd /build
-
+cd /build/kernel
 cargo build
 
-cp /build/target/helium/debug/helium /build/intermediate/helium.out
+cp /build/kernel/target/layout-kernel/debug/helium-kernel /build/intermediate/kernel.out
+
+cd /build/userspace
+cargo build
 
 cd /build/intermediate
 
-$OBJCOPY --only-keep-debug helium.out helium.dbg
-$OBJCOPY --strip-debug helium.out
-$STRIP -s -K mmio -K fb -K bootboot -K environment -K initstack helium.out -o helium
+$OBJCOPY --only-keep-debug kernel.out kernel.dbg
+$OBJCOPY --strip-debug kernel.out
+$STRIP -s -K mmio -K fb -K bootboot -K environment -K initstack kernel.out -o kernel.elf
 
-mkbootimg check helium
+mkbootimg check kernel.elf
 
 mkdir -p initrd/sys
 mkdir -p initrd/bin
 
-cp helium initrd/sys/helium
+cp kernel.elf initrd/sys/kernel.elf
 
 # START FIXME: Temporary until userspace build system is complete
-nasm /build/src/test.asm -felf64 -o /build/target/test.o
-$LD /build/target/test.o -o /build/target/test
-cp /build/target/test initrd/bin/init
-cp /build/target/test /build/out/init
+cp /build/userspace/target/layout-userspace/debug/init initrd/bin/init
+cp /build/userspace/target/layout-userspace/debug/init /build/out/init
 # END
 
-mkbootimg /build/config/bootimg.json helium.img
+mkbootimg /build/config/bootimg.json helium.iso
 
 cp bootboot.efi /build/out/bootboot.efi
-cp helium /build/out/helium
-cp helium.img /build/out/helium.img
-cp helium.dbg /build/out/helium.dbg
+cp kernel.elf /build/out/kernel.elf
+cp helium.iso /build/out/helium.iso
+cp kernel.dbg /build/out/kernel.dbg

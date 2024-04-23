@@ -31,7 +31,8 @@ HeliumOS, a hobby x86_64 operating system whose main goals are learning and test
 * [X] APIC
 * [ ] User space processes
   * [X] System calls basics
-  * [ ] Scheduling
+  * [X] Scheduling
+  * [ ] Build System
 * [ ] Basic device drivers
   * [ ] Framebuffer
   * [ ] Keyboard

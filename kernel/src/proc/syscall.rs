@@ -1,4 +1,4 @@
-use crate::{mem::gdt::KernelGlobalDescriptorTable, println};
+use crate::{mem::gdt::KernelGlobalDescriptorTable, println, sys};
 use helium_syscall::{Syscall, SyscallResult};
 use num_traits::FromPrimitive;
 use x86_64::{
@@ -8,6 +8,8 @@ use x86_64::{
   },
   VirtAddr,
 };
+
+use super::task;
 
 extern "C" {
   static syscall_handle_1: VirtAddr;
@@ -47,8 +49,11 @@ extern "C" fn syscall_handle_2(
       SyscallResult::Success
     }
     Syscall::Exit => {
-      println!("Exit");
-      SyscallResult::Success
+      // Move the current process to the graveyard where it can be cleaned up
+      // later by the kernel
+      // And set the current process to nothing, then halt.
+      task::exit_current();
+      sys::event_loop();
     }
   }
 }

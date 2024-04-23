@@ -181,6 +181,26 @@ pub unsafe fn continue_current() -> ! {
   }
 }
 
+pub fn exit_current() {
+  let pinfo = ProcInfo::instance();
+  if let Some(task_lock) = pinfo.current_task.take() {
+    let id = {
+      let task = task_lock.read();
+      task.id
+    };
+    // Remove process with ID from TASKS
+    let tasks = TASKS.get().unwrap().upgradeable_read();
+    let index = match tasks.iter().enumerate().find(|(_, task_lock)| {
+      task_lock.read().id == id
+    }) {
+      None => return,
+      Some((index, _)) => index,
+    };
+    let mut tasks = tasks.upgrade();
+    tasks.remove(index);
+  }
+}
+
 #[derive(Debug)]
 pub struct Task {
   id: usize,

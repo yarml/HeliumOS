@@ -175,14 +175,14 @@ impl<'a> VCache<'a> {
 
     // No good lazy page was found, look for a P2 table with at least 1 free page
 
-    let mut lazy_pages_count = 0u16;
+    let mut lazy_pages_count = None;
 
     let mut p2index: Option<usize> = None;
     let mut p1index: Option<usize> = None;
 
     for i in 0..P2PAGE_COUNT {
-      if lazy_pages_count != 0 {
-        lazy_pages_count = self.state.p2_lazycount[i];
+      if lazy_pages_count.is_none() {
+        lazy_pages_count = Some(self.state.p2_lazycount[i]);
       }
       if self.state.p2_freecount[i] != 0 {
         p2index = Some(i);
@@ -191,20 +191,20 @@ impl<'a> VCache<'a> {
     }
 
     if p2index.is_none() {
-      if lazy_pages_count == 0 {
+      if lazy_pages_count.is_none() {
         // No free pages were found, and no lazy pages can be freed either
         return Err(());
       }
 
       // No free pages were found, but some lazy pages exist, allocation can still be done
       for p2i in 0..P2PAGE_COUNT {
-        if self.state.p2_freecount[p2i] != 0 {
+        if self.state.p2_lazycount[p2i] != 0 {
           let mut lazy_found_count = 0u16;
           p2index = Some(p2i);
           // Iterate through all P1 tables of this P2 entry until we found all the lazy
           // pages and marked them as free
           for p1i in 0..512 {
-            if lazy_found_count >= lazy_pages_count {
+            if lazy_found_count >= lazy_pages_count.unwrap_or(0) {
               break;
             }
 

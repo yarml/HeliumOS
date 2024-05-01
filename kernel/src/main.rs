@@ -5,6 +5,7 @@
 #![feature(abi_x86_interrupt)]
 #![feature(ascii_char_variants)]
 #![feature(ascii_char)]
+#![feature(vec_push_within_capacity)]
 #![feature(option_take_if)]
 
 extern crate alloc;
@@ -17,6 +18,7 @@ mod acpi;
 mod bootboot;
 pub mod cfgtb;
 mod debug;
+mod dev;
 mod elf;
 mod fs;
 mod interrupts;
@@ -26,7 +28,10 @@ mod proc;
 mod sys;
 mod utils;
 
-use crate::{fs::initrd, interrupts::pic};
+use crate::{
+  fs::initrd,
+  interrupts::pic,
+};
 use x86_64::instructions::interrupts as x86interrupts;
 
 #[no_mangle]
@@ -55,7 +60,13 @@ fn _start() -> ! {
 
   println!("ACPI Lookup.");
   acpi::init();
-
+  
   println!("Processor ignition.");
-  proc::init::ignite()
+  proc::init::ignite() // ---> late_start() eventually
+}
+
+fn late_start() {
+  // Called by BSPID only after ignition but before processors are waiting in the event loop
+  println!("Device Initialization.");
+  dev::init();
 }

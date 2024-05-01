@@ -59,11 +59,7 @@ pub mod init {
     ProcInfo, DF_STACKS_VPTR, NMI_STACKS_VPTR, PROC_TABLE, STACK_TABLE_VPTR,
   };
   use crate::{
-    bootboot::kernel_stack_size,
-    interrupts::{self, ERROR_STACK_SIZE},
-    mem::gdt::KernelGlobalDescriptorTable,
-    proc::{syscall, task},
-    sys::{self, pause},
+    bootboot::kernel_stack_size, interrupts::{self, ERROR_STACK_SIZE}, late_start, mem::gdt::KernelGlobalDescriptorTable, proc::{is_primary, syscall, task}, sys::{self, pause}
   };
   use crate::{mem::valloc_ktable, println};
   use alloc::collections::BTreeMap;
@@ -71,6 +67,7 @@ pub mod init {
   use x86_64::{align_up, VirtAddr};
 
   static IGNITION: Once<()> = Once::new();
+  static LATE_IGNITION: Once<()> = Once::new();
 
   pub fn ignite() -> ! {
     let numcores = numcores();
@@ -105,6 +102,12 @@ pub mod init {
     wakeup()
   }
 
+  fn latewait() {
+    while LATE_IGNITION.get().is_none() {
+      pause();
+    }
+  }
+
   fn wakeup() -> ! {
     // This function is executed by all processors
     // after all essentials have been setup
@@ -135,6 +138,13 @@ pub mod init {
     interrupts::load();
     apic::init();
     syscall::enable();
+
+    if is_primary() {
+      late_start();
+      LATE_IGNITION.call_once(|| ());
+    } else {
+      latewait();
+    }
 
     println!("Done");
     sys::event_loop()

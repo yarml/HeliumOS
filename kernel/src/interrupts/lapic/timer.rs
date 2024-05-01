@@ -1,6 +1,9 @@
 use x86_64::VirtAddr;
 
-use crate::proc::{apic::regmap::LocalApicRegisterMap, task::{self, TaskProcState}};
+use crate::proc::{
+  apic::regmap::LocalApicRegisterMap,
+  task::{self, TaskProcState},
+};
 
 extern "C" {
   static timer_inter_1: VirtAddr;

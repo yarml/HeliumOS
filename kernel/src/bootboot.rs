@@ -93,7 +93,6 @@ pub struct ArchArm64 {
   pub unused4: u64,
 }
 
-#[doc = " Display text on screen *"]
 #[repr(C, packed)]
 #[derive(Debug, Copy, Clone)]
 pub struct PSF2 {

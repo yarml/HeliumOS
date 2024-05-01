@@ -1,18 +1,10 @@
 use x86_64::{
   addr::VirtAddrNotValid,
   registers::control::Cr2,
-  structures::{
-    idt::{InterruptStackFrame, PageFaultErrorCode},
-    paging::{Page, PageTableFlags, Size4KiB},
-  },
+  structures::idt::{InterruptStackFrame, PageFaultErrorCode},
 };
 
-use crate::{
-  interrupts::exceptions::prologue,
-  mem::{self, heap, valloc},
-  println,
-  proc::apic,
-};
+use crate::{interrupts::exceptions::prologue, mem::heap, println};
 
 pub extern "x86-interrupt" fn page_fault(
   frame: InterruptStackFrame,
@@ -26,28 +18,8 @@ pub extern "x86-interrupt" fn page_fault(
   };
 
   // PageFault in kernel heap? Fear not, we will allocate it and return
-  let heap_end = heap::START.start_address() + heap::SIZE as u64;
-  if heap::START.start_address() <= adr && adr < heap_end {
-    let adr = Page::<Size4KiB>::containing_address(adr).start_address();
-    let left = (heap_end - heap::START.start_address()) as usize;
-    let expand = if left > heap::FRAG_SIZE {
-      heap::FRAG_SIZE
-    } else {
-      left
-    };
-
-    println!(
-      "[Proc {}] Expanding kernel heap by {} bytes from {:?}",
-      apic::id(),
-      expand,
-      adr.as_ptr::<()>()
-    );
-
-    valloc(
-      Page::from_start_address(adr).unwrap(),
-      expand / mem::PAGE_SIZE,
-      PageTableFlags::WRITABLE,
-    );
+  if !ec.contains(PageFaultErrorCode::USER_MODE) && heap::is_heap(adr) {
+    heap::expand(adr);
     return;
   }
 

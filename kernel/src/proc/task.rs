@@ -181,13 +181,14 @@ pub unsafe fn continue_current() -> ! {
   }
 }
 
-pub fn exit_current() {
+pub fn exit_current(exit_code: usize) {
   let pinfo = ProcInfo::instance();
   if let Some(task_lock) = pinfo.current_task.take() {
     let id = {
       let task = task_lock.read();
       task.id
     };
+    println!("Process {} quit with exit code: {}", id, exit_code);
     // Remove process with ID from TASKS
     let tasks = TASKS.get().unwrap().upgradeable_read();
     let index = match tasks.iter().enumerate().find(|(_, task_lock)| {
@@ -203,7 +204,7 @@ pub fn exit_current() {
 
 #[derive(Debug)]
 pub struct Task {
-  id: usize,
+  pub id: usize,
   priority: usize,
   procstate: TaskProcState,
   memory_map: MemoryMap,

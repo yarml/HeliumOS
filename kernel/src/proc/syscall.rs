@@ -1,4 +1,4 @@
-use crate::{mem::gdt::KernelGlobalDescriptorTable, println, sys};
+use crate::{mem::gdt::KernelGlobalDescriptorTable, sys};
 use helium_syscall::{Syscall, SyscallResult};
 use num_traits::FromPrimitive;
 use x86_64::{
@@ -30,7 +30,7 @@ fn syscall1_adr() -> VirtAddr {
 
 #[no_mangle]
 extern "C" fn syscall_handle_2(
-  _rdi: u64,
+  rdi: u64,
   _rsi: u64,
   _rdx: u64,
   _rcx: u64,
@@ -44,16 +44,19 @@ extern "C" fn syscall_handle_2(
   };
 
   match syscall {
-    Syscall::Write => {
-      println!("Write");
-      SyscallResult::Success
-    }
     Syscall::Exit => {
       // Move the current process to the graveyard where it can be cleaned up
       // later by the kernel
       // And set the current process to nothing, then halt.
-      task::exit_current();
+      let exit_code = rdi as usize;
+      task::exit_current(exit_code);
       sys::event_loop();
+    }
+    Syscall::GetPid => {
+      // let pinfo = ProcInfo::instance();
+      // let task = pinfo.current_task.as_ref().unwrap().read();
+      // let pid = task.id;
+      SyscallResult::Pid
     }
   }
 }

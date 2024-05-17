@@ -23,6 +23,7 @@ syscall_handle_1:
     ; We need to get the location of the kernel stack for the current processor
     ; Without using the stack, this is done through the stack table
     ; Put by the kernel init at 0xFFFF840000000000
+    ; TODO: Use swapgs
     push rax
     push rdx
       mov rax, 1

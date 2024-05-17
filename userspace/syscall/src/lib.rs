@@ -6,11 +6,12 @@ use num_derive::FromPrimitive;
 pub enum SyscallResult {
   Success,
   Invalid,
+  Pid,
 }
 
 #[derive(FromPrimitive)]
 #[repr(u64)]
 pub enum Syscall {
-  Write,
   Exit,
+  GetPid,
 }

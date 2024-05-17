@@ -1,9 +1,10 @@
-use core::mem;
-
-use alloc::vec::Vec;
-use spin::{Once, RwLock};
-
 use crate::bootboot::bootboot;
+use alloc::vec;
+use alloc::vec::Vec;
+use core::mem;
+use spin::{Mutex, MutexGuard, Once};
+
+static FRAMEBUFFER: Once<Mutex<Framebuffer>> = Once::new();
 
 pub struct Framebuffer {
   format: FramebufferFormat,
@@ -40,13 +41,7 @@ impl Framebuffer {
     let width = bootboot.fb_width as usize;
     let height = bootboot.fb_height as usize;
     let scanline = bootboot.fb_scanline as usize;
-    let mut double_buffer = Vec::with_capacity(scanline * height);
-
-    // Fill all with 0s
-    // Yes, slow, too lazy to find another way
-    for _ in 0..double_buffer.capacity() {
-      double_buffer.push_within_capacity(0).unwrap();
-    }
+    let double_buffer = vec![0u8; scanline * height];
 
     Self {
       format: bootboot.fb_type.try_into().unwrap(),
@@ -60,6 +55,10 @@ impl Framebuffer {
     }
   }
 
+  pub fn instance<'a>() -> MutexGuard<'a, Framebuffer> {
+    FRAMEBUFFER.get().unwrap().lock()
+  }
+
   pub fn set_pixel(&mut self, x: usize, y: usize, pixel: PixelColor) {
     let offset = y * self.scanline + x * mem::size_of::<u32>();
     let word = pixel.word(self.format);
@@ -70,8 +69,8 @@ impl Framebuffer {
     if offset < *self.lowest_offset.get_or_insert(offset) {
       self.lowest_offset = Some(offset);
     }
-    if offset > *self.highest_offset.get_or_insert(offset) {
-      self.highest_offset = Some(offset);
+    if offset > *self.highest_offset.get_or_insert(offset + 4) {
+      self.highest_offset = Some(offset + 4);
     }
 
     unsafe {
@@ -82,18 +81,16 @@ impl Framebuffer {
   }
 
   pub fn refresh(&mut self) {
-    let len = self.height * self.scanline;
     let lowest_offset = self.lowest_offset.take().or(Some(0)).unwrap();
-    let highest_offset = self
-      .highest_offset
-      .take()
-      .or(Some(len))
-      .unwrap();
+    let highest_offset = self.highest_offset.take().or(Some(0)).unwrap();
+    let copy_len = highest_offset - lowest_offset;
     unsafe {
-      (self.ptr as *mut u8).copy_from_nonoverlapping(
-        self.double_buffer.as_ptr(),
-        self.double_buffer.len(),
-      )
+      (self.ptr as *mut u8)
+        .offset(lowest_offset as isize)
+        .copy_from_nonoverlapping(
+          self.double_buffer.as_ptr().offset(lowest_offset as isize),
+          copy_len,
+        )
     };
   }
 }
@@ -155,8 +152,6 @@ impl Into<PixelColor> for (u8, u8, u8) {
   }
 }
 
-static FRAMEBUFFER: Once<RwLock<Framebuffer>> = Once::new();
-
 pub(super) fn init() {
-  FRAMEBUFFER.call_once(|| RwLock::new(Framebuffer::from_bootboot()));
+  FRAMEBUFFER.call_once(|| Mutex::new(Framebuffer::from_bootboot()));
 }

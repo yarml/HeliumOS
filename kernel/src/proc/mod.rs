@@ -27,6 +27,14 @@ struct ProcInfo {
   _id: usize,
   tick_miss: usize,
   current_task: Option<TaskRef>,
+  basic: BasicProcInfo,
+}
+
+// Exposed to assembly via KGSBASE
+#[repr(C)]
+struct BasicProcInfo {
+  save_user_rsp: u64,
+  kernel_rsp: u64,
 }
 
 impl ProcInfo {
@@ -59,12 +67,17 @@ pub mod init {
     ProcInfo, DF_STACKS_VPTR, NMI_STACKS_VPTR, PROC_TABLE, STACK_TABLE_VPTR,
   };
   use crate::{
-    bootboot::kernel_stack_size, interrupts::{self, ERROR_STACK_SIZE}, late_start, mem::gdt::KernelGlobalDescriptorTable, proc::{is_primary, syscall, task}, sys::{self, pause}
+    bootboot::kernel_stack_size,
+    interrupts::{self, ERROR_STACK_SIZE},
+    late_start,
+    mem::gdt::KernelGlobalDescriptorTable,
+    proc::{is_primary, syscall, task, BasicProcInfo},
+    sys::{self, pause},
   };
   use crate::{mem::valloc_ktable, println};
   use alloc::collections::BTreeMap;
   use spin::{rwlock::RwLock, Once};
-  use x86_64::{align_up, VirtAddr};
+  use x86_64::{align_up, registers::model_specific::KernelGsBase, VirtAddr};
 
   static IGNITION: Once<()> = Once::new();
   static LATE_IGNITION: Once<()> = Once::new();
@@ -129,11 +142,18 @@ pub mod init {
       _id: id,
       tick_miss: 0,
       current_task: None,
+      basic: BasicProcInfo {
+        save_user_rsp: 0,
+        kernel_rsp: stack.as_u64(),
+      },
     };
     {
       let mut proc_table = PROC_TABLE.get().unwrap().write();
       proc_table.insert(id, pinfo);
     }
+    let pinfo_adr = &ProcInfo::instance().basic as *const BasicProcInfo as u64;
+    // Set KERNEL_GS_BASE
+    KernelGsBase::write(VirtAddr::new(pinfo_adr));
 
     interrupts::load();
     apic::init();

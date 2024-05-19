@@ -1,17 +1,46 @@
 #![no_std]
 
-use num_derive::FromPrimitive;
+use core::arch::asm;
 
-#[repr(u64)]
+use ordinalizer::Ordinal;
+
+#[derive(Ordinal)]
 pub enum SyscallResult {
-  Success,
+  Success(u64, u64, u64, u64, u64, u64),
   Invalid,
-  Pid,
 }
 
-#[derive(FromPrimitive)]
-#[repr(u64)]
+#[derive(Ordinal)]
 pub enum Syscall {
-  Exit,
-  GetPid,
+  Exit(u64),
+}
+
+impl Syscall {
+  pub fn call(&self) -> SyscallResult {
+    let num = self.ordinal();
+    let (mut io0, mut io1, mut io2, mut io3, mut io4, mut io5): (u64, u64, u64, u64, u64, u64) = match self {
+      Syscall::Exit(exitcode) => {
+        (*exitcode, 0, 0, 0, 0, 0)
+      }
+    };
+
+    let mut status: u64;
+    unsafe {
+      asm! {
+        "syscall",
+        inout("rax") num => status,
+        inout("rdi") io0,
+        inout("rsi") io1,
+        inout("rdx") io2,
+        inout("r10") io3,
+        inout("r8") io4,
+        inout("r9") io5,
+      }
+    }
+    if status == 0 {
+      SyscallResult::Success(io0, io1, io2, io3, io4, io5)
+    } else {
+      SyscallResult::Invalid
+    }
+  }
 }

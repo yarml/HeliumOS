@@ -5,61 +5,45 @@ extern syscall_handle_2
 section .text
 syscall_handle_1:
   cli
-  push rax
-  push rbx
-  push rcx
+  ; I may or may not have stolen this from Redox
+  swapgs
+  mov gs:[0], rsp ; Save user RSP
+  mov rsp, gs:[8] ; Load kernel RSP
+  ; Now we're in kernel stack
+  ; Push current CPU state
   push rdx
-  push rbp
+  push rcx ; Modified by syscall, but user knows that
+  push rbx
+  push rax
+  push r15
+  push r14
+  push r13
+  push r12
+  push r11 ; Modified by syscall, but user knows that
+  push r10
+  push r9
+  push r8
   push rdi
   push rsi
-  push r8
-  push r9
-  push r10
-  push r11
-  push r12
-  push r13
-  push r14
-  push r15
-    ; We need to get the location of the kernel stack for the current processor
-    ; Without using the stack, this is done through the stack table
-    ; Put by the kernel init at 0xFFFF840000000000
-    ; TODO: Use swapgs
-    push rax
-    push rdx
-      mov rax, 1
-      cpuid
-      shr rbx, 24
-    pop rdx
-    pop rax
+  push rbp
+  
+  ; Push user RSP
+  mov rax, gs:[0]
+  push rax
 
-    mov rcx, 0xFFFF840000000000
-    shl rbx, 3
-    add rcx, rbx
-    mov r15, [rcx]
+  push 0x23 ; SS should have been 0x23
+  push 0x1b ; CS should have been 0x1b
+  push r11 ; user RFL
+  push rcx ; user RIP
 
-    mov rbp, rsp
-    mov rsp, r15
-    mov rcx, r10; arg 4
-    push rbp
-    push rax ; arg 7; syscall number
-      call syscall_handle_2
-    pop rax
-    pop rsp
-  pop r15
-  pop r14
-  pop r13
-  pop r12
-  pop r11
-  pop r10
-  pop r9
-  pop r8
-  pop rsi
-  pop rdi
-  pop rbp
-  pop rdx
-  pop rcx
-  pop rbx
-  pop rax
-  o64 sysret
+  mov rdi, rsp
+
+  ; Ensure stack is 16 byte aligned before call
+  sub rsp, 16
+  and rsp, 0xFFFFFFFFFFFFFFF0
+  sub rsp, 8
+
+  swapgs ; Last revert KGSBASE
+  call syscall_handle_2 ; This guy takes care of returning to userspace
 
 

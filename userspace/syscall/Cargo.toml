@@ -4,5 +4,4 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-num-derive = "0.4.2"
-num-traits = { version = "0.2.18", default-features = false }
+ordinalizer = "0.1.0"

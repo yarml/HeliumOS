@@ -188,12 +188,17 @@ pub fn exit_current(exit_code: usize) {
       let task = task_lock.read();
       task.id
     };
-    println!("Process {} quit with exit code: {}", id, exit_code);
+    println!(
+      "Process {} went to buy milk and never came back: {}",
+      id, exit_code
+    );
     // Remove process with ID from TASKS
     let tasks = TASKS.get().unwrap().upgradeable_read();
-    let index = match tasks.iter().enumerate().find(|(_, task_lock)| {
-      task_lock.read().id == id
-    }) {
+    let index = match tasks
+      .iter()
+      .enumerate()
+      .find(|(_, task_lock)| task_lock.read().id == id)
+    {
       None => return,
       Some((index, _)) => index,
     };
@@ -206,7 +211,7 @@ pub fn exit_current(exit_code: usize) {
 pub struct Task {
   pub id: usize,
   priority: usize,
-  procstate: TaskProcState,
+  pub procstate: TaskProcState,
   memory_map: MemoryMap,
   state: TaskState,
 }
@@ -461,32 +466,32 @@ pub enum TaskState {
 #[repr(C, packed)]
 pub struct TaskProcState {
   // These are here first so that assembly saving them can be kept simple
-  rip: u64, // Offset 0
-  rflags: u64, // Offset 8
-  
-  code_seg: u64, // Offset 16
-  data_seg: u64, // Offset 24
+  pub rip: u64,    // Offset 0
+  pub rflags: u64, // Offset 8
 
-  rsp: u64, // Offset 32
+  pub code_seg: u64, // Offset 16
+  pub data_seg: u64, // Offset 24
 
-  rbp: u64, // Offset 40
-  rsi: u64, // Offset 48
-  rdi: u64, // Offset 56
-  r8: u64,  // Offset 64
-  r9: u64,  // Offset 72
-  r10: u64, // Offset 80
-  r11: u64, // Offset 88
-  r12: u64, // Offset 96
-  r13: u64, // Offset 104
-  r14: u64, // Offset 112
-  
+  pub rsp: u64, // Offset 32
+
+  pub rbp: u64, // Offset 40
+  pub rsi: u64, // Offset 48
+  pub rdi: u64, // Offset 56
+  pub r8: u64,  // Offset 64
+  pub r9: u64,  // Offset 72
+  pub r10: u64, // Offset 80
+  pub r11: u64, // Offset 88
+  pub r12: u64, // Offset 96
+  pub r13: u64, // Offset 104
+  pub r14: u64, // Offset 112
+
   // These need to be last, makes the assembly easier
-  r15: u64, // Offset 120
-  rax: u64, // Offset 128
-  rbx: u64, // Offset 136
-  rcx: u64, // Offset 144
-  rdx: u64, // Offset 152
-  // Offset 160
+  pub r15: u64, // Offset 120
+  pub rax: u64, // Offset 128
+  pub rbx: u64, // Offset 136
+  pub rcx: u64, // Offset 144
+  pub rdx: u64, // Offset 152
+            // Offset 160
 }
 
 impl TaskProcState {

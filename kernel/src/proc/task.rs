@@ -301,7 +301,7 @@ impl Task {
             );
 
             data.fill(0);
-            data.copy_from_slice(content);
+            data[0..content.len()].copy_from_slice(content);
           } else {
             return ExecResult::AllocationError;
           }

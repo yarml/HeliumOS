@@ -13,6 +13,7 @@ pub enum SyscallResult {
 #[derive(Ordinal)]
 pub enum Syscall {
   Exit(u64),
+  GetPid,
 }
 
 impl Syscall {
@@ -21,7 +22,10 @@ impl Syscall {
     let (mut io0, mut io1, mut io2, mut io3, mut io4, mut io5): (u64, u64, u64, u64, u64, u64) = match self {
       Syscall::Exit(exitcode) => {
         (*exitcode, 0, 0, 0, 0, 0)
-      }
+      },
+      Syscall::GetPid => {
+        (0, 0, 0, 0, 0, 0)
+      },
     };
 
     let mut status: u64;

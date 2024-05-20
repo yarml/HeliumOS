@@ -3,11 +3,11 @@
 
 use core::panic::PanicInfo;
 
-use helium_runtime::syscall;
+use helium_runtime::syscall::{self, getpid};
 
 #[no_mangle]
 extern "C" fn run() -> u64 {
-  1212
+  getpid() * 2
 }
 
 #[panic_handler]

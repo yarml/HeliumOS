@@ -35,7 +35,13 @@ impl SyscallHandler for Syscall {
     match self {
       Syscall::Exit(exitcode) => {
         task::exit_current(*exitcode as usize);
-        SyscallResult::Invalid
+        SyscallResult::Invalid // Does not matter
+      }
+      Syscall::GetPid => {
+        let pinfo = ProcInfo::instance();
+        let task = pinfo.current_task.as_ref().unwrap();
+        let task = task.read();
+        SyscallResult::Success(task.id as u64, 0, 0, 0, 0, 0)
       }
     }
   }
@@ -53,7 +59,11 @@ extern "C" fn syscall_handle_2(proc_state: &TaskProcState) -> ! {
     {
       // Update proc state
       let pinfo = ProcInfo::instance();
-      let mut task = pinfo.current_task.as_ref().expect("Syscall without running task?").write();
+      let mut task = pinfo
+        .current_task
+        .as_ref()
+        .expect("Syscall without running task?")
+        .write();
       task.procstate = *proc_state;
     }
     let result = {
@@ -95,7 +105,9 @@ impl TryFrom<&TaskProcState> for Syscall {
 
   fn try_from(proc_state: &TaskProcState) -> Result<Self, Self::Error> {
     match proc_state.rax {
+      // TODO: A proc macro will be good here
       0 => Ok(Syscall::Exit(proc_state.rdi)),
+      1 => Ok(Syscall::GetPid),
       _ => Err(()),
     }
   }

@@ -31,8 +31,8 @@ syscall_handle_1:
   mov rax, gs:[0]
   push rax
 
-  push 0x23 ; SS should have been 0x23
-  push 0x1b ; CS should have been 0x1b
+  push 0x1B ; SS should have been 0x1B
+  push 0x23 ; CS should have been 0x23
   push r11 ; user RFL
   push rcx ; user RIP
 

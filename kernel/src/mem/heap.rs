@@ -7,7 +7,7 @@ use x86_64::{
   VirtAddr,
 };
 
-use crate::{mem, println, proc::apic};
+use crate::{dev::framebuffer::debug_set_pixel, mem, println, proc::apic};
 
 use super::{valloc, PAGE_SIZE};
 
@@ -43,6 +43,7 @@ static GLOB_ALLOCATOR: LockedHeap = LockedHeap::empty();
 
 pub fn expand(adr: VirtAddr) {
   let mut heap_head = HEAP_HEAD.lock();
+  debug_set_pixel(100, 110, (0, 255, 0).into());
   if adr.as_u64() < *heap_head {
     // There was a race condition, some other core already mapped
     // this area of the heap now, should be good to gp
@@ -65,13 +66,14 @@ pub fn expand(adr: VirtAddr) {
     expand,
     adr.as_ptr::<()>()
   );
-
+  debug_set_pixel(100, 110, (255, 255, 0).into());
   valloc(
     Page::from_start_address(adr).unwrap(),
     expand / mem::PAGE_SIZE,
     PageTableFlags::WRITABLE,
   );
   *heap_head += expand as u64;
+  debug_set_pixel(100, 110, (0, 0, 0).into());
 }
 
 pub fn is_heap(adr: VirtAddr) -> bool {

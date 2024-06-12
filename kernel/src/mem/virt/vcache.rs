@@ -1,5 +1,10 @@
 use super::{alloc_substruct, KVMSPACE};
-use crate::mem::{early_heap::EarlyAllocator, PAGE_SIZE};
+use crate::{
+  debug,
+  dev::framebuffer::debug_set_pixel,
+  mem::{early_heap::EarlyAllocator, PAGE_SIZE},
+  println,
+};
 use alloc::{boxed::Box, slice};
 use core::mem;
 use spin::{rwlock::RwLock, Once};
@@ -86,7 +91,8 @@ pub(in crate::mem::virt) fn init() {
   for i in 0..P2PAGE_COUNT {
     let p1_virtaddr = match vcache.map(
       PhysFrame::from_start_address(
-        p1_frame.start_address() + (i * 512 * mem::size_of::<PageTableEntry>()) as u64,
+        p1_frame.start_address()
+          + (i * 512 * mem::size_of::<PageTableEntry>()) as u64,
       )
       .unwrap(),
     ) {
@@ -147,32 +153,46 @@ impl<'a> VCache<'a> {
   }
   pub fn map(&mut self, physframe: PhysFrame) -> Result<Page, ()> {
     // First pass, look for lazy pages already pointing at this physical address
-    for p2i in 0..P2PAGE_COUNT {
-      let lazy_count = &mut self.state.p2_lazycount[p2i];
+    debug_set_pixel(110, 116, (255, 0, 0).into());
+    let start_time = debug::rdtsc();
+    let loop1_start = debug::rdtsc();
+    // for p2i in 0..P2PAGE_COUNT {
+    //   let lazy_count = &mut self.state.p2_lazycount[p2i];
 
-      if *lazy_count == 0 {
-        continue;
-      }
+    //   if *lazy_count == 0 {
+    //     continue;
+    //   }
 
-      for p1i in 0..512 {
-        let p1_entry = &self.p1[p2i][p1i];
-        let age = &mut self.state.p1_age[p2i][p1i];
-        let frame = match p1_entry.frame() {
-          Ok(frame) => frame,
-          Err(_) => continue,
-        };
-        if !p1_entry.is_unused() && *age != 0 && frame == physframe {
-          *age = 0;
-          *lazy_count -= 1;
-          let page = Page::<Size4KiB>::from_start_address(
-            START_ADDR + (PAGE_SIZE * (p2i * 512 + p1i)) as u64,
-          )
-          .unwrap();
-          return Ok(page);
-        }
-      }
-    }
-
+    //   debug_set_pixel(111, 116, (0, 255, 0).into());
+    //   for p1i in 0..512 {
+    //     let p1_entry = &self.p1[p2i][p1i];
+    //     let age = &mut self.state.p1_age[p2i][p1i];
+    //     debug_set_pixel(112, 116, (255, 0, 0).into());
+    //     let frame = match p1_entry.frame() {
+    //       Ok(frame) => frame,
+    //       Err(_) => {
+    //         debug_set_pixel(112, 116, (0, 0, 0).into());
+    //         continue;
+    //       }
+    //     };
+    //     debug_set_pixel(112, 116, (0, 0, 0).into());
+    //     if !p1_entry.is_unused() && *age != 0 && frame == physframe {
+    //       *age = 0;
+    //       *lazy_count -= 1;
+    //       let page = Page::<Size4KiB>::from_start_address(
+    //         START_ADDR + (PAGE_SIZE * (p2i * 512 + p1i)) as u64,
+    //       )
+    //       .unwrap();
+    //       debug_set_pixel(111, 116, (0, 0, 0).into());
+    //       debug_set_pixel(110, 116, (0, 0, 0).into());
+    //       return Ok(page);
+    //     }
+    //   }
+    //   debug_set_pixel(111, 116, (0, 0, 0).into());
+    // }
+    let loop1_end = debug::rdtsc();
+    debug_set_pixel(110, 116, (0, 0, 0).into());
+    debug_set_pixel(110, 117, (0, 255, 0).into());
     // No good lazy page was found, look for a P2 table with at least 1 free page
 
     let mut lazy_pages_count = None;
@@ -189,10 +209,12 @@ impl<'a> VCache<'a> {
         break;
       }
     }
-
+    debug_set_pixel(110, 117, (0, 0, 0).into());
+    debug_set_pixel(110, 118, (0, 0, 255).into());
     if p2index.is_none() {
       if lazy_pages_count.is_none() {
         // No free pages were found, and no lazy pages can be freed either
+        debug_set_pixel(110, 118, (0, 0, 0).into());
         return Err(());
       }
 
@@ -203,6 +225,7 @@ impl<'a> VCache<'a> {
           p2index = Some(p2i);
           // Iterate through all P1 tables of this P2 entry until we found all the lazy
           // pages and marked them as free
+          debug_set_pixel(111, 118, (0, 255, 0).into());
           for p1i in 0..512 {
             if lazy_found_count >= lazy_pages_count.unwrap_or(0) {
               break;
@@ -220,6 +243,7 @@ impl<'a> VCache<'a> {
               // Don't bother invalidating the pages, they will be invalidated when remapped
             }
           }
+          debug_set_pixel(111, 118, (0, 0, 0).into());
 
           self.state.p2_freecount[p2i] = lazy_found_count;
           self.state.p2_lazycount[p2i] = 0;
@@ -229,6 +253,7 @@ impl<'a> VCache<'a> {
         }
       }
     }
+    debug_set_pixel(110, 118, (0, 0, 0).into());
 
     let p2index = p2index.unwrap();
     self.state.p2_freecount[p2index] -= 1;
@@ -262,7 +287,13 @@ impl<'a> VCache<'a> {
     let virt_addr = START_ADDR + (PAGE_SIZE * (p2index * 512 + p1index)) as u64;
     let page = Page::<Size4KiB>::from_start_address(virt_addr).unwrap();
     MapperFlush::new(page).flush();
-
+    let end_time = debug::rdtsc();
+    println!(
+      "VCache map took {} cycles, loop1 took {} cycles of that ({}%)",
+      end_time - start_time,
+      loop1_end - loop1_start,
+      (loop1_end - loop1_start) * 100 / (end_time - start_time)
+    );
     Ok(page)
   }
   pub fn map_many<const N: usize>(
@@ -271,6 +302,7 @@ impl<'a> VCache<'a> {
   ) -> Result<[Page; N], ()> {
     let mut result = [None; N];
     for (index, phyaddr) in phy_addrs.iter().enumerate() {
+      debug_set_pixel(110, 115, (255, 255, 0).into());
       let page = match self.map(*phyaddr) {
         Ok(page) => page,
         Err(_) => {
@@ -278,9 +310,11 @@ impl<'a> VCache<'a> {
           for page in result.into_iter().flatten() {
             self.unmap(page);
           }
+          debug_set_pixel(110, 115, (0, 0, 0).into());
           return Err(());
         }
       };
+      debug_set_pixel(110, 115, (0, 0, 0).into());
       result[index] = Some(page);
     }
 

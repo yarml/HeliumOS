@@ -12,3 +12,6 @@ pub fn getpid() -> u64 {
   }
 }
 
+pub fn debug_draw(x: usize, y: usize, r: u8, g: u8, b: u8) {
+  Syscall::DebugDraw(x as u64, y as u64, r as u64, g as u64, b as u64).call();
+}

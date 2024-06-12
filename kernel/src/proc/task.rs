@@ -1,4 +1,5 @@
 use super::{apic, ProcInfo};
+use crate::dev::framebuffer::debug_set_pixel;
 use crate::elf::ElfFile;
 use crate::mem::gdt::KernelGlobalDescriptorTable;
 use crate::println;
@@ -90,6 +91,9 @@ pub fn tick(proc_state: &TaskProcState) {
 
   // If we got the lock, then this is a clock tick
   let clock = unsafe { CLOCK.fetch_add(1, Ordering::Relaxed) };
+
+  debug_set_pixel(clock, 1, (255, 255, 0).into());
+  // Framebuffer::instance().refresh();
 
   // Save task state, if there was a task that is
   if let Some(task_lock) = &pinfo.current_task {
@@ -491,7 +495,7 @@ pub struct TaskProcState {
   pub rbx: u64, // Offset 136
   pub rcx: u64, // Offset 144
   pub rdx: u64, // Offset 152
-            // Offset 160
+                // Offset 160
 }
 
 impl TaskProcState {

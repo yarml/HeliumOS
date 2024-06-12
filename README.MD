@@ -32,7 +32,8 @@ HeliumOS, a hobby x86_64 operating system whose main goals are learning and test
 * [ ] User space processes
   * [X] System calls basics
   * [X] Scheduling
-  * [ ] Build System
+  * [X] Build System
+  * [ ] Proc macro for system calls
 * [ ] Basic device drivers
   * [ ] Framebuffer
   * [ ] Keyboard

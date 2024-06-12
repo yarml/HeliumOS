@@ -1,14 +1,14 @@
+use crate::{debug, dev::framebuffer::debug_set_pixel, println};
+
 use self::{
   phys::PHYS_FRAME_ALLOCATOR,
   virt::mapper::{KernelMapError, MAPPER},
 };
 use core::mem;
 use x86_64::{
-  align_up,
-  structures::paging::{
+  align_up, structures::paging::{
     FrameAllocator, FrameDeallocator, Page, PageTableFlags, PhysFrame, Size4KiB,
-  },
-  VirtAddr,
+  }, VirtAddr
 };
 
 pub mod early_heap;
@@ -29,7 +29,11 @@ pub fn init() {
 }
 
 pub fn palloc() -> Option<PhysFrame<Size4KiB>> {
-  PHYS_FRAME_ALLOCATOR.write().allocate_frame()
+  let mut allocator = PHYS_FRAME_ALLOCATOR.write();
+  debug_set_pixel(100, 111, (0, 255, 0).into());
+  let result = allocator.allocate_frame();
+  debug_set_pixel(100, 111, (0, 0, 0).into());
+  result
 }
 pub fn pfree(frame: PhysFrame<Size4KiB>) {
   unsafe { PHYS_FRAME_ALLOCATOR.write().deallocate_frame(frame) }
@@ -60,16 +64,36 @@ pub fn vmap_many(
 }
 
 pub fn valloc(page: Page<Size4KiB>, n: usize, flags: PageTableFlags) {
+  let mut total_palloc_time = 0;
+  let mut total_vmap_time = 0;
+  let start_time = debug::rdtsc();
   for off in 0..n {
+    let palloc_start = debug::rdtsc();
     let frame = match palloc() {
       Some(frame) => frame,
       None => panic!("Could not allocate physical frame"),
     };
+    let palloc_end = debug::rdtsc();
     let page =
       Page::from_start_address(page.start_address() + (off * PAGE_SIZE) as u64)
         .unwrap();
+    debug_set_pixel(100, 112, (0, 0, 255).into());
+    let vmap_start = debug::rdtsc();
     vmap(page, frame, PAGE_SIZE, flags).expect("Could not map allocated frame");
+    let vmal_end = debug::rdtsc();
+    debug_set_pixel(100, 112, (0, 0, 0).into());
+    total_palloc_time += palloc_end - palloc_start;
+    total_vmap_time += vmal_end - vmap_start;
   }
+  let end_time = debug::rdtsc();
+  println!(
+    "Valloc took {} cycles, palloc took {} cycles of that ({}%), vmap took {} cycles of that ({}%)",
+    end_time - start_time,
+    total_palloc_time,
+    total_palloc_time * 100 / (end_time - start_time),
+    total_vmap_time,
+    total_vmap_time * 100 / (end_time - start_time)
+  );
 }
 
 pub fn valloc_size(page: Page<Size4KiB>, nbytes: usize, flags: PageTableFlags) {

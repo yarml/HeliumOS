@@ -1,8 +1,12 @@
-use crate::bootboot::bootboot;
+use crate::{
+  bootboot::{bootboot, fb_virt},
+  println,
+};
 use alloc::vec;
 use alloc::vec::Vec;
 use core::mem;
 use spin::{Mutex, MutexGuard, Once};
+use x86_64::VirtAddr;
 
 static FRAMEBUFFER: Once<Mutex<Framebuffer>> = Once::new();
 
@@ -11,8 +15,7 @@ pub struct Framebuffer {
   width: usize,
   height: usize,
   scanline: usize,
-  ptr: u64,
-
+  ptr: VirtAddr,
   // Double buffer info
   // Lowest and highest offsets written to after last refresh
   lowest_offset: Option<usize>,
@@ -43,12 +46,15 @@ impl Framebuffer {
     let scanline = bootboot.fb_scanline as usize;
     let double_buffer = vec![0u8; scanline * height];
 
+    let fb_virt = fb_virt();
+    println!("Framebuffer virtual address: {:?}", fb_virt);
+
     Self {
       format: bootboot.fb_type.try_into().unwrap(),
       width,
       height,
       scanline,
-      ptr: bootboot.fb_ptr as u64,
+      ptr: fb_virt,
       lowest_offset: None,
       highest_offset: None,
       double_buffer,
@@ -65,6 +71,7 @@ impl Framebuffer {
     assert!(x < self.width);
     assert!(y < self.height);
     debug_assert!(offset < self.double_buffer.len());
+    println!("Setting pixel at offset {}", offset);
 
     if offset < *self.lowest_offset.get_or_insert(offset) {
       self.lowest_offset = Some(offset);
@@ -85,7 +92,9 @@ impl Framebuffer {
     let highest_offset = self.highest_offset.take().or(Some(0)).unwrap();
     let copy_len = highest_offset - lowest_offset;
     unsafe {
-      (self.ptr as *mut u8)
+      self
+        .ptr
+        .as_mut_ptr::<u8>()
         .offset(lowest_offset as isize)
         .copy_from_nonoverlapping(
           self.double_buffer.as_ptr().offset(lowest_offset as isize),
@@ -154,4 +163,18 @@ impl Into<PixelColor> for (u8, u8, u8) {
 
 pub(super) fn init() {
   FRAMEBUFFER.call_once(|| Mutex::new(Framebuffer::from_bootboot()));
+  debug_set_pixel(0, 0, (255, 255, 255).into());
+}
+
+pub fn debug_set_pixel(x: usize, y: usize, pixel: PixelColor) {
+  let bootboot = bootboot();
+  let ptr = fb_virt();
+  let offset = y * bootboot.fb_scanline as usize + x * mem::size_of::<u32>();
+  let word = pixel.word(FramebufferFormat::Argb);
+  unsafe {
+    ptr
+      .as_mut_ptr::<u32>()
+      .offset(offset as isize)
+      .write_volatile(word);
+  };
 }

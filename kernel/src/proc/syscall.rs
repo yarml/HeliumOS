@@ -1,4 +1,6 @@
-use crate::{mem::gdt::KernelGlobalDescriptorTable, sys};
+use crate::{
+  dev::framebuffer::debug_set_pixel, mem::gdt::KernelGlobalDescriptorTable, sys,
+};
 use helium_syscall::{Syscall, SyscallResult};
 use x86_64::{
   registers::{
@@ -42,6 +44,14 @@ impl SyscallHandler for Syscall {
         let task = pinfo.current_task.as_ref().unwrap();
         let task = task.read();
         SyscallResult::Success(task.id as u64, 0, 0, 0, 0, 0)
+      }
+      Syscall::DebugDraw(x, y, r, g, b) => {
+        debug_set_pixel(
+          *x as usize,
+          *y as usize,
+          (*r as u8, *g as u8, *b as u8).into(),
+        );
+        SyscallResult::Success(0, 0, 0, 0, 0, 0)
       }
     }
   }
@@ -108,6 +118,13 @@ impl TryFrom<&TaskProcState> for Syscall {
       // TODO: A proc macro will be good here
       0 => Ok(Syscall::Exit(proc_state.rdi)),
       1 => Ok(Syscall::GetPid),
+      2 => Ok(Syscall::DebugDraw(
+        proc_state.rdi,
+        proc_state.rsi,
+        proc_state.rdx,
+        proc_state.r10,
+        proc_state.r8,
+      )),
       _ => Err(()),
     }
   }

@@ -1,4 +1,4 @@
-use x86_64::{align_down, align_up, PhysAddr};
+use x86_64::{align_down, align_up, PhysAddr, VirtAddr};
 
 use crate::mem::PAGE_SIZE;
 
@@ -28,6 +28,7 @@ pub const BOOTBOOT_CORE: u64 = 0xffffffffffe02000;
 
 extern "C" {
   static initstack: usize;
+  static fb: usize;
 }
 
 #[repr(C, packed)]
@@ -112,6 +113,10 @@ pub fn bootboot() -> &'static BootBoot {
 }
 pub fn kernel_stack_size() -> usize {
   unsafe { &initstack as *const usize as usize }
+}
+
+pub fn fb_virt() -> VirtAddr {
+  VirtAddr::new(unsafe { &fb as *const usize as u64 }.into())
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

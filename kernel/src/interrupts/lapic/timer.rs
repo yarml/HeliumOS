@@ -16,9 +16,6 @@ pub(in crate::interrupts) fn timer_inter_1_adr() -> VirtAddr {
 #[no_mangle]
 extern "C" fn timer_inter_2(proc_state: &TaskProcState) {
   task::tick(proc_state);
-  // Shouldn't do this all ticks, what usually happens in 1 process tick takes 3-4 process ticks
-  // A simple program exiting with a code takes 3-4 process ticks
-  // Framebuffer::instance().refresh();
   LocalApicRegisterMap::get().eoi();
   unsafe { task::continue_current() };
 }

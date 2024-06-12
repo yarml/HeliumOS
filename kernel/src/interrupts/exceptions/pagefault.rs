@@ -18,7 +18,7 @@ pub extern "x86-interrupt" fn page_fault(
   };
 
   // PageFault in kernel heap? Fear not, we will allocate it and return
-  if !ec.contains(PageFaultErrorCode::USER_MODE) && heap::is_heap(adr) {
+  if !ec.contains(PageFaultErrorCode::USER_MODE) && heap::is_heap(adr) {    
     heap::expand(adr);
     return;
   }
@@ -62,6 +62,6 @@ pub extern "x86-interrupt" fn page_fault(
     println!("SGX.");
   }
 
-  // For the far far far far far far far future, implement swapping here
+  // For the far far far future, implement swapping here
   panic!();
 }

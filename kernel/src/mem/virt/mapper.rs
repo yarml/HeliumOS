@@ -1,13 +1,12 @@
-use core::{borrow::BorrowMut, mem, slice};
-
-use crate::mem::{
-  virt::{
-    self, alloc_substruct,
-    vcache::{self, VCACHE},
-    KVMSPACE,
+use super::vcache::{self, VCache, VCACHE};
+use crate::{
+  dev::framebuffer::debug_set_pixel,
+  mem::{
+    virt::{self, alloc_substruct, KVMSPACE},
+    PAGE_SIZE,
   },
-  PAGE_SIZE,
 };
+use core::{borrow::BorrowMut, mem, slice};
 use spin::{Once, RwLock};
 use x86_64::{
   align_up,
@@ -19,8 +18,6 @@ use x86_64::{
   },
   PhysAddr,
 };
-
-use super::vcache::VCache;
 
 pub(in crate::mem::virt) fn init() {
   // All the mapper needs is mapping the P4 table into virtual memory
@@ -83,7 +80,6 @@ impl KernelMapper {
     {
       return Err(KernelMapError::Managed);
     }
-
     // Align size to page size
     let size = align_up(size as u64, PAGE_SIZE as u64) as usize;
     let num_pages = size / PAGE_SIZE;
@@ -96,9 +92,9 @@ impl KernelMapper {
     let detail_flush = flags.contains(PageTableFlags::GLOBAL)
       || page.start_address() >= virt::KVMSPACE
       || size / PAGE_SIZE < RLCR3_THRESHOLD;
-
     let mut vcache = VCACHE.get().unwrap().write();
 
+    debug_set_pixel(100, 115, (255, 0, 0).into());
     let tmp_pages = {
       let null_frame = PhysFrame::containing_address(PhysAddr::zero());
       match vcache.map_many(&[null_frame, null_frame]) {
@@ -106,7 +102,8 @@ impl KernelMapper {
         Err(_) => return Err(KernelMapError::NoVCacheSpace),
       }
     };
-
+    debug_set_pixel(100, 115, (0, 0, 0).into());
+    debug_set_pixel(100, 116, (0, 255, 0).into());
     let mut p4table = P4TABLE.get().unwrap().write();
 
     for i in 0..num_pages {
@@ -142,7 +139,7 @@ impl KernelMapper {
         flags &= !PageTableFlags::USER_ACCESSIBLE;
       }
 
-      // And not matter the whimes of the callee, a mapping is present
+      // And not matter the whims of the callee, a mapping is present
       flags |= PageTableFlags::PRESENT;
       p1_entry.set_frame(physframe, flags);
 
@@ -150,13 +147,15 @@ impl KernelMapper {
         MapperFlush::new(page).flush();
       }
     }
-
+    debug_set_pixel(100, 116, (0, 0, 0).into());
+    debug_set_pixel(100, 117, (0, 0, 255).into());
     vcache.unmap_many(&tmp_pages);
 
     if !detail_flush {
       MapperFlushAll::new().flush_all();
     }
 
+    debug_set_pixel(100, 117, (0, 0, 0).into());
     Ok(())
   }
 

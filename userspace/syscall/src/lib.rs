@@ -14,6 +14,7 @@ pub enum SyscallResult {
 pub enum Syscall {
   Exit(u64),
   GetPid,
+  DebugDraw(u64, u64, u64, u64, u64), // x, y, r, g, b
 }
 
 impl Syscall {
@@ -26,6 +27,9 @@ impl Syscall {
       Syscall::GetPid => {
         (0, 0, 0, 0, 0, 0)
       },
+      Self::DebugDraw(x, y, r, g, b) => {
+        (*x, *y, *r, *g, *b, 0)
+      }
     };
 
     let mut status: u64;

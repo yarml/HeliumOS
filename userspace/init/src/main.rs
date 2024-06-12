@@ -3,11 +3,15 @@
 
 use core::panic::PanicInfo;
 
-use helium_runtime::syscall::{self, getpid};
+use helium_runtime::syscall::{self, debug_draw, getpid};
 
 #[no_mangle]
 extern "C" fn run() -> u64 {
-  getpid() * 2
+  let pid = getpid();
+  if pid < 10 {
+    debug_draw(10 + pid as usize, 10, 255, 0, 0);
+  }
+  pid * 2
 }
 
 #[panic_handler]

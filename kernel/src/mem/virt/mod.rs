@@ -1,18 +1,16 @@
-use core::slice;
-
-use x86_64::{
-  structures::paging::{page_table::PageTableEntry, PageTableFlags, PhysFrame},
-  VirtAddr,
-};
+pub mod mapper;
+pub mod vcache;
 
 use super::{
   palloc,
   phys::{self},
   PAGE_SIZE,
 };
-
-pub mod mapper;
-pub mod vcache;
+use core::slice;
+use x86_64::{
+  structures::paging::{page_table::PageTableEntry, PageTableFlags, PhysFrame},
+  VirtAddr,
+};
 
 pub const KVMSPACE: VirtAddr = VirtAddr::new_truncate(0xFFFF800000000000);
 

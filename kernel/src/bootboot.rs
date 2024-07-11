@@ -116,7 +116,7 @@ pub fn kernel_stack_size() -> usize {
 }
 
 pub fn fb_virt() -> VirtAddr {
-  VirtAddr::new(unsafe { &fb as *const usize as u64 }.into())
+  VirtAddr::new(unsafe { &fb as *const usize as u64 })
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]

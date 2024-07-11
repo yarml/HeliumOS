@@ -30,8 +30,7 @@ pub fn init() {
 
 pub fn palloc() -> Option<PhysFrame<Size4KiB>> {
   let mut allocator = PHYS_FRAME_ALLOCATOR.write();
-  let result = allocator.allocate_frame();
-  result
+  allocator.allocate_frame()
 }
 pub fn pfree(frame: PhysFrame<Size4KiB>) {
   unsafe { PHYS_FRAME_ALLOCATOR.write().deallocate_frame(frame) }

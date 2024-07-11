@@ -2,25 +2,22 @@ use crate::{
   bootboot::{bootboot, fb_virt},
   println,
 };
-use alloc::vec;
-use alloc::vec::Vec;
 use core::mem;
-use spin::{Mutex, MutexGuard, Once};
-use x86_64::VirtAddr;
+use spin::{Mutex, Once};
 
 static FRAMEBUFFER: Once<Mutex<Framebuffer>> = Once::new();
 
 pub struct Framebuffer {
-  format: FramebufferFormat,
-  width: usize,
-  height: usize,
-  scanline: usize,
-  ptr: VirtAddr,
-  // Double buffer info
-  // Lowest and highest offsets written to after last refresh
-  lowest_offset: Option<usize>,
-  highest_offset: Option<usize>,
-  double_buffer: Vec<u8>,
+  // format: FramebufferFormat,
+  // width: usize,
+  // height: usize,
+  // scanline: usize,
+  // ptr: VirtAddr,
+  // // Double buffer info
+  // // Lowest and highest offsets written to after last refresh
+  // lowest_offset: Option<usize>,
+  // highest_offset: Option<usize>,
+  // double_buffer: Vec<u8>,
 }
 
 pub struct PixelColor {
@@ -40,68 +37,68 @@ pub enum FramebufferFormat {
 
 impl Framebuffer {
   pub fn from_bootboot() -> Self {
-    let bootboot = bootboot();
-    let width = bootboot.fb_width as usize;
-    let height = bootboot.fb_height as usize;
-    let scanline = bootboot.fb_scanline as usize;
-    let double_buffer = vec![0u8; scanline * height];
+    // let bootboot = bootboot();
+    // let width = bootboot.fb_width as usize;
+    // let height = bootboot.fb_height as usize;
+    // let scanline = bootboot.fb_scanline as usize;
+    // let double_buffer = vec![0u8; scanline * height];
 
     let fb_virt = fb_virt();
     println!("Framebuffer virtual address: {:?}", fb_virt);
 
     Self {
-      format: bootboot.fb_type.try_into().unwrap(),
-      width,
-      height,
-      scanline,
-      ptr: fb_virt,
-      lowest_offset: None,
-      highest_offset: None,
-      double_buffer,
+      // format: bootboot.fb_type.try_into().unwrap(),
+      // width,
+      // height,
+      // scanline,
+      // ptr: fb_virt,
+      // lowest_offset: None,
+      // highest_offset: None,
+      // double_buffer,
     }
   }
 
-  pub fn instance<'a>() -> MutexGuard<'a, Framebuffer> {
-    FRAMEBUFFER.get().unwrap().lock()
-  }
+  // pub fn instance<'a>() -> MutexGuard<'a, Framebuffer> {
+  //   FRAMEBUFFER.get().unwrap().lock()
+  // }
 
-  pub fn set_pixel(&mut self, x: usize, y: usize, pixel: PixelColor) {
-    let offset = y * self.scanline + x * mem::size_of::<u32>();
-    let word = pixel.word(self.format);
-    assert!(x < self.width);
-    assert!(y < self.height);
-    debug_assert!(offset < self.double_buffer.len());
-    println!("Setting pixel at offset {}", offset);
+  // pub fn set_pixel(&mut self, x: usize, y: usize, pixel: PixelColor) {
+  //   let offset = y * self.scanline + x * mem::size_of::<u32>();
+  //   let word = pixel.word(self.format);
+  //   assert!(x < self.width);
+  //   assert!(y < self.height);
+  //   debug_assert!(offset < self.double_buffer.len());
+  //   println!("Setting pixel at offset {}", offset);
 
-    if offset < *self.lowest_offset.get_or_insert(offset) {
-      self.lowest_offset = Some(offset);
-    }
-    if offset > *self.highest_offset.get_or_insert(offset + 4) {
-      self.highest_offset = Some(offset + 4);
-    }
+  //   if offset < *self.lowest_offset.get_or_insert(offset) {
+  //     self.lowest_offset = Some(offset);
+  //   }
+  //   if offset > *self.highest_offset.get_or_insert(offset + 4) {
+  //     self.highest_offset = Some(offset + 4);
+  //   }
 
-    unsafe {
-      (self.double_buffer.as_mut_ptr() as *mut u32)
-        .offset(offset as isize)
-        .write_volatile(word)
-    };
-  }
+  //   unsafe {
+  //     (self.double_buffer.as_mut_ptr() as *mut u32)
+  //       .add(offset)
+  //       .write_volatile(word)
+  //   };
+  // }
 
-  pub fn refresh(&mut self) {
-    let lowest_offset = self.lowest_offset.take().or(Some(0)).unwrap();
-    let highest_offset = self.highest_offset.take().or(Some(0)).unwrap();
-    let copy_len = highest_offset - lowest_offset;
-    unsafe {
-      self
-        .ptr
-        .as_mut_ptr::<u8>()
-        .offset(lowest_offset as isize)
-        .copy_from_nonoverlapping(
-          self.double_buffer.as_ptr().offset(lowest_offset as isize),
-          copy_len,
-        )
-    };
-  }
+  // pub fn refresh(&mut self) {
+  //   let lowest_offset = self.lowest_offset.take().unwrap_or(0);
+  //   let highest_offset = self.highest_offset.take().unwrap_or(0);
+  //   let copy_len = highest_offset - lowest_offset;
+  //   unsafe {
+  //     self
+  //       .ptr
+  //       .as_mut_ptr::<u8>()
+  //       .add(lowest_offset)
+  //       .copy_from_nonoverlapping(
+  //         self.double_buffer.as_ptr().add(lowest_offset),
+  //         copy_len,
+  //       )
+  //   };
+  // }
 }
 
 impl TryInto<FramebufferFormat> for u8 {
@@ -139,23 +136,23 @@ impl PixelColor {
   }
 }
 
-impl Into<PixelColor> for (u8, u8, u8, u8) {
-  fn into(self) -> PixelColor {
+impl From<(u8, u8, u8, u8)> for PixelColor {
+  fn from((red, green, blue, alpha): (u8, u8, u8, u8)) -> Self {
     PixelColor {
-      red: self.0,
-      green: self.1,
-      blue: self.2,
-      alpha: self.3,
+      red,
+      green,
+      blue,
+      alpha,
     }
   }
 }
 
-impl Into<PixelColor> for (u8, u8, u8) {
-  fn into(self) -> PixelColor {
+impl From<(u8, u8, u8)> for PixelColor {
+  fn from((red, green, blue): (u8, u8, u8)) -> Self {
     PixelColor {
-      red: self.0,
-      green: self.1,
-      blue: self.2,
+      red,
+      green,
+      blue,
       alpha: 255,
     }
   }
@@ -172,9 +169,6 @@ pub fn debug_set_pixel(x: usize, y: usize, pixel: PixelColor) {
   let offset = y * bootboot.fb_scanline as usize + x * mem::size_of::<u32>();
   let word = pixel.word(FramebufferFormat::Argb);
   unsafe {
-    ptr
-      .as_mut_ptr::<u32>()
-      .offset(offset as isize)
-      .write_volatile(word);
+    ptr.as_mut_ptr::<u32>().add(offset).write_volatile(word);
   };
 }

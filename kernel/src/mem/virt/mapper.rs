@@ -1,10 +1,7 @@
 use super::vcache::{self, VCache, VCACHE};
-use crate::{
-  dev::framebuffer::debug_set_pixel,
-  mem::{
-    virt::{self, alloc_substruct, KVMSPACE},
-    PAGE_SIZE,
-  },
+use crate::mem::{
+  virt::{self, alloc_substruct, KVMSPACE},
+  PAGE_SIZE,
 };
 use core::{borrow::BorrowMut, mem, slice};
 use spin::{Once, RwLock};
@@ -95,7 +92,6 @@ impl KernelMapper {
       || size / PAGE_SIZE < RLCR3_THRESHOLD;
     let mut vcache = VCACHE.get().unwrap().write();
 
-    debug_set_pixel(100, 115, (255, 0, 0).into());
     let tmp_pages = {
       let null_frame = PhysFrame::containing_address(PhysAddr::zero());
       match vcache.map_many(&[null_frame, null_frame]) {
@@ -103,8 +99,6 @@ impl KernelMapper {
         Err(_) => return Err(KernelMapError::NoVCacheSpace),
       }
     };
-    debug_set_pixel(100, 115, (0, 0, 0).into());
-    debug_set_pixel(100, 116, (0, 255, 0).into());
     let mut p4table = P4TABLE.get().unwrap().write();
 
     for i in 0..num_pages {
@@ -147,16 +141,12 @@ impl KernelMapper {
       if detail_flush {
         MapperFlush::new(page).flush();
       }
-    }
-    debug_set_pixel(100, 116, (0, 0, 0).into());
-    debug_set_pixel(100, 117, (0, 0, 255).into());
+    }    
     vcache.unmap_many(&tmp_pages);
 
     if !detail_flush {
       MapperFlushAll::new().flush_all();
     }
-
-    debug_set_pixel(100, 117, (0, 0, 0).into());
     Ok(())
   }
 

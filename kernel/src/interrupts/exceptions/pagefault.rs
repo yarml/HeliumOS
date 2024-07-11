@@ -8,7 +8,6 @@ use x86_64::{
 use crate::{
   interrupts::exceptions::prologue,
   mem::{early_heap::EarlyAllocator, heap},
-  println,
 };
 
 pub extern "x86-interrupt" fn page_fault(

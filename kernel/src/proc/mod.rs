@@ -68,7 +68,12 @@ pub mod init {
     ProcInfo, DF_STACKS_VPTR, NMI_STACKS_VPTR, PROC_TABLE, STACK_TABLE_VPTR,
   };
   use crate::{
-    bootboot::kernel_stack_size, dev::framebuffer::debug_set_pixel, interrupts::{self, ERROR_STACK_SIZE}, late_start, mem::gdt::KernelGlobalDescriptorTable, proc::{is_primary, syscall, task, BasicProcInfo}, sys::{self, pause}
+    bootboot::kernel_stack_size,
+    interrupts::{self, ERROR_STACK_SIZE},
+    late_start,
+    mem::gdt::KernelGlobalDescriptorTable,
+    proc::{is_primary, syscall, task, BasicProcInfo},
+    sys::{self, pause},
   };
   use crate::{mem::valloc_ktable, println};
   use alloc::collections::BTreeMap;
@@ -98,9 +103,6 @@ pub mod init {
     PROC_TABLE.call_once(|| RwLock::new(BTreeMap::new()));
 
     // That's it for now
-
-    debug_set_pixel(20, 30, (0, 0, 255).into());
-
     IGNITION.call_once(|| ());
     wakeup()
   }

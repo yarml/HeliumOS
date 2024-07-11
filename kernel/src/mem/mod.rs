@@ -1,4 +1,9 @@
-use crate::dev::framebuffer::debug_set_pixel;
+pub mod early_heap;
+#[allow(dead_code)]
+pub mod gdt;
+pub mod heap;
+mod phys;
+pub mod virt;
 
 use self::{
   phys::PHYS_FRAME_ALLOCATOR,
@@ -13,13 +18,6 @@ use x86_64::{
   VirtAddr,
 };
 
-pub mod early_heap;
-#[allow(dead_code)]
-pub mod gdt;
-pub mod heap;
-mod phys;
-pub mod virt;
-
 pub const PAGE_SIZE: usize = 0x1000;
 
 pub fn init() {
@@ -32,9 +30,7 @@ pub fn init() {
 
 pub fn palloc() -> Option<PhysFrame<Size4KiB>> {
   let mut allocator = PHYS_FRAME_ALLOCATOR.write();
-  debug_set_pixel(100, 111, (0, 255, 0).into());
   let result = allocator.allocate_frame();
-  debug_set_pixel(100, 111, (0, 0, 0).into());
   result
 }
 pub fn pfree(frame: PhysFrame<Size4KiB>) {
@@ -74,9 +70,7 @@ pub fn valloc(page: Page<Size4KiB>, n: usize, flags: PageTableFlags) {
     let page =
       Page::from_start_address(page.start_address() + (off * PAGE_SIZE) as u64)
         .unwrap();
-    debug_set_pixel(100, 112, (0, 0, 255).into());
     vmap(page, frame, PAGE_SIZE, flags).expect("Could not map allocated frame");
-    debug_set_pixel(100, 112, (0, 0, 0).into());
   }
 }
 

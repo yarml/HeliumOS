@@ -1,8 +1,5 @@
 use super::{alloc_substruct, KVMSPACE};
-use crate::{
-  dev::framebuffer::debug_set_pixel,
-  mem::{early_heap::EarlyAllocator, PAGE_SIZE},
-};
+use crate::mem::{early_heap::EarlyAllocator, PAGE_SIZE};
 use alloc::{boxed::Box, slice};
 use core::mem;
 use spin::{rwlock::RwLock, Once};
@@ -151,7 +148,6 @@ impl<'a> VCache<'a> {
   }
   pub fn map(&mut self, physframe: PhysFrame) -> Result<Page, ()> {
     // First pass, look for lazy pages already pointing at this physical address
-    debug_set_pixel(110, 116, (255, 0, 0).into());
     // for p2i in 0..P2PAGE_COUNT {
     //   let lazy_count = &mut self.state.p2_lazycount[p2i];
 
@@ -186,8 +182,6 @@ impl<'a> VCache<'a> {
     //   }
     //   debug_set_pixel(111, 116, (0, 0, 0).into());
     // }
-    debug_set_pixel(110, 116, (0, 0, 0).into());
-    debug_set_pixel(110, 117, (0, 255, 0).into());
     // No good lazy page was found, look for a P2 table with at least 1 free page
 
     let mut lazy_pages_count = None;
@@ -204,12 +198,9 @@ impl<'a> VCache<'a> {
         break;
       }
     }
-    debug_set_pixel(110, 117, (0, 0, 0).into());
-    debug_set_pixel(110, 118, (0, 0, 255).into());
     if p2index.is_none() {
       if lazy_pages_count.is_none() {
         // No free pages were found, and no lazy pages can be freed either
-        debug_set_pixel(110, 118, (0, 0, 0).into());
         return Err(());
       }
 
@@ -220,7 +211,6 @@ impl<'a> VCache<'a> {
           p2index = Some(p2i);
           // Iterate through all P1 tables of this P2 entry until we found all the lazy
           // pages and marked them as free
-          debug_set_pixel(111, 118, (0, 255, 0).into());
           for p1i in 0..512 {
             if lazy_found_count >= lazy_pages_count.unwrap_or(0) {
               break;
@@ -238,7 +228,6 @@ impl<'a> VCache<'a> {
               // Don't bother invalidating the pages, they will be invalidated when remapped
             }
           }
-          debug_set_pixel(111, 118, (0, 0, 0).into());
 
           self.state.p2_freecount[p2i] = lazy_found_count;
           self.state.p2_lazycount[p2i] = 0;
@@ -248,7 +237,6 @@ impl<'a> VCache<'a> {
         }
       }
     }
-    debug_set_pixel(110, 118, (0, 0, 0).into());
 
     let p2index = p2index.unwrap();
     self.state.p2_freecount[p2index] -= 1;
@@ -290,7 +278,6 @@ impl<'a> VCache<'a> {
   ) -> Result<[Page; N], ()> {
     let mut result = [None; N];
     for (index, phyaddr) in phy_addrs.iter().enumerate() {
-      debug_set_pixel(110, 115, (255, 255, 0).into());
       let page = match self.map(*phyaddr) {
         Ok(page) => page,
         Err(_) => {
@@ -298,11 +285,9 @@ impl<'a> VCache<'a> {
           for page in result.into_iter().flatten() {
             self.unmap(page);
           }
-          debug_set_pixel(110, 115, (0, 0, 0).into());
           return Err(());
         }
       };
-      debug_set_pixel(110, 115, (0, 0, 0).into());
       result[index] = Some(page);
     }
 

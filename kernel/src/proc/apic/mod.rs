@@ -29,6 +29,8 @@ const VBASE: Page<Size4KiB> = unsafe {
   ))
 };
 
+const TIMER_LEN: usize = 100_000_000;
+
 static IOAPIC_REDIRECTION: Once<
   RwLock<BTreeMap<IoApicRedirectionSource, usize>>,
 > = Once::new();
@@ -77,8 +79,8 @@ pub(super) fn init() {
   apic_msr.error_setup(Vectors::LocalApicError.into());
   apic_msr.spurious_setup(Vectors::LocalApicSpurious.into());
 
-  apic_msr.timer_setup(Vectors::LocalApicTimer.into(), TimerMode::Periodic, 7);
-  apic_msr.timer_reset(100_000);
+  apic_msr.timer_setup(Vectors::LocalApicTimer.into(), TimerMode::Periodic, 2);
+  apic_msr.timer_reset(TIMER_LEN);
 
   // Setup LINT0 & LINT1
   if let Some(apic_config) = APIC_CONFIG.get() {

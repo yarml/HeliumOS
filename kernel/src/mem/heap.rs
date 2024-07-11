@@ -46,7 +46,7 @@ pub fn expand(adr: VirtAddr) {
   debug_set_pixel(100, 110, (0, 255, 0).into());
   if adr.as_u64() < *heap_head {
     // There was a race condition, some other core already mapped
-    // this area of the heap now, should be good to gp
+    // this area of the heap now, should be good to go
     return;
   }
   let heap_end = START.start_address() + SIZE as u64;

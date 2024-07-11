@@ -12,10 +12,9 @@ timer_inter_1:
   ; But if we did interrupt kernel code, it was the event loop(hopefully, again), which we can throw away
   ; The important part is that, unlike syscall, we don't know if we need to save the processor state or not
   cli
-  ; I may or may not have stolen this from Redox
   swapgs
-  mov gs:[0], rsp ; Save user RSP
-  mov rsp, gs:[8] ; Load kernel RSP
+  mov gs:[0], rsp ; Save RSP before these fuckeries
+  ; mov rsp, gs:[8] ; Load kernel RSP, if we were in the kernel before, fuck all
   ; Now we're in kernel stack
   ; Push current CPU state
   push rdx
@@ -34,14 +33,26 @@ timer_inter_1:
   push rsi
   push rbp
   
-  ; Push user RSP
+  ; Push RSP before timer
   mov rax, gs:[0]
-  push rax
+  ; RAX is now RSP before the fuckeries
+  mov rbx, [rax + 24]
+  ; RBX is now RSP before the timer
+  push rbx
 
+  ; The processor state is only saved if we came from user mode, so we can assume CS and SS
   push 0x1B ; SS should have been 0x1B
   push 0x23 ; CS should have been 0x23
+  ; Now we will move old RFL into r11, and old RIP into RCX (simulating a syscall)
+  ; (Just so that I don't have to modify the 2 pushes following)
+  ; RAX contains RSP before the fuckeries
+  mov r11, [rax + 16]
+  mov rcx, [rax + 00]
+
   push r11 ; user RFL
   push rcx ; user RIP
+
+  ; Hopefully this is good
 
   mov rdi, rsp
 

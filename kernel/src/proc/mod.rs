@@ -31,6 +31,7 @@ struct ProcInfo {
 }
 
 // Exposed to assembly via KGSBASE
+// Values in here are just scratch for assembly code, they should not be relied upon
 #[repr(C)]
 struct BasicProcInfo {
   save_user_rsp: u64,

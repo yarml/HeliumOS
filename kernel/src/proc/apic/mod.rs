@@ -77,7 +77,7 @@ pub(super) fn init() {
   apic_msr.error_setup(Vectors::LocalApicError.into());
   apic_msr.spurious_setup(Vectors::LocalApicSpurious.into());
 
-  apic_msr.timer_setup(Vectors::LocalApicTimer.into(), TimerMode::Periodic, 5);
+  apic_msr.timer_setup(Vectors::LocalApicTimer.into(), TimerMode::Periodic, 7);
   apic_msr.timer_reset(100_000);
 
   // Setup LINT0 & LINT1

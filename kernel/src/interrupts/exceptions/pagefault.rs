@@ -1,10 +1,15 @@
+use alloc::vec::Vec;
 use x86_64::{
   addr::VirtAddrNotValid,
   registers::control::Cr2,
   structures::idt::{InterruptStackFrame, PageFaultErrorCode},
 };
 
-use crate::{interrupts::exceptions::prologue, mem::heap, println};
+use crate::{
+  interrupts::exceptions::prologue,
+  mem::{early_heap::EarlyAllocator, heap},
+  println,
+};
 
 pub extern "x86-interrupt" fn page_fault(
   frame: InterruptStackFrame,
@@ -18,13 +23,15 @@ pub extern "x86-interrupt" fn page_fault(
   };
 
   // PageFault in kernel heap? Fear not, we will allocate it and return
-  if !ec.contains(PageFaultErrorCode::USER_MODE) && heap::is_heap(adr) {    
+  if !ec.contains(PageFaultErrorCode::USER_MODE) && heap::is_heap(adr) {
     heap::expand(adr);
     return;
   }
 
   prologue(&frame, "Page Fault");
-  let operation = if ec.contains(PageFaultErrorCode::CAUSED_BY_WRITE) {
+  let operation = if ec.contains(PageFaultErrorCode::INSTRUCTION_FETCH) {
+    "fetch"
+  } else if ec.contains(PageFaultErrorCode::CAUSED_BY_WRITE) {
     "write"
   } else {
     "read"
@@ -42,26 +49,23 @@ pub extern "x86-interrupt" fn page_fault(
     "page level protection"
   };
 
-  println!(
-    "Memory violation while trying to {} in {} mode",
-    operation, privilege
-  );
-  println!("Violation happened at {:?}", adr.as_ptr::<*const ()>());
-  println!("Vioation caused by {}", cause);
+  // Not sure if the normal heap will be safe to use here
+  let mut flags = Vec::new_in(EarlyAllocator);
 
   if ec.contains(PageFaultErrorCode::PROTECTION_KEY) {
-    println!("Caused by protection-key violation.");
+    flags.push("protection-key violation");
   }
   if ec.contains(PageFaultErrorCode::SHADOW_STACK) {
-    println!("Caused by shadow stack.");
-  }
-  if ec.contains(PageFaultErrorCode::INSTRUCTION_FETCH) {
-    println!("While trying to fetch instruction.");
+    flags.push("shadow-stack violation");
   }
   if ec.contains(PageFaultErrorCode::SGX) {
-    println!("SGX.");
+    flags.push("SGX");
   }
 
   // For the far far far future, implement swapping here
-  panic!();
+  panic!(
+    "Memory violation caused by {cause} while trying to {operation} at {:p
+  } in {privilege} mode. Additional flags: {flags:?}",
+    adr.as_ptr::<()>()
+  );
 }

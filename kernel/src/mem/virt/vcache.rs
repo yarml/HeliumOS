@@ -1,9 +1,7 @@
 use super::{alloc_substruct, KVMSPACE};
 use crate::{
-  debug,
   dev::framebuffer::debug_set_pixel,
   mem::{early_heap::EarlyAllocator, PAGE_SIZE},
-  println,
 };
 use alloc::{boxed::Box, slice};
 use core::mem;
@@ -154,8 +152,6 @@ impl<'a> VCache<'a> {
   pub fn map(&mut self, physframe: PhysFrame) -> Result<Page, ()> {
     // First pass, look for lazy pages already pointing at this physical address
     debug_set_pixel(110, 116, (255, 0, 0).into());
-    let start_time = debug::rdtsc();
-    let loop1_start = debug::rdtsc();
     // for p2i in 0..P2PAGE_COUNT {
     //   let lazy_count = &mut self.state.p2_lazycount[p2i];
 
@@ -190,7 +186,6 @@ impl<'a> VCache<'a> {
     //   }
     //   debug_set_pixel(111, 116, (0, 0, 0).into());
     // }
-    let loop1_end = debug::rdtsc();
     debug_set_pixel(110, 116, (0, 0, 0).into());
     debug_set_pixel(110, 117, (0, 255, 0).into());
     // No good lazy page was found, look for a P2 table with at least 1 free page
@@ -287,13 +282,6 @@ impl<'a> VCache<'a> {
     let virt_addr = START_ADDR + (PAGE_SIZE * (p2index * 512 + p1index)) as u64;
     let page = Page::<Size4KiB>::from_start_address(virt_addr).unwrap();
     MapperFlush::new(page).flush();
-    let end_time = debug::rdtsc();
-    println!(
-      "VCache map took {} cycles, loop1 took {} cycles of that ({}%)",
-      end_time - start_time,
-      loop1_end - loop1_start,
-      (loop1_end - loop1_start) * 100 / (end_time - start_time)
-    );
     Ok(page)
   }
   pub fn map_many<const N: usize>(

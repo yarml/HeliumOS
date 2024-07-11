@@ -21,6 +21,10 @@ pub(in crate::mem) fn init() {
   mapper::remove_identity();
 }
 
+/// Allocates into physical memory a page and sets the given entry to point to it.
+///
+/// # Assumptions
+/// `clear_inplace`: if set to `true`, then identity mapping should still be in place.
 fn alloc_substruct(
   entry: &mut PageTableEntry,
   flags: PageTableFlags,

@@ -4,21 +4,25 @@ extern timer_inter_2
 
 section .text
 timer_inter_1:
+  ; In previous versions this just used whatever stack was there
+  ; This shouldn't be the case, like syscall, we need to use the kernel stack
+  ; Gonna copy paste, I need to get familiar with NASM's macros
+  ; The assumption we can make is that we are not in a double interrupt situation (hopefully???)
+  ; We can't know if we interrupted user code or kernel code
+  ; But if we did interrupt kernel code, it was the event loop(hopefully, again), which we can throw away
+  ; The important part is that, unlike syscall, we don't know if we need to save the processor state or not
   cli
-
-  ; Elements in reverse order to that in TaskProcState
+  ; I may or may not have stolen this from Redox
+  swapgs
+  mov gs:[0], rsp ; Save user RSP
+  mov rsp, gs:[8] ; Load kernel RSP
+  ; Now we're in kernel stack
+  ; Push current CPU state
   push rdx
   push rcx
   push rbx
   push rax
   push r15
-  
-  mov rax, [rsp + 40] ; RIP
-  mov rbx, [rsp + 48] ; CS
-  mov rcx, [rsp + 56] ; RFL
-  mov rdx, [rsp + 64] ; RSP
-  mov r15, [rsp + 72] ; SS
-
   push r14
   push r13
   push r12
@@ -30,17 +34,21 @@ timer_inter_1:
   push rsi
   push rbp
   
-  push rdx ; RSP
-  push r15 ; SS
-  push rbx ; CS
-  push rcx ; RFL
-  push rax ; RIP
+  ; Push user RSP
+  mov rax, gs:[0]
+  push rax
+
+  push 0x1B ; SS should have been 0x1B
+  push 0x23 ; CS should have been 0x23
+  push r11 ; user RFL
+  push rcx ; user RIP
 
   mov rdi, rsp
 
-  ; Assure stack is 16 byte aligned before call
+  ; Ensure stack is 16 byte aligned before call
   sub rsp, 16
   and rsp, 0xFFFFFFFFFFFFFFF0
   sub rsp, 8
 
+  swapgs ; Last revert KGSBASE
   call timer_inter_2 ; Never returns

@@ -21,6 +21,7 @@ use x86_64::{
 
 pub(in crate::mem::virt) fn init() {
   // All the mapper needs is mapping the P4 table into virtual memory
+  // We can make the assumption that identity mapping is still in place
   let (p4_frame, _) = Cr3::read();
   let mut vcache = VCACHE.get().unwrap().write();
   let page = vcache.map(p4_frame).unwrap();

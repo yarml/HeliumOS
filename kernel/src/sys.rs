@@ -1,7 +1,5 @@
 use core::{arch::asm, panic::PanicInfo};
-
 use x86_64::instructions::{hlt, interrupts};
-
 use crate::{println, proc::apic};
 
 #[panic_handler]

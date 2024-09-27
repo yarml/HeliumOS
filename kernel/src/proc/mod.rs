@@ -155,8 +155,8 @@ pub mod init {
     // Set KERNEL_GS_BASE
     KernelGsBase::write(VirtAddr::new(pinfo_adr));
 
-    interrupts::load();
     apic::init();
+    interrupts::load();
     syscall::enable();
 
     if is_primary() {

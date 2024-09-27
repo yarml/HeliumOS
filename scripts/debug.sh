@@ -20,6 +20,7 @@ QEMU_CMD=$(echo qemu-system-x86_64 \
     -smp $CPU \
     -vnc :0\
     -s -S \
+    -d int\
     -monitor unix:qms,server)
 
 tmux new sh -c "sleep 1 && rust-gdb -tui" \; \

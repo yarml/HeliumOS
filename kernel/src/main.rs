@@ -28,7 +28,8 @@ mod proc;
 mod sys;
 mod utils;
 
-use crate::{debug::rdtsc, fs::initrd, interrupts::pic};
+use crate::{fs::initrd, interrupts::pic};
+use dev::framebuffer::debug_set_pixel;
 use x86_64::instructions::interrupts as x86interrupts;
 
 #[no_mangle]
@@ -39,7 +40,7 @@ fn _start() -> ! {
       proc::init::wait(); // Wait for initialization
     }
   }
-  let start_time = debug::rdtsc();
+  debug_set_pixel(0, 0, (255, 255, 255).into());
   if debug::isvm() {
     println!("Running in VM");
   } else {
@@ -48,8 +49,11 @@ fn _start() -> ! {
   println!("Disabling PIC");
   pic::disable();
 
+  debug_set_pixel(0, 1, (255, 255, 0).into());
   println!("Initializing memory");
   mem::init();
+
+  debug_set_pixel(0, 2, (0, 255, 255).into());
 
   println!("Initializing interrupt table.");
   interrupts::init();
@@ -60,19 +64,18 @@ fn _start() -> ! {
   println!("Initializing Config Tables.");
   cfgtb::init();
 
+  debug_set_pixel(0, 3, (0, 0, 255).into());
   println!("ACPI Lookup.");
   acpi::init();
 
-  let end_time = rdtsc();
-  let routine_time = end_time - start_time;
-  println!("Startup routine took {} cycles", routine_time);
-
+  debug_set_pixel(0, 4, (255, 0, 0).into());
   println!("Processor ignition.");
   proc::init::ignite() // ---> late_start() eventually
 }
 
 fn late_start() {
   // Called by BSPID only after ignition but before processors are waiting in the event loop
+  debug_set_pixel(0, 5, (255, 255, 255).into());
   println!("Device Initialization.");
   dev::init();
 }

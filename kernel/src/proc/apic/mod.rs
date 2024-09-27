@@ -1,5 +1,6 @@
 pub mod regmap;
 
+use crate::interrupts::pic::{self, PITCalib};
 use crate::interrupts::Vectors;
 use crate::println;
 use crate::proc::apic;
@@ -11,6 +12,7 @@ use crate::{
   sys::pause,
 };
 use alloc::{collections::BTreeMap, vec::Vec};
+use core::usize;
 use core::{
   arch::x86_64::__cpuid,
   ptr::{self, addr_of, addr_of_mut},
@@ -28,8 +30,6 @@ const VBASE: Page<Size4KiB> = unsafe {
     KVMSPACE.as_u64() + 1024 * 1024 * 1024 * 1024 + 513 * 1024 * 1024 * 1024,
   ))
 };
-
-const TIMER_LEN: usize = 100_000_000;
 
 static IOAPIC_REDIRECTION: Once<
   RwLock<BTreeMap<IoApicRedirectionSource, usize>>,
@@ -53,8 +53,17 @@ pub fn numcores() -> usize {
   *numcores
 }
 
+struct APICTimerCalib;
+
+impl PITCalib for APICTimerCalib {
+  fn measure() -> usize {
+    LocalApicRegisterMap::get().timer_current()
+  }
+}
+
 // Called once per core
 pub(super) fn init() {
+  let id = apic::id();
   static MAPPED: Once<()> = Once::new();
 
   if !is_primary() {
@@ -80,7 +89,13 @@ pub(super) fn init() {
   apic_msr.spurious_setup(Vectors::LocalApicSpurious.into());
 
   apic_msr.timer_setup(Vectors::LocalApicTimer.into(), TimerMode::Periodic, 2);
-  apic_msr.timer_reset(TIMER_LEN);
+  apic_msr.timer_reset(usize::MAX);
+
+  println!("[Proc{}] Calibrating APIC", id);
+  let pit_calib = pic::pit_calib_sleep::<APICTimerCalib>();
+  let apic_10ms = pit_calib.0 - pit_calib.1;
+
+  apic_msr.timer_reset(apic_10ms * 100);
 
   // Setup LINT0 & LINT1
   if let Some(apic_config) = APIC_CONFIG.get() {
@@ -99,8 +114,6 @@ pub(super) fn init() {
       apic_msr.lint_setup(lint, flags);
     }
   }
-
-  
 }
 
 #[derive(Debug)]

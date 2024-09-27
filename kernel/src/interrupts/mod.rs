@@ -10,7 +10,7 @@ use self::{
   lapic::{error::error, spurious::spurious, timer::timer_inter_1_adr},
 };
 use spin::RwLock;
-use x86_64::structures::idt::InterruptDescriptorTable;
+use x86_64::structures::idt::{HandlerFunc, InterruptDescriptorTable};
 
 pub const ERROR_STACK_SIZE: usize = 8 * 1024;
 
@@ -29,6 +29,8 @@ impl From<Vectors> for u8 {
 }
 
 static IDT: RwLock<InterruptDescriptorTable> =
+  RwLock::new(InterruptDescriptorTable::new());
+static CALIB_IDT: RwLock<InterruptDescriptorTable> =
   RwLock::new(InterruptDescriptorTable::new());
 
 pub fn init() {
@@ -54,5 +56,12 @@ pub fn init() {
 
 pub fn load() {
   let idt = IDT.read();
+  unsafe { idt.load_unsafe() };
+}
+
+// Sets up IDT[0x20] to call handler
+pub(super) fn setup_pit_calib(handler: HandlerFunc) {
+  let mut idt = CALIB_IDT.write();
+  idt[0x20].set_handler_fn(handler);
   unsafe { idt.load_unsafe() };
 }

@@ -160,7 +160,7 @@ impl From<(u8, u8, u8)> for PixelColor {
 
 pub(super) fn init() {
   FRAMEBUFFER.call_once(|| Mutex::new(Framebuffer::from_bootboot()));
-  debug_set_pixel(0, 0, (255, 255, 255).into());
+  debug_set_pixel(0, 10, (255, 255, 255).into());
 }
 
 pub fn debug_set_pixel(x: usize, y: usize, pixel: PixelColor) {

@@ -61,6 +61,11 @@ impl LocalApicRegisterMap {
       other => panic!("Unsupported timer division power {}.", other),
     }
   }
+
+  pub fn timer_current(&self) -> usize {
+    (unsafe { (&self.currcountreg[0] as *const u32).read_volatile() }) as usize
+  }
+
   pub fn timer_reset(&mut self, init: usize) {
     self.initcountreg[0] = init as u32;
   }

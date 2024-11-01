@@ -5,7 +5,7 @@
 set -e
 
 mkdir bootboot
-mkdir /build/intermediate
+mkdir -p /build/intermediate
 
 tar -xf bootboot.tar.gz --strip-components=2 -C bootboot
 tar -xf mkbootimg.tar.gz --strip-components=1

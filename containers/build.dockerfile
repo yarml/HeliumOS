@@ -32,6 +32,12 @@ ADD ${MKBOOTIMG_URL} mkbootimg.tar.gz
 COPY --chmod=0755 ./scripts/bootboot.sh /build/scripts/bootboot.sh
 RUN /build/scripts/bootboot.sh
 
+# Font: Tamsyn by scott@fial.com
+ENV FONT_URL=http://www.fial.com/~scott/tamsyn-font/download/tamsyn-font-1.11.tar.gz
+ADD ${FONT_URL} font.tar.gz
+COPY --chmod=0755 ./scripts/font.sh /build/scripts/font.sh
+RUN /build/scripts/font.sh
+
 WORKDIR /build
 COPY --chmod=0755 ./scripts/build.sh /build/scripts/build.sh
 ENTRYPOINT [ "/build/scripts/build.sh" ]

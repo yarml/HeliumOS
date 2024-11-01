@@ -1,7 +1,6 @@
 use super::{valloc_ktable, virt::KVMSPACE};
 use crate::{
-  println,
-  proc::apic::{self, numcores},
+  dev::framebuffer::debug_set_pixel, println, proc::apic::{self, numcores}
 };
 use lazy_static::lazy_static;
 use x86_64::{
@@ -107,19 +106,28 @@ impl KernelGlobalDescriptorTable {
     nmistack: VirtAddr,
     dfstack: VirtAddr,
   ) {
+    let id = apic::id();
+    debug_set_pixel(30, id + 1, (255, 0, 0).into());
     let mut gdt = GlobalDescriptorTable::new();
+    debug_set_pixel(31, id + 1, (0, 255, 0).into());
     let kcode_seg = gdt.append(Descriptor::kernel_code_segment());
+    debug_set_pixel(32, id + 1, (255, 0, 0).into());
     let kdata_seg = gdt.append(Descriptor::kernel_data_segment());
+    debug_set_pixel(33, id + 1, (0, 255, 0).into());
     let udata_seg = gdt.append(Descriptor::user_data_segment());
+    debug_set_pixel(34, id + 1, (255, 0, 0).into());
     let ucode_seg = gdt.append(Descriptor::user_code_segment());
+    debug_set_pixel(35, id + 1, (0, 255, 0).into());
 
     let tss = Self::tss();
     *tss = TaskStateSegment::new();
+    debug_set_pixel(36, id + 1, (255, 0, 0).into());
     tss.privilege_stack_table[0] = kstack;
     tss.interrupt_stack_table[0] = nmistack;
     tss.interrupt_stack_table[1] = dfstack;
 
     let tss_seg = gdt.append(Descriptor::tss_segment(tss));
+    debug_set_pixel(37, id + 1, (0, 255, 0).into());
 
     // We don't load the GDT just yet, until it is in its final location
     let entry = unsafe { Self::entry() };
@@ -131,20 +139,24 @@ impl KernelGlobalDescriptorTable {
       udata_seg,
       tss_seg,
     };
-
+    debug_set_pixel(40, id + 1, (255, 255, 0).into());
     entry.gdt.load(); // Now we can load the GDT
+    debug_set_pixel(41, id + 1, (255, 0, 255).into());
     entry.load_kernel();
+    debug_set_pixel(43, id + 1, (0, 0, 255).into());
   }
 
   // unsafe: Caller has to verify that the currently
   // loaded GDT is the one managed by this struct
   unsafe fn load_kernel(&self) {
+    let id = apic::id();
     CS::set_reg(self.kcode_seg);
     SS::set_reg(self.kdata_seg);
     DS::set_reg(self.kdata_seg);
     ES::set_reg(self.kdata_seg);
     FS::set_reg(self.kdata_seg);
     GS::set_reg(self.kdata_seg);
+    debug_set_pixel(42, id + 1, (255, 0, 0).into());
     tables::load_tss(self.tss_seg);
   }
 }

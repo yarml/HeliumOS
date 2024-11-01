@@ -1,9 +1,12 @@
-use core::sync::atomic::{AtomicBool, Ordering};
+use core::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 use crate::{
   dev::framebuffer::debug_set_pixel,
-  println,
-  proc::{apic::regmap::LocalApicRegisterMap, task::TaskProcState},
+  proc::{
+    self,
+    apic::regmap::LocalApicRegisterMap,
+    task::{self, TaskProcState},
+  },
   sys,
 };
 use x86_64::VirtAddr;
@@ -16,20 +19,19 @@ pub(in crate::interrupts) fn timer_inter_1_adr() -> VirtAddr {
   VirtAddr::new((unsafe { &timer_inter_1 }) as *const VirtAddr as u64)
 }
 
-static PERIOD: AtomicBool = AtomicBool::new(false);
+static COUNT: AtomicUsize = AtomicUsize::new(0);
 
 #[no_mangle]
-extern "C" fn timer_inter_2(_proc_state: &TaskProcState) {
-  //task::tick(proc_state);
-  println!("Hello");
-  let period = PERIOD.fetch_or(false, Ordering::SeqCst);
-  PERIOD.store(!period, Ordering::SeqCst);
-  if period {
-    debug_set_pixel(200, 200, (255, 255, 0).into());
-  } else {
-    debug_set_pixel(200, 200, (0, 255, 255).into());
+extern "C" fn timer_inter_2(proc_state: &TaskProcState) -> ! {
+  // task::tick(proc_state);
+  if proc::is_primary() {
+    let count = COUNT.fetch_add(1, Ordering::SeqCst);
+    let period = count / 10 % 2 == 0;
+    let color = if period { (0, 0, 255) } else { (255, 0, 0) };
+    let offset = count % 10;
+    debug_set_pixel(1 + offset, 50, color.into());
   }
   LocalApicRegisterMap::get().eoi();
   sys::event_loop()
-  //unsafe { task::continue_current() };
+  // unsafe { task::continue_current() }
 }

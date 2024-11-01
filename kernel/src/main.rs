@@ -29,7 +29,10 @@ mod sys;
 mod utils;
 
 use crate::{fs::initrd, interrupts::pic};
-use dev::framebuffer::debug_set_pixel;
+use dev::{
+  console,
+  framebuffer::{self, debug_set_pixel},
+};
 use x86_64::instructions::interrupts as x86interrupts;
 
 #[no_mangle]
@@ -40,6 +43,7 @@ fn _start() -> ! {
       proc::init::wait(); // Wait for initialization
     }
   }
+  framebuffer::init();
   debug_set_pixel(0, 0, (255, 255, 255).into());
   if debug::isvm() {
     println!("Running in VM");
@@ -60,6 +64,9 @@ fn _start() -> ! {
 
   println!("Initializing INITRD.");
   initrd::init();
+
+  println!("Initializing console");
+  console::init();
 
   println!("Initializing Config Tables.");
   cfgtb::init();

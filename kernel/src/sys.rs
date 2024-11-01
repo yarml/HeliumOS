@@ -1,11 +1,14 @@
 use core::{arch::asm, panic::PanicInfo};
 use x86_64::instructions::{hlt, interrupts};
-use crate::{println, proc::apic};
+use crate::{dev::framebuffer::debug_set_pixel, println, proc::apic};
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
   interrupts::disable();
-  println!("[Proc {}] {}", apic::id(), info);
+  let id = apic::id();
+  debug_set_pixel(30, 30, (255, 0, 0).into());
+  debug_set_pixel(30, 30 + id + 1, (255, 0, 0).into());
+  println!("[Proc {}] {}", id, info);
   loop {
     hlt();
   }

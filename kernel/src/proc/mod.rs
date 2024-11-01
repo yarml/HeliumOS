@@ -69,6 +69,7 @@ pub mod init {
   };
   use crate::{
     bootboot::kernel_stack_size,
+    dev::framebuffer::debug_set_pixel,
     interrupts::{self, ERROR_STACK_SIZE},
     late_start,
     mem::gdt::KernelGlobalDescriptorTable,
@@ -104,6 +105,10 @@ pub mod init {
 
     // That's it for now
     IGNITION.call_once(|| ());
+    let id = apic::id();
+    debug_set_pixel(1, id + 1, (255, 255, 128).into());
+    debug_set_pixel(2, id + 1, (255, 128, 255).into());
+    debug_set_pixel(3, id + 1, (128, 255, 255).into());
     wakeup()
   }
 
@@ -112,7 +117,8 @@ pub mod init {
     while IGNITION.get().is_none() {
       pause();
     }
-    wakeup()
+    loop{pause();}
+    //wakeup()
   }
 
   fn latewait() {
@@ -126,17 +132,23 @@ pub mod init {
     // after all essentials have been setup
 
     let id = apic::id();
+    debug_set_pixel(10, 0, (255, 255, 255).into());
+    debug_set_pixel(10, id + 1, (255, 0, 255).into());
 
     let stack = stack();
     *unsafe { ProcInfo::stack() } = stack;
+    debug_set_pixel(11, id + 1, (255, 255, 0).into());
 
     // Allocate the NMI, and DF stacks
     let nmistack = ProcInfo::nmi_stack();
+    debug_set_pixel(12, id + 1, (255, 0, 255).into());
     let dfstack = ProcInfo::df_stack();
+    debug_set_pixel(13, id + 1, (255, 255, 0).into());
 
     unsafe {
       KernelGlobalDescriptorTable::register(stack, nmistack, dfstack);
     }
+    debug_set_pixel(14, id + 1, (255, 0, 255).into());
 
     let pinfo = ProcInfo {
       _id: id,
@@ -148,16 +160,22 @@ pub mod init {
       },
     };
     {
+      debug_set_pixel(15, id + 1, (255, 0, 0).into());
       let mut proc_table = PROC_TABLE.get().unwrap().write();
       proc_table.insert(id, pinfo);
     }
+    debug_set_pixel(16, id + 1, (0, 0, 255).into());
     let pinfo_adr = &ProcInfo::instance().basic as *const BasicProcInfo as u64;
     // Set KERNEL_GS_BASE
     KernelGsBase::write(VirtAddr::new(pinfo_adr));
+    debug_set_pixel(17, id + 1, (255, 0, 255).into());
 
     apic::init();
+    debug_set_pixel(18, id + 1, (255, 255, 0).into());
     interrupts::load();
+    debug_set_pixel(19, id + 1, (255, 0, 255).into());
     syscall::enable();
+    debug_set_pixel(20, id + 1, (255, 255, 0).into());
 
     if is_primary() {
       late_start();
@@ -165,6 +183,8 @@ pub mod init {
     } else {
       latewait();
     }
+    debug_set_pixel(5, 0, (255, 128, 128).into());
+    debug_set_pixel(5, id + 1, (255, 128, 128).into());
 
     println!("Done");
     sys::event_loop()

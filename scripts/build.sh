@@ -27,6 +27,7 @@ mkdir -p initrd/sys
 mkdir -p initrd/bin
 
 cp kernel.elf initrd/sys/kernel.elf
+cp font.psf initrd/sys/font.psf
 
 # START FIXME: Temporary until userspace build system is complete
 cp /build/userspace/target/layout-userspace/debug/init initrd/bin/init

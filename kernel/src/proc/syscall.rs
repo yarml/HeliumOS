@@ -65,6 +65,7 @@ fn syscall1_adr() -> VirtAddr {
 extern "C" fn syscall_handle_2(proc_state: &TaskProcState) -> ! {
   // Everything here in it's own scope to ensure it
   // gets dropped before continue_current
+  // What if compiler thinks it's smarted than me????
   {
     {
       // Update proc state

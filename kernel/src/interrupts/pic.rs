@@ -1,12 +1,11 @@
-use core::sync::atomic::{AtomicBool, Ordering};
-
 use spin::Mutex;
-use x86_64::{
-  instructions::{interrupts, port::PortWriteOnly},
-  structures::idt::InterruptStackFrame,
-};
+use x86_64::instructions::port::{Port, PortWriteOnly};
 
-use crate::{io, println};
+use crate::{
+  dev::framebuffer::{debug_printbin, debug_set_pixel},
+  io, println,
+  proc::apic,
+};
 
 const PIC_MASTER_PORT_CMD: u16 = 0x20;
 const PIC_MASTER_PORT_DATA: u16 = 0x21;
@@ -55,11 +54,6 @@ pub fn disable() {
   }
 }
 
-static PIT_CALIB_DONE: AtomicBool = AtomicBool::new(false);
-extern "x86-interrupt" fn pit_interrupt(_frame: InterruptStackFrame) {
-  PIT_CALIB_DONE.store(true, Ordering::Release);
-}
-
 pub trait PITCalib {
   fn measure() -> usize;
 }
@@ -70,44 +64,41 @@ pub trait PITCalib {
 // Returns the difference between the timer state before and after the PIT enabled sleep
 // Should not be called after interrupts are setup
 pub fn pit_calib_sleep<Measurer: PITCalib>() -> (usize, usize) {
+  let id = apic::id();
   let lock = CALIB_LOCK.lock();
 
-  let mut pit_data = PortWriteOnly::<u8>::new(PIT_CH0_DATA);
+  let mut pit_data = Port::<u8>::new(PIT_CH0_DATA);
   let mut pit_cmd = PortWriteOnly::<u8>::new(PIT_CMD);
-  let mut master_data = PortWriteOnly::<u8>::new(PIC_MASTER_PORT_DATA);
-
-  super::setup_pit_calib(pit_interrupt);
 
   let pit_delay: u16 = 11933;
-
-  let pit_delay_lo = (pit_delay & 0xFF) as u8;
-  let pit_delay_hi = ((pit_delay >> 8) & 0xFF) as u8;
-
+  debug_set_pixel(40, 20 + id, (255, 255, 255).into());
+  println!("[Proc {}] Start PIT", id);
   unsafe {
-    // Setup PIT channel 0 in Mode 0(One shot)
-    pit_cmd.write(0b00110000);
-    // Remove PIC mask
-    master_data.write(0xFE);
-    // Write large value here so we don't get interrupted immediatly after enabling interrupts
     pit_data.write(0xFF);
     pit_data.write(0xFF);
   }
-  interrupts::enable();
   unsafe {
-    pit_data.write(pit_delay_lo);
-    pit_data.write(pit_delay_hi);
-    pit_cmd.write(0b00110000);
+    pit_cmd.write(0);
   }
-  PIT_CALIB_DONE.store(true, Ordering::SeqCst);
+  let ref_start_lo = unsafe { pit_data.read() };
+  let ref_start_hi = unsafe { pit_data.read() };
+  let ref_timer_start = ref_start_lo as u16 | (ref_start_hi as u16) << 8;
   let timer_start = Measurer::measure();
-  while !PIT_CALIB_DONE.fetch_or(false, Ordering::SeqCst) {}
+  let error = loop {
+    unsafe {
+      pit_cmd.write(0);
+    }
+    let ref_lo = unsafe { pit_data.read() };
+    let ref_hi = unsafe { pit_data.read() };
+    let ref_timer_now = ref_lo as u16 | (ref_hi as u16) << 8;
+    if ref_timer_start - ref_timer_now >= pit_delay {
+      break ref_timer_start - ref_timer_now - pit_delay;
+    }
+  };
   let timer_end = Measurer::measure();
-  interrupts::disable();
-  unsafe {
-    // Remask PIC
-    master_data.write(0xFF);
-  }
-  println!("Done PIT");
+  println!("[Proc {}] Done PIT with error: {} pic tick", id, error);
+  debug_printbin(40, 20 + id, error as usize);
+  debug_set_pixel(39, 20 + id, (255, 255, 0).into());
 
   drop(lock);
 

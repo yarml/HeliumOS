@@ -1,5 +1,6 @@
+pub mod console;
 pub mod framebuffer;
 
 pub fn init() {
-  framebuffer::init();
+  //framebuffer::late_init();
 }

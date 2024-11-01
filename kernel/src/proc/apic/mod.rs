@@ -1,5 +1,6 @@
 pub mod regmap;
 
+use crate::dev::framebuffer::{debug_printbin, debug_set_pixel};
 use crate::interrupts::pic::{self, PITCalib};
 use crate::interrupts::Vectors;
 use crate::println;
@@ -72,6 +73,7 @@ pub(super) fn init() {
     }
     MapperFlushAll::new().flush_all();
   } else {
+    debug_set_pixel(10, 20 + id, (255, 255, 255).into());
     println!("Mapping APIC registers: {:x}", APIC_VBASE.as_u64());
     mem::vmap(
       Page::from_start_address(APIC_VBASE).unwrap(),
@@ -80,22 +82,30 @@ pub(super) fn init() {
       PageTableFlags::empty(),
     )
     .expect("Could not map APIC registers into virtual memory");
+    debug_set_pixel(11, 20 + id, (255, 0, 255).into());
     MAPPED.call_once(|| ());
   }
 
   let apic_msr = LocalApicRegisterMap::get();
 
+  debug_set_pixel(12, 20 + id, (255, 255, 255).into());
   apic_msr.error_setup(Vectors::LocalApicError.into());
+  debug_set_pixel(13, 20 + id, (255, 0, 255).into());
   apic_msr.spurious_setup(Vectors::LocalApicSpurious.into());
-
+  debug_set_pixel(14, 20 + id, (255, 255, 255).into());
   apic_msr.timer_setup(Vectors::LocalApicTimer.into(), TimerMode::Periodic, 2);
+  debug_set_pixel(15, 20 + id, (255, 0, 255).into());
   apic_msr.timer_reset(usize::MAX);
-
   println!("[Proc{}] Calibrating APIC", id);
+  debug_set_pixel(16, 20 + id, (255, 255, 255).into());
   let pit_calib = pic::pit_calib_sleep::<APICTimerCalib>();
+  debug_set_pixel(17, 20 + id, (255, 0, 255).into());
   let apic_10ms = pit_calib.0 - pit_calib.1;
+  debug_printbin(50, id + 1, apic_10ms);
+  println!("[Proc {}] APIC 10ms = {} tick", id, apic_10ms);
 
-  apic_msr.timer_reset(apic_10ms * 100);
+  apic_msr.timer_reset(apic_10ms * 10);
+  debug_set_pixel(18, 20 + id, (255, 255, 255).into());
 
   // Setup LINT0 & LINT1
   if let Some(apic_config) = APIC_CONFIG.get() {

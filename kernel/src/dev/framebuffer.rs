@@ -2,22 +2,28 @@ use crate::{
   bootboot::{bootboot, fb_virt},
   println,
 };
-use core::mem;
-use spin::{Mutex, Once};
+use alloc::vec;
+use alloc::vec::Vec;
+use core::{
+  mem,
+  ops::{Deref, DerefMut},
+};
+use spin::{Mutex, MutexGuard, Once};
+use x86_64::VirtAddr;
 
 static FRAMEBUFFER: Once<Mutex<Framebuffer>> = Once::new();
 
 pub struct Framebuffer {
-  // format: FramebufferFormat,
-  // width: usize,
-  // height: usize,
-  // scanline: usize,
-  // ptr: VirtAddr,
-  // // Double buffer info
-  // // Lowest and highest offsets written to after last refresh
-  // lowest_offset: Option<usize>,
-  // highest_offset: Option<usize>,
-  // double_buffer: Vec<u8>,
+  format: FramebufferFormat,
+  width: usize,
+  height: usize,
+  scanline: usize,
+  ptr: VirtAddr,
+  // Double buffer info
+  // Lowest and highest offsets written to after last refresh
+  lowest_offset: Option<usize>,
+  highest_offset: Option<usize>,
+  double_buffer: Option<Vec<u8>>,
 }
 
 pub struct PixelColor {
@@ -36,69 +42,81 @@ pub enum FramebufferFormat {
 }
 
 impl Framebuffer {
+  // Initiallizes the Framebuffer struct using no double buffering
   pub fn from_bootboot() -> Self {
-    // let bootboot = bootboot();
-    // let width = bootboot.fb_width as usize;
-    // let height = bootboot.fb_height as usize;
-    // let scanline = bootboot.fb_scanline as usize;
-    // let double_buffer = vec![0u8; scanline * height];
+    let bootboot = bootboot();
+    let width = bootboot.fb_width as usize;
+    let height = bootboot.fb_height as usize;
+    let scanline = bootboot.fb_scanline as usize;
 
     let fb_virt = fb_virt();
     println!("Framebuffer virtual address: {:?}", fb_virt);
 
     Self {
-      // format: bootboot.fb_type.try_into().unwrap(),
-      // width,
-      // height,
-      // scanline,
-      // ptr: fb_virt,
-      // lowest_offset: None,
-      // highest_offset: None,
-      // double_buffer,
+      format: bootboot.fb_type.try_into().unwrap(),
+      width,
+      height,
+      scanline,
+      ptr: fb_virt,
+      lowest_offset: None,
+      highest_offset: None,
+      double_buffer: None,
     }
   }
 
-  // pub fn instance<'a>() -> MutexGuard<'a, Framebuffer> {
-  //   FRAMEBUFFER.get().unwrap().lock()
-  // }
+  pub fn init_dfb(&mut self) {
+    self.double_buffer = Some(vec![0u8; self.scanline * self.height]);
+    self.lowest_offset = None;
+    self.highest_offset = None;
+  }
 
-  // pub fn set_pixel(&mut self, x: usize, y: usize, pixel: PixelColor) {
-  //   let offset = y * self.scanline + x * mem::size_of::<u32>();
-  //   let word = pixel.word(self.format);
-  //   assert!(x < self.width);
-  //   assert!(y < self.height);
-  //   debug_assert!(offset < self.double_buffer.len());
-  //   println!("Setting pixel at offset {}", offset);
+  pub fn instance<'a>() -> &'a mut Framebuffer {
+    unsafe {
+      (FRAMEBUFFER.get().unwrap().lock().deref_mut() as *mut Framebuffer)
+        .as_mut()
+        .unwrap()
+    }
+  }
 
-  //   if offset < *self.lowest_offset.get_or_insert(offset) {
-  //     self.lowest_offset = Some(offset);
-  //   }
-  //   if offset > *self.highest_offset.get_or_insert(offset + 4) {
-  //     self.highest_offset = Some(offset + 4);
-  //   }
+  pub fn set_pixel(&mut self, x: usize, y: usize, pixel: PixelColor) {
+    let offset = y * self.scanline + x * mem::size_of::<u32>();
+    let word = pixel.word(self.format);
+    assert!(x < self.width);
+    assert!(y < self.height);
+    let buffer_len = self.scanline * self.height;
+    debug_assert!(offset < buffer_len);
+    if offset < *self.lowest_offset.get_or_insert(offset) {
+      self.lowest_offset = Some(offset);
+    }
+    if offset > *self.highest_offset.get_or_insert(offset + 4) {
+      self.highest_offset = Some(offset + 4);
+    }
 
-  //   unsafe {
-  //     (self.double_buffer.as_mut_ptr() as *mut u32)
-  //       .add(offset)
-  //       .write_volatile(word)
-  //   };
-  // }
+    let final_ptr = match &mut self.double_buffer {
+      Some(double_buffer) => double_buffer.as_mut_ptr(),
+      None => self.ptr.as_mut_ptr(),
+    } as *mut u32;
 
-  // pub fn refresh(&mut self) {
-  //   let lowest_offset = self.lowest_offset.take().unwrap_or(0);
-  //   let highest_offset = self.highest_offset.take().unwrap_or(0);
-  //   let copy_len = highest_offset - lowest_offset;
-  //   unsafe {
-  //     self
-  //       .ptr
-  //       .as_mut_ptr::<u8>()
-  //       .add(lowest_offset)
-  //       .copy_from_nonoverlapping(
-  //         self.double_buffer.as_ptr().add(lowest_offset),
-  //         copy_len,
-  //       )
-  //   };
-  // }
+    unsafe { final_ptr.add(offset).write_volatile(word) };
+  }
+
+  pub fn refresh(&mut self) {
+    let lowest_offset = self.lowest_offset.take().unwrap_or(0);
+    let highest_offset = self.highest_offset.take().unwrap_or(0);
+    let copy_len = highest_offset - lowest_offset;
+    if let Some(double_buffer) = &mut self.double_buffer {
+      unsafe {
+        self
+          .ptr
+          .as_mut_ptr::<u8>()
+          .add(lowest_offset)
+          .copy_from_nonoverlapping(
+            double_buffer.as_ptr().add(lowest_offset),
+            copy_len,
+          )
+      };
+    }
+  }
 }
 
 impl TryInto<FramebufferFormat> for u8 {
@@ -158,17 +176,24 @@ impl From<(u8, u8, u8)> for PixelColor {
   }
 }
 
-pub(super) fn init() {
+pub fn init() {
   FRAMEBUFFER.call_once(|| Mutex::new(Framebuffer::from_bootboot()));
-  debug_set_pixel(0, 10, (255, 255, 255).into());
+}
+
+pub(super) fn late_init() {
+  Framebuffer::instance().init_dfb();
 }
 
 pub fn debug_set_pixel(x: usize, y: usize, pixel: PixelColor) {
-  let bootboot = bootboot();
-  let ptr = fb_virt();
-  let offset = y * bootboot.fb_scanline as usize + x * mem::size_of::<u32>();
-  let word = pixel.word(FramebufferFormat::Argb);
-  unsafe {
-    ptr.as_mut_ptr::<u32>().add(offset).write_volatile(word);
-  };
+  Framebuffer::instance().set_pixel(x, y, pixel);
+}
+
+pub fn debug_printbin(x: usize, y: usize, val: usize) {
+  let fb = Framebuffer::instance();
+  for bitindex in 0..64 {
+    let xindex = x + 64 - bitindex - 1;
+    let bitval = (val >> bitindex) & 1 == 1;
+    let color = if bitval { (255, 0, 0) } else { (0, 0, 255) };
+    fb.set_pixel(xindex, y, color.into());
+  }
 }

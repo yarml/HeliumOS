@@ -1,10 +1,10 @@
 .PHONY: build run build-run install reboot
 
 build:
-	docker compose run --build build
+	docker compose run --remove-orphans --build build
 
 run:
-	docker compose run --build debug
+	docker compose run --remove-orphans --build debug
 
 build-run: build run
 

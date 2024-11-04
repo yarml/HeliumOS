@@ -1,5 +1,5 @@
 use crate::{
-  dev::framebuffer::debug_set_pixel, mem::gdt::KernelGlobalDescriptorTable, sys,
+  dev::framebuffer::debug_set_pixel, mem::gdt::KernelGlobalDescriptorTable, println, sys
 };
 use helium_syscall::{Syscall, SyscallResult};
 use x86_64::{
@@ -40,12 +40,14 @@ impl SyscallHandler for Syscall {
         SyscallResult::Invalid // Does not matter
       }
       Syscall::GetPid => {
+        println!("GetPid");
         let pinfo = ProcInfo::instance();
         let task = pinfo.current_task.as_ref().unwrap();
         let task = task.read();
         SyscallResult::Success(task.id as u64, 0, 0, 0, 0, 0)
       }
       Syscall::DebugDraw(x, y, r, g, b) => {
+        println!("DebugDraw");
         debug_set_pixel(
           *x as usize,
           *y as usize,
@@ -107,7 +109,7 @@ extern "C" fn syscall_handle_2(proc_state: &TaskProcState) -> ! {
     }
   }
   unsafe {
-    task::continue_current();
+    task::continue_current(false);
   }
 }
 

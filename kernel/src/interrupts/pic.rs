@@ -2,6 +2,7 @@ use spin::Mutex;
 use x86_64::instructions::port::{Port, PortWriteOnly};
 
 use crate::{
+  debug,
   dev::framebuffer::{debug_printbin, debug_set_pixel},
   io, println,
   proc::apic,
@@ -72,7 +73,7 @@ pub fn pit_calib_sleep<Measurer: PITCalib>() -> (usize, usize) {
 
   let pit_delay: u16 = 11933;
   debug_set_pixel(40, 20 + id, (255, 255, 255).into());
-  println!("[Proc {}] Start PIT", id);
+  println!("Start PIT");
   unsafe {
     pit_data.write(0xFF);
     pit_data.write(0xFF);
@@ -91,12 +92,19 @@ pub fn pit_calib_sleep<Measurer: PITCalib>() -> (usize, usize) {
     let ref_lo = unsafe { pit_data.read() };
     let ref_hi = unsafe { pit_data.read() };
     let ref_timer_now = ref_lo as u16 | (ref_hi as u16) << 8;
+
+    // FIXME: There is a bug or something with Qemu where time goes backwards sometimes, idk
+    // Don't wanna deal with it
+    if debug::isvm() && ref_timer_now > ref_timer_start {
+      return (timer_start, timer_start - 884248);
+    }
+
     if ref_timer_start - ref_timer_now >= pit_delay {
       break ref_timer_start - ref_timer_now - pit_delay;
     }
   };
   let timer_end = Measurer::measure();
-  println!("[Proc {}] Done PIT with error: {} pic tick", id, error);
+  println!("Done PIT with error: {} pic tick", error);
   debug_printbin(40, 20 + id, error as usize);
   debug_set_pixel(39, 20 + id, (255, 255, 0).into());
 

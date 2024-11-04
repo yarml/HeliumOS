@@ -6,6 +6,7 @@ use crate::interrupts::Vectors;
 use crate::println;
 use crate::proc::apic;
 use crate::proc::apic::regmap::{LocalApicRegisterMap, TimerMode};
+use crate::proc::task::QUANTUM_MS;
 use crate::{
   acpi::tables::{MadtEntryIoApic, MadtEntryLocalApicNmi},
   mem::{self, virt::KVMSPACE},
@@ -63,7 +64,7 @@ impl PITCalib for APICTimerCalib {
 }
 
 // Called once per core
-pub(super) fn init() {
+pub(super) fn init() -> usize {
   let id = apic::id();
   static MAPPED: Once<()> = Once::new();
 
@@ -93,7 +94,7 @@ pub(super) fn init() {
   debug_set_pixel(13, 20 + id, (255, 0, 255).into());
   apic_msr.spurious_setup(Vectors::LocalApicSpurious.into());
   debug_set_pixel(14, 20 + id, (255, 255, 255).into());
-  apic_msr.timer_setup(Vectors::LocalApicTimer.into(), TimerMode::Periodic, 2);
+  apic_msr.timer_setup(Vectors::LocalApicTimer.into(), TimerMode::Periodic, 0);
   debug_set_pixel(15, 20 + id, (255, 0, 255).into());
   apic_msr.timer_reset(usize::MAX);
   println!("[Proc{}] Calibrating APIC", id);
@@ -102,9 +103,9 @@ pub(super) fn init() {
   debug_set_pixel(17, 20 + id, (255, 0, 255).into());
   let apic_10ms = pit_calib.0 - pit_calib.1;
   debug_printbin(50, id + 1, apic_10ms);
-  println!("[Proc {}] APIC 10ms = {} tick", id, apic_10ms);
-
-  apic_msr.timer_reset(apic_10ms * 10);
+  println!("APIC 10ms = {} tick", apic_10ms);
+  let quantum = apic_10ms * QUANTUM_MS / 10;
+  apic_msr.timer_reset(quantum);
   debug_set_pixel(18, 20 + id, (255, 255, 255).into());
 
   // Setup LINT0 & LINT1
@@ -124,6 +125,7 @@ pub(super) fn init() {
       apic_msr.lint_setup(lint, flags);
     }
   }
+  quantum
 }
 
 #[derive(Debug)]

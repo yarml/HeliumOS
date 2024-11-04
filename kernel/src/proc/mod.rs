@@ -28,6 +28,7 @@ struct ProcInfo {
   tick_miss: usize,
   current_task: Option<TaskRef>,
   basic: BasicProcInfo,
+  schedule_quantum: usize,
 }
 
 // Exposed to assembly via KGSBASE
@@ -117,7 +118,9 @@ pub mod init {
     while IGNITION.get().is_none() {
       pause();
     }
-    loop{pause();}
+    loop {
+      pause();
+    }
     //wakeup()
   }
 
@@ -154,6 +157,7 @@ pub mod init {
       _id: id,
       tick_miss: 0,
       current_task: None,
+      schedule_quantum: 0,
       basic: BasicProcInfo {
         save_user_rsp: 0,
         kernel_rsp: stack.as_u64(),
@@ -170,7 +174,7 @@ pub mod init {
     KernelGsBase::write(VirtAddr::new(pinfo_adr));
     debug_set_pixel(17, id + 1, (255, 0, 255).into());
 
-    apic::init();
+    ProcInfo::instance().schedule_quantum = apic::init();
     debug_set_pixel(18, id + 1, (255, 255, 0).into());
     interrupts::load();
     debug_set_pixel(19, id + 1, (255, 0, 255).into());

@@ -20,8 +20,14 @@ macro_rules! print {
 
 #[macro_export]
 macro_rules! println {
-  ($fmt:expr) => ($crate::print!(concat!($fmt, "\r\n")));
-  ($fmt:expr, $($arg:tt)*) => ($crate::print!(concat!($fmt, "\n"), $($arg)*));
+  ($fmt:expr) => ({
+    let id = $crate::proc::apic::id();
+    $crate::print!(concat!("[Proc {}] ", $fmt, "\r\n"), id)
+  });
+  ($fmt:expr, $($arg:tt)*) => ({
+    let id = $crate::proc::apic::id();
+    $crate::print!(concat!("[Proc {}] ", $fmt, "\r\n"), id, $($arg)*)
+  });
 }
 
 pub static DEBUG_WRITER: RwLock<DebugWriter> = RwLock::new(DebugWriter());

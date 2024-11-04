@@ -1,6 +1,6 @@
+use crate::{dev::framebuffer::debug_set_pixel, println, proc::apic};
 use core::{arch::asm, panic::PanicInfo};
 use x86_64::instructions::{hlt, interrupts};
-use crate::{dev::framebuffer::debug_set_pixel, println, proc::apic};
 
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
@@ -8,7 +8,7 @@ fn panic(info: &PanicInfo) -> ! {
   let id = apic::id();
   debug_set_pixel(30, 30, (255, 0, 0).into());
   debug_set_pixel(30, 30 + id + 1, (255, 0, 0).into());
-  println!("[Proc {}] {}", id, info);
+  println!("Panic Info: {}", info);
   loop {
     hlt();
   }

@@ -2,6 +2,7 @@ use super::{apic, ProcInfo};
 use crate::elf::ElfFile;
 use crate::mem::gdt::KernelGlobalDescriptorTable;
 use crate::println;
+use crate::proc::apic::regmap::LocalApicRegisterMap;
 use crate::sys;
 use crate::{
   elf::{self},
@@ -29,6 +30,8 @@ pub const USERSTACK_SIZE: usize = 512 * 1024;
 pub const USERSTACK_BOTTOM: u64 = USERSPACE_TOP.as_u64() + 1 - 1024 * 1024;
 pub const USERSTACK_TOP: VirtAddr =
   VirtAddr::new_truncate(USERSTACK_BOTTOM - USERSTACK_SIZE as u64);
+
+pub const QUANTUM_MS: usize = 1000;
 
 // When loading a task, we need to set memory in user space to certain values,
 // But we don't want to change the current mapping of the user space, so instead
@@ -103,7 +106,7 @@ pub fn tick(proc_state: &TaskProcState) {
     let mut tasks_lock = tasks_lock.upgrade();
     match Task::exec_initrd("/bin/init", &mut tasks_lock) {
       ExecResult::Success(id) => {
-        println!("[Proc {}] Start init with ID: {}", apic::id(), id)
+        println!("Start init with ID: {}", id)
       }
       error => panic!("Could not run /bin/init: {:?}", error),
     }
@@ -121,14 +124,14 @@ pub fn tick(proc_state: &TaskProcState) {
     clock - since >= task.life_expectancy()
   }) {
     let mut task = task_lock.write();
-    println!("[Proc {}] Releasing {}", apic::id(), task.id);
+    println!("Releasing {}", task.id);
     task.state = TaskState::Pending;
   }
 
   // If there is still a task running, then that's it we're done here
   if let Some(task) = &pinfo.current_task {
     let t = task.read();
-    println!("[Proc {}] Continuing {}", apic::id(), t.id);
+    println!("Continuing {}", t.id);
     return;
   }
 
@@ -159,12 +162,12 @@ pub fn tick(proc_state: &TaskProcState) {
     // We have a cadidate
     task.state = TaskState::Running { since: clock };
     pinfo.current_task = Some(tasks_lock[index].clone());
-    println!("[Proc {}] Running {}", apic::id(), task.id);
+    println!("Running {}", task.id);
   }
 }
 
 // unsafe: Caller must manually drop any lock they are holding
-pub unsafe fn continue_current() -> ! {
+pub unsafe fn continue_current(reset_timer: bool) -> ! {
   let pinfo = ProcInfo::instance();
 
   if let Some(task_lock) = &pinfo.current_task {
@@ -176,6 +179,11 @@ pub unsafe fn continue_current() -> ! {
     let state =
       unsafe { (&task.procstate as *const TaskProcState).as_ref() }.unwrap();
     drop(task);
+    let lapic = LocalApicRegisterMap::get();
+    if reset_timer {
+      lapic.timer_reset(pinfo.schedule_quantum);
+      lapic.eoi();
+    }
     unsafe { state.apply() };
   } else {
     sys::event_loop()

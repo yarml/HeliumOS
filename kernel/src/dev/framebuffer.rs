@@ -4,11 +4,8 @@ use crate::{
 };
 use alloc::vec;
 use alloc::vec::Vec;
-use core::{
-  mem,
-  ops::{Deref, DerefMut},
-};
-use spin::{Mutex, MutexGuard, Once};
+use core::{mem, ops::DerefMut};
+use spin::{Mutex, Once};
 use x86_64::VirtAddr;
 
 static FRAMEBUFFER: Once<Mutex<Framebuffer>> = Once::new();

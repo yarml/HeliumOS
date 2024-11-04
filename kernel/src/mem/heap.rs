@@ -7,7 +7,7 @@ use x86_64::{
   VirtAddr,
 };
 
-use crate::{mem, println, proc::apic};
+use crate::{mem, println};
 
 use super::{valloc, PAGE_SIZE};
 
@@ -60,8 +60,7 @@ pub fn expand(adr: VirtAddr) {
   };
 
   println!(
-    "[Proc {}] Expanding kernel heap by {} bytes from {:?}",
-    apic::id(),
+    "Expanding kernel heap by {} bytes from {:?}",
     expand,
     adr.as_ptr::<()>()
   );

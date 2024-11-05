@@ -29,6 +29,7 @@ struct ProcInfo {
   current_task: Option<TaskRef>,
   basic: BasicProcInfo,
   schedule_quantum: usize,
+  active_mapping: Option<usize>,
 }
 
 // Exposed to assembly via KGSBASE
@@ -162,6 +163,7 @@ pub mod init {
         save_user_rsp: 0,
         kernel_rsp: stack.as_u64(),
       },
+      active_mapping: None,
     };
     {
       debug_set_pixel(15, id + 1, (255, 0, 0).into());

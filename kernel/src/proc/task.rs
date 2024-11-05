@@ -370,12 +370,15 @@ pub enum ExecResult {
 
 #[derive(Debug)]
 pub struct MemoryMap {
+  id: usize,
   mappings: Vec<MemoryMapping>,
 }
 
 impl MemoryMap {
+  const ID_COUNT: AtomicUsize = AtomicUsize::new(0);
   pub fn new() -> Self {
     Self {
+      id: Self::ID_COUNT.fetch_add(1, Ordering::SeqCst),
       mappings: Vec::new(),
     }
   }
@@ -437,9 +440,16 @@ impl MemoryMap {
   }
 
   fn apply(&self) {
+    let pinfo = ProcInfo::instance();
+    if let Some(active_mapping) = pinfo.active_mapping {
+      if active_mapping == self.id {
+        return;
+      }
+    }
     for mapping in &self.mappings {
       mapping.apply().unwrap()
     }
+    pinfo.active_mapping = Some(self.id);
   }
 }
 

@@ -178,7 +178,7 @@ pub fn init() {
 }
 
 pub(super) fn late_init() {
-  Framebuffer::instance().init_dfb();
+  //Framebuffer::instance().init_dfb();
 }
 
 pub fn debug_set_pixel(x: usize, y: usize, pixel: PixelColor) {

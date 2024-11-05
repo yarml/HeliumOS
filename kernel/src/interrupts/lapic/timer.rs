@@ -37,6 +37,5 @@ extern "C" fn timer_inter_2(proc_state: &TaskProcState) -> ! {
     let offset = count % 10;
     debug_set_pixel(1 + offset, 50, color.into());
   }
-  //sys::event_loop()
   unsafe { task::continue_current(true) }
 }

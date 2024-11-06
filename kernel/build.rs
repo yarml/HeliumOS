@@ -1,5 +1,7 @@
+#![feature(generic_arg_infer)]
+
 fn main() {
-  let assemblies = ["src/proc/syscall.asm", "src/interrupts/lapic/timer.asm"];
+  let assemblies: [&str; _] = [];
   for assembly in assemblies {
     println!("cargo::rerun-if-changed={assembly}");
   }

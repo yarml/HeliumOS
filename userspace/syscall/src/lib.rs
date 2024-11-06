@@ -2,15 +2,11 @@
 
 use core::arch::asm;
 
-use ordinalizer::Ordinal;
-
-#[derive(Ordinal)]
 pub enum SyscallResult {
   Success(u64, u64, u64, u64, u64, u64),
   Invalid,
 }
 
-#[derive(Ordinal)]
 pub enum Syscall {
   Exit(u64),
   GetPid,
@@ -19,17 +15,18 @@ pub enum Syscall {
 
 impl Syscall {
   pub fn call(&self) -> SyscallResult {
-    let num = self.ordinal();
-    let (mut io0, mut io1, mut io2, mut io3, mut io4, mut io5): (u64, u64, u64, u64, u64, u64) = match self {
-      Syscall::Exit(exitcode) => {
-        (*exitcode, 0, 0, 0, 0, 0)
-      },
-      Syscall::GetPid => {
-        (0, 0, 0, 0, 0, 0)
-      },
-      Self::DebugDraw(x, y, r, g, b) => {
-        (*x, *y, *r, *g, *b, 0)
-      }
+    let num = 0u64; //self.ordinal();
+    let (mut io0, mut io1, mut io2, mut io3, mut io4, mut io5): (
+      u64,
+      u64,
+      u64,
+      u64,
+      u64,
+      u64,
+    ) = match self {
+      Syscall::Exit(exitcode) => (*exitcode, 0, 0, 0, 0, 0),
+      Syscall::GetPid => (0, 0, 0, 0, 0, 0),
+      Self::DebugDraw(x, y, r, g, b) => (*x, *y, *r, *g, *b, 0),
     };
 
     let mut status: u64;

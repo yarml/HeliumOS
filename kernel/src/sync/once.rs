@@ -47,7 +47,7 @@ impl<T> Once<T> {
   pub fn get(&self) -> Option<&T> {
     if self.status() == Status::Init {
       Some(unsafe {
-        // Safety: STatus is checked to be Init
+        // Safety: self.status == Status::Init
         self.force_get()
       })
     } else {
@@ -60,7 +60,7 @@ impl<T> Once<T> {
       Status::Uninit => None,
       Status::Init => {
         Some(unsafe {
-          // Safety: status is checked to be Init
+          // Safety: self.status == Status::Init
           self.force_get()
         })
       }
@@ -73,7 +73,7 @@ impl<T> Once<T> {
       hint::spin_loop();
     }
     unsafe {
-      // Safety: status is checked to be init
+      // Safety: self.status == Status::Init
       self.force_get()
     }
   }
@@ -84,9 +84,9 @@ impl<T> Once<T> {
     self.status.load(Ordering::Acquire)
   }
 
-  // Safety: Status must be Init
+  // Safety: self.status == Status::Init
   unsafe fn force_get(&self) -> &T {
-    unsafe { (&*self.data.as_ptr()).assume_init_ref() }
+    (&*self.data.as_ptr()).assume_init_ref()
   }
 }
 
@@ -109,7 +109,7 @@ mod status {
   }
 
   impl Status {
-    // Safety: `raw` must be a valid enum value
+    // Safety: raw ∈ Status
     unsafe fn new_unchecked(raw: u8) -> Self {
       mem::transmute(raw)
     }
@@ -138,7 +138,7 @@ mod status {
 
     pub fn load(&self, order: Ordering) -> Status {
       unsafe {
-        // Safety: status was stored from a value originally converted from Status
+        // Safety: status always stores a copy of a valid Status
         Status::new_unchecked(self.status.load(order))
       }
     }

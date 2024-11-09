@@ -69,12 +69,18 @@ impl<'lock, T> Deref for MutexGuard<'lock, T> {
   type Target = T;
 
   fn deref(&self) -> &Self::Target {
-    unsafe { &*self.mutex.data.as_ptr() }
+    unsafe {
+      // Safety: MutexGuard ensures exclusivity
+      &*self.mutex.data.as_ptr()
+    }
   }
 }
 
 impl<'lock, T> DerefMut for MutexGuard<'lock, T> {
   fn deref_mut(&mut self) -> &mut Self::Target {
-    unsafe { &mut *self.mutex.data.as_ptr() }
+    unsafe {
+      // Safety: MutexGuard ensures exclusivity
+      &mut *self.mutex.data.as_ptr()
+    }
   }
 }

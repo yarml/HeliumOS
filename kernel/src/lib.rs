@@ -3,10 +3,8 @@
 
 extern crate alloc;
 
+mod error;
+mod hart;
 mod mem;
-mod sys;
-
-#[no_mangle]
-fn _start() -> ! {
-  loop {}
-}
+mod start;
+mod sync;

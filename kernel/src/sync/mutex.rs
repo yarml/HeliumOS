@@ -1,5 +1,5 @@
 use core::{
-  cell::Cell,
+  cell::{Cell, UnsafeCell},
   hint,
   ops::{Deref, DerefMut},
   sync::atomic::{AtomicBool, Ordering},
@@ -7,24 +7,39 @@ use core::{
 
 pub struct Mutex<T: ?Sized> {
   lock: AtomicBool,
-  data: Cell<T>,
+  data: UnsafeCell<T>,
 }
 
 pub struct MutexGuard<'mutex, T: ?Sized> {
-  mutex: &'mutex Mutex<T>,
+  lock: &'mutex AtomicBool,
+  data: &'mutex UnsafeCell<T>,
 }
 
+/// # Safety
+/// With T: Send, borrow checker will prevent any move when Mutex is locked
+/// There is no issue moving an unlocked Mutex between harts.
+/// The UnsafeCell<T> within the Mutex<T> is only accessible to 1 hart at most
+/// at any point in time.
 unsafe impl<T: ?Sized + Send> Send for Mutex<T> {}
+
+/// # Safety
+/// The UnsafeCell<T> is not directly accessible to harts unless they lock the entire
+/// Mutex<T>.
 unsafe impl<T: ?Sized + Send> Sync for Mutex<T> {}
 
+/// # Safety
+/// No problem dropping a MutexGuard<T> in a hart it was not locked in.
 unsafe impl<T: ?Sized + Send> Send for MutexGuard<'_, T> {}
+
+/// # Safety
+/// MutexGuard<T: Send>: Send
 unsafe impl<T: ?Sized + Sync> Sync for MutexGuard<'_, T> {}
 
 impl<T> Mutex<T> {
   pub const fn new(data: T) -> Self {
     Self {
       lock: AtomicBool::new(false),
-      data: Cell::new(data),
+      data: UnsafeCell::new(data),
     }
   }
 }
@@ -48,7 +63,10 @@ impl<T: ?Sized> Mutex<T> {
       .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
       .is_ok()
     {
-      return Some(MutexGuard { mutex: &self });
+      return Some(MutexGuard {
+        lock: &self.lock,
+        data: &self.data,
+      });
     } else {
       None
     }
@@ -61,7 +79,7 @@ impl<T: ?Sized> Mutex<T> {
 
 impl<'lock, T: ?Sized> Drop for MutexGuard<'lock, T> {
   fn drop(&mut self) {
-    self.mutex.lock.store(false, Ordering::Release);
+    self.lock.store(false, Ordering::Release);
   }
 }
 
@@ -70,8 +88,9 @@ impl<'lock, T> Deref for MutexGuard<'lock, T> {
 
   fn deref(&self) -> &Self::Target {
     unsafe {
-      // Safety: MutexGuard ensures exclusivity
-      &*self.mutex.data.as_ptr()
+      // # Safety
+      // MutexGuard ensures exclusivity
+      &*self.data.get()
     }
   }
 }
@@ -79,8 +98,9 @@ impl<'lock, T> Deref for MutexGuard<'lock, T> {
 impl<'lock, T> DerefMut for MutexGuard<'lock, T> {
   fn deref_mut(&mut self) -> &mut Self::Target {
     unsafe {
-      // Safety: MutexGuard ensures exclusivity
-      &mut *self.mutex.data.as_ptr()
+      // # Safety
+      // MutexGuard ensures exclusivity
+      &mut *self.data.get()
     }
   }
 }

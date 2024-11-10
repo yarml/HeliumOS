@@ -1,4 +1,8 @@
+use core::hint;
+
 #[no_mangle]
 fn _start() -> ! {
-  loop {}
+  loop {
+    hint::spin_loop();
+  }
 }

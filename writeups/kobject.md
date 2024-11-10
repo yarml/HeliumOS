@@ -15,6 +15,10 @@ of the get it done asap to see results mindset.
 
 # Progress
 - [ ] Sync
+  - [ ] Barrier
+  - [X] Once
+  - [ ] RwLock
+  - [X] Mutex
 - [ ] Logging
 - [ ] SysInfo
 - [ ] PIC
@@ -75,7 +79,7 @@ fn example() {
 ```
 
 ## RwLock
-A fair Read/Write lock.
+A fair Read/Write lock. Based on FOLL from https://doi.org/10.1145/1583991.1584020
 
 POC (not perfect but meh):
 ```rust
@@ -98,3 +102,5 @@ fn hart3() {
   println!("{example}");
 }
 ```
+# Mutex
+A mutually exclusive lock.

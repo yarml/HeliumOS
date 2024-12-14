@@ -1,5 +1,5 @@
 use core::{
-  cell::{Cell, UnsafeCell},
+  cell::UnsafeCell,
   hint,
   ops::{Deref, DerefMut},
   sync::atomic::{AtomicBool, Ordering},
@@ -28,11 +28,12 @@ unsafe impl<T: ?Sized + Send> Send for Mutex<T> {}
 unsafe impl<T: ?Sized + Send> Sync for Mutex<T> {}
 
 /// # Safety
-/// No problem dropping a MutexGuard<T> in a hart it was not locked in.
+/// No problem dropping a MutexGuard<T> in a hart it was not locked in, or
+/// accessing the data behind the mutex.
 unsafe impl<T: ?Sized + Send> Send for MutexGuard<'_, T> {}
 
 /// # Safety
-/// MutexGuard<T: Send>: Send
+/// Borrow checker will prevent any mutable aliasing.
 unsafe impl<T: ?Sized + Sync> Sync for MutexGuard<'_, T> {}
 
 impl<T> Mutex<T> {

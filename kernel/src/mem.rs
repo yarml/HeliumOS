@@ -1,3 +1,12 @@
+//! Temporary implementation to satistfy linker requirements
+
+mod phys;
+mod size;
+
+pub use phys::FrameAllocation;
+pub use phys::PhysAddr;
+pub use size::MemorySize;
+
 use core::alloc::GlobalAlloc;
 
 struct NoAlloc;
@@ -14,3 +23,7 @@ unsafe impl GlobalAlloc for NoAlloc {
 
 #[global_allocator]
 static GLOBALLOC: NoAlloc = NoAlloc;
+
+pub fn init() {
+  phys::init();
+}

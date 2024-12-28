@@ -8,17 +8,17 @@ pub use raw::RawPort;
 use core::marker::PhantomData;
 use serialize::{IOReadable, IOWritable};
 
-struct PortReadOnly<T: IOReadable> {
+pub struct PortReadOnly<T: IOReadable> {
   port: RawPort,
   phantom: PhantomData<T>,
 }
 
-struct PortWriteOnly<T: IOWritable> {
+pub struct PortWriteOnly<T: IOWritable> {
   port: RawPort,
   phantom: PhantomData<T>,
 }
 
-struct PortReadWrite<T: IOReadable + IOWritable> {
+pub struct PortReadWrite<T: IOReadable + IOWritable> {
   port: RawPort,
   phantom: PhantomData<T>,
 }

@@ -18,6 +18,13 @@ macro_rules! log {
 }
 
 #[macro_export]
+macro_rules! debug {
+  ($($arg:tt)*) => {
+    $crate::log!("DEBUG", $($arg)*)
+  };
+}
+
+#[macro_export]
 macro_rules! info {
   ($($arg:tt)*) => {
     $crate::log!("INFO", $($arg)*)

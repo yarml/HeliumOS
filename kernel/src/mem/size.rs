@@ -1,4 +1,4 @@
-use core::fmt::Display;
+use core::fmt::{Debug, Display};
 
 pub enum MemoryUnit {
   Byte,
@@ -16,28 +16,9 @@ pub struct MemorySize {
 }
 
 impl MemorySize {
-  pub fn new(size: usize) -> Self {
+  #[inline]
+  pub const fn new(size: usize) -> Self {
     Self { inner: size }
-  }
-}
-
-impl Display for MemorySize {
-  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-    if self.inner == 0 {
-      write!(f, "0{}", MemoryUnit::Byte.suffix())
-    } else {
-      for unit in (0..MemoryUnit::MEMORY_ORDERS)
-        .rev()
-        .filter_map(|order| MemoryUnit::from_order(order))
-        .filter(|unit| unit.component(self.inner) != 0)
-      {
-        match write!(f, "{}{}", unit.component(self.inner), unit.suffix()) {
-          Err(e) => return Err(e),
-          _ => {}
-        }
-      }
-      Ok(())
-    }
   }
 }
 
@@ -57,6 +38,7 @@ impl MemoryUnit {
 }
 
 impl MemoryUnit {
+  #[inline]
   pub const fn from_order(order: usize) -> Option<Self> {
     match order {
       0 => Some(Self::Byte),
@@ -72,6 +54,7 @@ impl MemoryUnit {
 }
 
 impl MemoryUnit {
+  #[inline]
   pub const fn order(&self) -> usize {
     match self {
       MemoryUnit::Byte => 0,
@@ -83,13 +66,45 @@ impl MemoryUnit {
       MemoryUnit::ExbiByte => 6,
     }
   }
+  #[inline]
   pub const fn suffix(&self) -> char {
     Self::MEMORY_UNITS[self.order()]
   }
+  #[inline]
   pub const fn size(&self) -> usize {
     Self::MEMORY_SIZES[self.order()]
   }
+  #[inline]
   pub const fn component(&self, size: usize) -> usize {
     (size / self.size()) % 1024
+  }
+}
+
+impl Debug for MemorySize {
+  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    for unit in (0..MemoryUnit::MEMORY_ORDERS)
+      .rev()
+      .filter_map(|order| MemoryUnit::from_order(order))
+    {
+      write!(f, "{:04}{}", unit.component(self.inner), unit.suffix())?
+    }
+    Ok(())
+  }
+}
+
+impl Display for MemorySize {
+  fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+    if self.inner == 0 {
+      write!(f, "0{}", MemoryUnit::Byte.suffix())
+    } else {
+      for unit in (0..MemoryUnit::MEMORY_ORDERS)
+        .rev()
+        .filter_map(|order| MemoryUnit::from_order(order))
+        .filter(|unit| unit.component(self.inner) != 0)
+      {
+        write!(f, "{}{}", unit.component(self.inner), unit.suffix())?
+      }
+      Ok(())
+    }
   }
 }

@@ -3,7 +3,7 @@ use core::{
   usize,
 };
 
-use alloc::string::ToString;
+use super::Frame;
 
 macro_rules! phys_truncated {
   ($addr:expr) => {
@@ -12,6 +12,7 @@ macro_rules! phys_truncated {
 }
 
 #[repr(transparent)]
+#[derive(Clone, Copy)]
 pub struct PhysAddr {
   inner: usize,
 }
@@ -47,15 +48,20 @@ impl PhysAddr {
       inner: self.inner + offset,
     }
   }
+
+  #[inline]
+  pub const fn frame(&self) -> Frame {
+    Frame::containing(self)
+  }
 }
 
 impl PhysAddr {
   #[inline]
-  pub fn as_usize(&self) -> usize {
+  pub const fn as_usize(&self) -> usize {
     self.inner
   }
   #[inline]
-  pub fn as_u64(&self) -> u64 {
+  pub const fn as_u64(&self) -> u64 {
     self.inner as u64
   }
 }

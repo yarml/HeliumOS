@@ -17,7 +17,8 @@ pub enum Type {
 }
 
 impl Entry {
-  pub fn typ(&self) -> Type {
+  #[inline]
+  pub const fn typ(&self) -> Type {
     match self.flags & 0xF {
       0 => Type::Used,
       1 => Type::Free,
@@ -27,10 +28,12 @@ impl Entry {
     }
   }
 
-  pub fn phys_addr(&self) -> PhysAddr {
+  #[inline]
+  pub const fn phys_addr(&self) -> PhysAddr {
     PhysAddr::new_truncate(self.ptr as usize)
   }
-  pub fn size(&self) -> usize {
+  #[inline]
+  pub const fn size(&self) -> usize {
     (self.flags & 0xFFFFFFFFFFFFFFF0) as usize
   }
 }

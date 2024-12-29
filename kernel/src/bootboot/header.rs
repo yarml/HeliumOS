@@ -1,6 +1,8 @@
-use core::{mem, slice};
-
-use super::MmapEntry;
+use super::{
+  framebuffer::{FramebufferInfo, FramebufferType},
+  MmapEntry,
+};
+use core::{ffi, mem, slice};
 
 #[repr(C, packed)]
 pub struct Header {
@@ -59,6 +61,27 @@ impl Header {
 
   pub const fn numcores(&self) -> usize {
     self.numcores as usize
+  }
+
+  pub const fn bspid(&self) -> usize {
+    self.bspid as usize
+  }
+
+  pub fn framebuffer(&self) -> FramebufferInfo {
+    FramebufferInfo {
+      // No Panic: Bootboot should guarentee a valid value
+      typ: FramebufferType::try_from(self.fb_type).unwrap(),
+      phys_location: self.fb_ptr.into(),
+      size: self.fb_size as usize,
+      width: self.fb_width as usize,
+      height: self.fb_height as usize,
+      scanline: self.fb_scanline as usize,
+      location: unsafe {
+        // # Safety
+        // Nothing to worry about
+        &super::fb
+      } as *const ffi::c_void as *mut u8,
+    }
   }
 
   pub const fn mmap(&self) -> &'static [MmapEntry] {

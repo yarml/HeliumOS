@@ -73,6 +73,13 @@ impl From<usize> for PhysAddr {
   }
 }
 
+impl From<u64> for PhysAddr {
+  #[inline]
+  fn from(value: u64) -> Self {
+    Self::new_truncate(value as usize)
+  }
+}
+
 impl From<PhysAddr> for usize {
   #[inline]
   fn from(value: PhysAddr) -> Self {

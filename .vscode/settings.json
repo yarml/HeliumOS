@@ -2,7 +2,7 @@
   "rust-analyzer.cargo.target": "x86_64-unknown-none",
   "rust-analyzer.cargo.allTargets": false,
   "rust-analyzer.linkedProjects": [
-    "./kernel/Cargo.toml",
-    "./userspace/Cargo.toml"
+    "kernel/Cargo.toml",
+    "userspace/Cargo.toml"
   ]
 }

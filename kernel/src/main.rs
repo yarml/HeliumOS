@@ -6,6 +6,7 @@
 extern crate alloc;
 
 mod bootboot;
+mod dev;
 mod error;
 mod hart;
 mod io;

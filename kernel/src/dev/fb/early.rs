@@ -44,9 +44,9 @@ impl Write for EarlyFramebuffer {
         '\r' => {}
         c => {
           let glyph = self.font.glyph(c);
-          for (col, line) in (0..glyph.lines())
+          for (line, col) in (0..glyph.lines())
             .flat_map(|line| (0..glyph.cols()).map(move |col| (line, col)))
-            .filter(|(col, line)| glyph.bitval(*col, *line))
+            .filter(|(line, col)| glyph.bitval(*col, *line))
           {
             let locy = self.position.y * fontdim.height() + line;
             let locx = self.position.x * fontdim.width() + 8 - col;

@@ -1,6 +1,6 @@
 use super::{
   framebuffer::{FramebufferInfo, FramebufferType},
-  MmapEntry,
+  mmap::{MmapRawEntry, PhysMemoryMap},
 };
 use core::{ffi, mem, slice};
 
@@ -84,13 +84,13 @@ impl Header {
     }
   }
 
-  pub const fn mmap(&self) -> &'static [MmapEntry] {
+  pub const fn mmap(&self) -> PhysMemoryMap {
     let nentries = (self.size as usize - mem::size_of::<Header>())
-      / mem::size_of::<MmapEntry>();
+      / mem::size_of::<MmapRawEntry>();
     let start = (self as *const Header as *const u8)
       .wrapping_add(mem::size_of::<Header>())
-      as *const MmapEntry;
-    unsafe {
+      as *const MmapRawEntry;
+    let mmap = unsafe {
       // # Safety
       // - start is not NULL, guarenteed by Bootboot
       // - start is valid for reads for at least len * mem::size_of::<MmapEntry> bytes, guarenteed by Bootboot
@@ -99,7 +99,8 @@ impl Header {
       // - This memory is never mutably referenced in the kernel
       // - The maximum size of the memory map is 3968 bytes, which is less than isize::MAX, guarenteed by Bootboot
       slice::from_raw_parts(start, nentries)
-    }
+    };
+    PhysMemoryMap::from(mmap)
   }
 }
 

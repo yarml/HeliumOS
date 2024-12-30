@@ -1,11 +1,11 @@
+pub mod mmap;
+
 mod framebuffer;
 mod header;
-mod mmap;
-
-use core::ffi;
 
 pub use header::Header as BootbootHeader;
-pub use mmap::{Entry as MmapEntry, Type as MmapType};
+
+use core::ffi;
 
 extern "C" {
   static bootboot: BootbootHeader;

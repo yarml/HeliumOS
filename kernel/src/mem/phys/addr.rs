@@ -3,7 +3,7 @@ use core::{
   usize,
 };
 
-use super::Frame;
+use super::frame::{size::FrameSize, Frame};
 
 macro_rules! phys_truncated {
   ($addr:expr) => {
@@ -50,7 +50,7 @@ impl PhysAddr {
   }
 
   #[inline]
-  pub const fn frame(&self) -> Frame {
+  pub const fn frame<S: FrameSize>(&self) -> Frame<S> {
     Frame::containing(self)
   }
 }

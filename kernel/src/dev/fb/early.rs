@@ -1,11 +1,10 @@
+use super::{CursorPosition, FbBuiltinFont};
 use crate::{bootboot::BootbootHeader, dev::fb::FbFont};
+use core::fmt::Write;
 
 /// Early framebuffer always queries bootboot info on each write request for framebuffer location & dimensions,
 /// does not use any buffering, writes directly to framebuffer, wraps around when screen is full
 /// Supposed to only be used before heap allocation is possible.
-use super::{CursorPosition, FbBuiltinFont};
-use core::fmt::Write;
-
 pub struct EarlyFramebuffer {
   font: FbBuiltinFont,
   position: CursorPosition,

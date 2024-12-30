@@ -1,23 +1,30 @@
-use core::fmt::{Debug, Display};
+pub mod size;
 
 use super::PhysAddr;
+use core::{
+  fmt::{Debug, Display},
+  marker::PhantomData,
+};
+use size::FrameSize;
 
 #[derive(Clone, Copy)]
 #[repr(transparent)]
-pub struct Frame {
+pub struct Frame<S: FrameSize> {
   boundary: PhysAddr,
+  _phantom: PhantomData<S>,
 }
 
-impl Frame {
+impl<S: FrameSize> Frame<S> {
   #[inline]
   pub const fn containing(addr: &PhysAddr) -> Self {
     Self {
-      boundary: PhysAddr::new_truncate(addr.as_usize() << 3 >> 3),
+      boundary: PhysAddr::new_truncate(addr.as_usize() << S::SHIFT >> S::SHIFT),
+      _phantom: PhantomData,
     }
   }
 }
 
-impl Frame {
+impl<S: FrameSize> Frame<S> {
   #[inline]
   pub const fn boundary(&self) -> PhysAddr {
     self.boundary
@@ -25,18 +32,18 @@ impl Frame {
 
   #[inline]
   pub const fn number(&self) -> usize {
-    self.boundary.as_usize() << 3
+    self.boundary.as_usize() << S::SHIFT
   }
 }
 
-impl Debug for Frame {
+impl<S: FrameSize> Debug for Frame<S> {
   fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-    write!(f, "Frame#{}@{}", self.number(), self.boundary())
+    write!(f, "Frame{}#{}@{}", S::SIZE, self.number(), self.boundary())
   }
 }
 
-impl Display for Frame {
+impl<S: FrameSize> Display for Frame<S> {
   fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-    write!(f, "Frame#{}", self.number())
+    write!(f, "Frame{}#{}", S::SIZE, self.number())
   }
 }

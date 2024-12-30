@@ -10,17 +10,17 @@ use serialize::{IOReadable, IOWritable};
 
 pub struct PortReadOnly<T: IOReadable> {
   port: RawPort,
-  phantom: PhantomData<T>,
+  _phantom: PhantomData<T>,
 }
 
 pub struct PortWriteOnly<T: IOWritable> {
   port: RawPort,
-  phantom: PhantomData<T>,
+  _phantom: PhantomData<T>,
 }
 
 pub struct PortReadWrite<T: IOReadable + IOWritable> {
   port: RawPort,
-  phantom: PhantomData<T>,
+  _phantom: PhantomData<T>,
 }
 
 impl<T: IOReadable> PortReadOnly<T> {
@@ -34,7 +34,7 @@ impl<T: IOReadable> PortReadOnly<T> {
         // This is the only instance of RawPort with the speicifed port address
         RawPort::new(port)
       },
-      phantom: PhantomData::<T>,
+      _phantom: PhantomData::<T>,
     }
   }
 }
@@ -50,7 +50,7 @@ impl<T: IOWritable> PortWriteOnly<T> {
         // This is the only instance of RawPort with the speicifed port address
         RawPort::new(port)
       },
-      phantom: PhantomData::<T>,
+      _phantom: PhantomData::<T>,
     }
   }
 }
@@ -66,7 +66,7 @@ impl<T: IOReadable + IOWritable> PortReadWrite<T> {
         // This is the only instance of RawPort with the speicifed port address
         RawPort::new(port)
       },
-      phantom: PhantomData::<T>,
+      _phantom: PhantomData::<T>,
     }
   }
 }

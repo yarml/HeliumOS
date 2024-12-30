@@ -3,7 +3,6 @@
 mod phys;
 mod size;
 
-pub use phys::FrameAllocation;
 pub use phys::PhysAddr;
 pub use size::MemorySize;
 

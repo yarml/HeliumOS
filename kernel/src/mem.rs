@@ -2,6 +2,7 @@
 
 mod phys;
 mod size;
+mod virt;
 
 pub use phys::PhysAddr;
 pub use size::MemorySize;

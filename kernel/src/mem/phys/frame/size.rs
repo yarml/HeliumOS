@@ -6,6 +6,7 @@ pub struct Frame2MiB;
 pub trait FrameSize {
   const SHIFT: usize;
   const SIZE: usize = 1 << Self::SHIFT;
+  const MASK: usize = usize::MAX >> Self::SHIFT << Self::SHIFT;
 }
 
 impl FrameSize for Frame4KiB {

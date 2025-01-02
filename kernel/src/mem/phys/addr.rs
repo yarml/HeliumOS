@@ -24,7 +24,7 @@ impl PhysAddr {
   #[inline]
   pub const fn new(addr: usize) -> Option<Self> {
     if addr == phys_truncated!(addr) {
-      Some(PhysAddr { inner: addr })
+      Some(Self { inner: addr })
     } else {
       None
     }
@@ -43,10 +43,12 @@ impl PhysAddr {
 
 impl PhysAddr {
   #[inline]
-  pub const fn with_offset(&self, offset: usize) -> Self {
-    Self {
-      inner: self.inner + offset,
-    }
+  pub const fn add(&self, offset: usize) -> Option<Self> {
+    Self::new(self.inner + offset)
+  }
+  #[inline]
+  pub const fn add_truncate(&self, offset: usize) -> Self {
+    Self::new_truncate(self.inner + offset)
   }
 
   #[inline]

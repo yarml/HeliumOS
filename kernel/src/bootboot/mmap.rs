@@ -62,7 +62,7 @@ impl Iterator for PhysMemoryMapIterator {
     }
     let current = &self.mmap[self.current];
     let begin_class =
-      MmapClass::from_address(current.phys_addr().with_offset(self.offset));
+      MmapClass::from_address(current.phys_addr().add_truncate(self.offset));
     let end_class = MmapClass::from_address(current.phys_addr_end());
     if begin_class == end_class {
       let gap = if self.current + 1 < self.mmap.len() {
@@ -95,7 +95,7 @@ impl MmapEntry {
     gap: Option<usize>,
     max_size: usize,
   ) -> Self {
-    let start = raw.phys_addr().with_offset(offset);
+    let start = raw.phys_addr().add_truncate(offset);
     let typ = raw.typ();
     Self {
       start,
@@ -124,12 +124,12 @@ impl MmapEntry {
   /// Exclusive last address within this entry
   #[inline]
   pub const fn phys_addr_adjacent(&self) -> PhysAddr {
-    self.start.with_offset(self.size)
+    self.start.add_truncate(self.size)
   }
   /// Inclusive last address within this entry
   #[inline]
   pub const fn phys_addr_end(&self) -> PhysAddr {
-    self.start.with_offset(self.size - 1)
+    self.start.add_truncate(self.size - 1)
   }
   #[inline]
   pub const fn size(&self) -> usize {

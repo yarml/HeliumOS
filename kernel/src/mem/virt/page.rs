@@ -1,34 +1,36 @@
-pub mod size;
-
-use crate::mem::MemorySize;
-
-use super::PhysAddr;
 use core::{
   fmt::{Debug, Display},
   marker::PhantomData,
 };
-use size::FrameSize;
+
+use size::PageSize;
+
+use crate::mem::MemorySize;
+
+use super::VirtAddr;
+
+pub mod size;
 
 #[repr(transparent)]
 #[derive(Clone, Copy)]
-pub struct Frame<S: FrameSize> {
-  boundary: PhysAddr,
+pub struct Page<S: PageSize> {
+  boundary: VirtAddr,
   _phantom: PhantomData<S>,
 }
 
-impl<S: FrameSize> Frame<S> {
+impl<S: PageSize> Page<S> {
   #[inline]
-  pub const fn containing(addr: &PhysAddr) -> Self {
+  pub const fn containing(addr: &VirtAddr) -> Self {
     Self {
-      boundary: PhysAddr::new_truncate(addr.as_usize() & S::MASK),
+      boundary: VirtAddr::new_truncate(addr.as_usize() & S::MASK),
       _phantom: PhantomData,
     }
   }
 }
 
-impl<S: FrameSize> Frame<S> {
+impl<S: PageSize> Page<S> {
   #[inline]
-  pub const fn boundary(&self) -> PhysAddr {
+  pub const fn boundary(&self) -> VirtAddr {
     self.boundary
   }
 
@@ -38,11 +40,11 @@ impl<S: FrameSize> Frame<S> {
   }
 }
 
-impl<S: FrameSize> Debug for Frame<S> {
+impl<S: PageSize> Debug for Page<S> {
   fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
     write!(
       f,
-      "Frame{}#{}@{}",
+      "Page{}#{}@{}",
       MemorySize::new(S::SIZE),
       self.number(),
       self.boundary()
@@ -50,8 +52,8 @@ impl<S: FrameSize> Debug for Frame<S> {
   }
 }
 
-impl<S: FrameSize> Display for Frame<S> {
+impl<S: PageSize> Display for Page<S> {
   fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-    write!(f, "Frame{}#{}", MemorySize::new(S::SIZE), self.number())
+    write!(f, "Page{}#{}", MemorySize::new(S::SIZE), self.number())
   }
 }

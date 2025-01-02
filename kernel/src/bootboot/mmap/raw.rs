@@ -1,4 +1,4 @@
-use crate::mem::{MemorySize, PhysAddr};
+use crate::mem::PhysAddr;
 use core::fmt::Debug;
 
 #[repr(C, packed)]
@@ -36,13 +36,13 @@ impl RawEntry {
   /// Inclusive last address within this entry
   #[inline]
   pub const fn phys_addr_end(&self) -> PhysAddr {
-    self.phys_addr().with_offset(self.size() - 1)
+    self.phys_addr().add_truncate(self.size() - 1)
   }
 
   /// Exclusive last address within this entry
   #[inline]
   pub const fn phys_addr_adjacent(&self) -> PhysAddr {
-    self.phys_addr().with_offset(self.size())
+    self.phys_addr().add_truncate(self.size())
   }
 
   #[inline]

@@ -11,8 +11,6 @@
 //! Like middle memory, this entire memory space can be found in kernel space
 //! with constant offset using PhysAddr::to_virt()
 
-use crate::sync::Mutex;
-
 use super::{
   frame::{
     size::{Frame128KiB, Frame4KiB, Frame64KiB, FrameSize},
@@ -20,6 +18,7 @@ use super::{
   },
   PhysAddr,
 };
+use crate::sync::Mutex;
 
 static LOWMEM_ALLOCATOR: Mutex<LowMemoryAllocator> =
   Mutex::new(LowMemoryAllocator::default());
@@ -76,13 +75,14 @@ impl LowMemoryAllocator {
 
     // Not found, instead we allocate a 128K frame and take the first 64K in it
     let frame128 = self.alloc128()?;
-    let num128 = Self::numof(frame128);
+    let num128 = frame128.number();
     let num64 = num128 << 1;
     self.mark_used64(num64);
     Some(Self::frame(num64))
   }
+
   pub fn free64(&mut self, frame: Frame<Frame64KiB>) {
-    let num = Self::numof(frame);
+    let num = frame.number();
     let buddy_num = Self::buddyof64(num);
     self.mark_free64(num);
     if self.isfree64(buddy_num) {
@@ -90,7 +90,7 @@ impl LowMemoryAllocator {
     }
   }
   pub fn free128(&mut self, frame: Frame<Frame128KiB>) {
-    let num = Self::numof(frame);
+    let num = frame.number();
     self.mark_free128(num);
   }
 }
@@ -161,9 +161,5 @@ impl LowMemoryAllocator {
   #[inline]
   const fn frame<S: FrameSize>(num: usize) -> Frame<S> {
     PhysAddr::new_truncate(num << S::SHIFT).frame()
-  }
-  #[inline]
-  const fn numof<S: FrameSize>(frame: Frame<S>) -> usize {
-    frame.boundary().as_usize() >> S::SHIFT
   }
 }

@@ -5,7 +5,7 @@ use core::{
 
 macro_rules! make_canonical {
   ($addr:expr) => {
-    if $addr & 0x0001000000000000 == 0 {
+    if $addr & 0x0000800000000000 == 0 {
       $addr & 0x0000FFFFFFFFFFFF
     } else {
       $addr | 0xFFFF000000000000

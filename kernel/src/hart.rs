@@ -1,28 +1,41 @@
-mod glob;
+mod feature;
 
-use core::arch::x86_64::__cpuid;
+pub use feature::FeatureSet;
 
-pub use glob::GlobHartInfo;
+use crate::{bootboot::BootbootHeader, system::SystemStage};
+use core::{arch::x86_64::__cpuid, hint};
 
-use crate::bootboot::BootbootHeader;
+pub struct ThisHart;
 
-static GLOB_HART_INFO: GlobHartInfo = GlobHartInfo::new();
-
-pub fn glob_info() -> &'static GlobHartInfo {
-  &GLOB_HART_INFO
-}
-
-pub fn id() -> usize {
-  (unsafe {
-    // # Safety
-    // Nothing to worry about
-    __cpuid(1)
+impl ThisHart {
+  pub fn id() -> usize {
+    match SystemStage::current() {
+      SystemStage::Initialization => Self::id_cpuid(),
+    }
   }
-  .ebx
-    >> 24) as usize
+
+  pub fn is_bootstrap() -> bool {
+    let bspid = match SystemStage::current() {
+      SystemStage::Initialization => BootbootHeader::instance().bspid(),
+    };
+    Self::id() == bspid
+  }
+
+  pub fn die() -> ! {
+    loop {
+      hint::spin_loop();
+    }
+  }
 }
 
-pub fn is_bootstrap() -> bool {
-  let bspid = BootbootHeader::instance().bspid();
-  id() == bspid
+impl ThisHart {
+  fn id_cpuid() -> usize {
+    (unsafe {
+      // # Safety
+      // Nothing to worry about
+      __cpuid(1)
+    }
+    .ebx
+      >> 24) as usize
+  }
 }

@@ -1,6 +1,7 @@
 #![no_std]
 #![no_main]
 #![feature(ptr_as_ref_unchecked)]
+#![feature(ascii_char)]
 #![deny(unsafe_op_in_unsafe_fn)]
 
 extern crate alloc;
@@ -14,3 +15,4 @@ mod logging;
 mod mem;
 mod start;
 mod sync;
+mod system;

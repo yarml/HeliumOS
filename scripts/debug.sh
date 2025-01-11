@@ -7,7 +7,7 @@ OVMF_VARS=/usr/share/OVMF/OVMF_VARS.fd
 SYS_IMG=/vm/helium.iso
 
 QEMU_CMD=$(echo qemu-system-x86_64 \
-    -cpu qemu64 \
+    -cpu qemu64,pdpe1gb=on \
     -net none \
     -drive if=pflash,format=raw,unit=0,file=${OVMF_CODE},readonly=on \
     -drive if=pflash,format=raw,unit=1,file=${OVMF_VARS} \

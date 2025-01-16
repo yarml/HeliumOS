@@ -8,3 +8,29 @@ edition = "2021"
 
 [build-dependencies]
 nasm-rs = "0.3.0"
+
+[features]
+default = ["debug"]
+
+debug = [
+  "log_level_debug",
+  "logger_framebuffer",
+  "logger_port_e9",
+  "debug_checks",
+]
+release = ["log_level_info", "logger_framebuffer"]
+
+debug_checks = []
+
+log_debug = []
+log_info = []
+log_warn = []
+log_error = []
+
+logger_framebuffer = []
+logger_port_e9 = []
+
+log_level_error = ["log_error"]
+log_level_warn = ["log_warn", "log_level_error"]
+log_level_info = ["log_info", "log_level_warn"]
+log_level_debug = ["log_debug", "log_level_info"]

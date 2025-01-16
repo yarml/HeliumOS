@@ -1,7 +1,11 @@
+#[cfg(feature = "logger_framebuffer")]
 mod fb;
+
+#[cfg(feature = "logger_port_e9")]
 mod port_e9;
 
 #[doc(hidden)]
+#[cfg(feature = "logger_port_e9")]
 pub use port_e9::DEBUG_PORT;
 
 #[doc(hidden)]
@@ -18,28 +22,40 @@ macro_rules! log {
 #[macro_export]
 macro_rules! debug {
   ($($arg:tt)*) => {
-    $crate::log!("DEBUG", $($arg)*);
+    #[cfg(feature = "log_debug")]
+    {
+      $crate::log!("DEBUG", $($arg)*);
+    }
   };
 }
 
 #[macro_export]
 macro_rules! info {
   ($($arg:tt)*) => {
-    $crate::log!("INFO", $($arg)*);
+    #[cfg(feature = "log_info")]
+    {
+      $crate::log!("INFO", $($arg)*);
+    }
   };
 }
 
 #[macro_export]
 macro_rules! warn {
   ($($arg:tt)*) => {
-    $crate::log!("WARN", $($arg)*);
+    #[cfg(feature = "log_warn")]
+    {
+      $crate::log!("WARN", $($arg)*);
+    }
   };
 }
 
 #[macro_export]
 macro_rules! error {
   ($($arg:tt)*) => {
-    $crate::log!("ERROR", $($arg)*);
+    #[cfg(feature = "log_error")]
+    {
+      $crate::log!("ERROR", $($arg)*);
+    }
   };
 }
 
@@ -60,11 +76,13 @@ macro_rules! log_routine {
 #[macro_export]
 macro_rules! log_dbg {
   ($header:expr, $($arg:tt)*) => ({
-    use core::fmt::Write;
-    use $crate::logging::DEBUG_PORT;
-    let mut debug_port = DEBUG_PORT.lock();
-    $crate::log_routine!(debug_port, $header, $($arg)*);
-
+    #[cfg(feature = "logger_port_e9")]
+    {
+      use core::fmt::Write;
+      use $crate::logging::DEBUG_PORT;
+      let mut debug_port = DEBUG_PORT.lock();
+      $crate::log_routine!(debug_port, $header, $($arg)*);
+    }
   });
 }
 
@@ -73,9 +91,12 @@ macro_rules! log_dbg {
 #[macro_export]
 macro_rules! log_fb {
   ($header:expr, $($arg:tt)*) => {{
-    use core::fmt::Write;
-    use $crate::logging::FRAMEBUFFER;
-    let mut framebuffer = FRAMEBUFFER.lock();
-    $crate::log_routine!(framebuffer, $header, $($arg)*);
+    #[cfg(feature = "logger_framebuffer")]
+    {
+      use core::fmt::Write;
+      use $crate::logging::FRAMEBUFFER;
+      let mut framebuffer = FRAMEBUFFER.lock();
+      $crate::log_routine!(framebuffer, $header, $($arg)*);
+    }
   }};
 }

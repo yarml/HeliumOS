@@ -14,17 +14,20 @@ of the get it done asap to see results mindset.
 - APIs must be final, usable, & good.
 
 # Progress
-- [ ] Sync
-  - [ ] Barrier
+- [X] Sync
+  - [X] Barrier
   - [X] Once
-  - [ ] RwLock
+  - [X] RwLock
   - [X] Mutex
-- [ ] Logging
+- [X] Logging
 - [ ] SysInfo
 - [ ] PIC
 - [ ] Basic GDT
 - [ ] Physical Memory Management
-- [ ] Kernel Mappings
+  - [X] Low Memory Management
+  - [ ] Middle Memory Management
+  - [ ] High Memory Management
+- [ ] Virtual Memory Management
 - [ ] Hart Ignition
 - [ ] ...
 - [ ] Interrupts
@@ -79,7 +82,10 @@ fn example() {
 ```
 
 ## RwLock
-A fair Read/Write lock. Based on FOLL from https://doi.org/10.1145/1583991.1584020
+A fair Read/Write lock. Based on FOLL from https://doi.org/10.1145/1583991.1584020.
+Currently the FOLL based lock is not implemented, as that would require kernel heap.
+They will be needed really only when we have kernel tasks etc. For now a NaiveRwLock
+exists to bootstrap.
 
 POC (not perfect but meh):
 ```rust
@@ -104,3 +110,29 @@ fn hart3() {
 ```
 # Mutex
 A mutually exclusive lock.
+
+## Logging
+The kernel comes with 4 log levels: Debug, Info, Warn, Error.
+
+Logs are written to the framebuffer and 0xE9 IO port (both behind feature flags).
+
+The module `logging` exports 4 macros which are meant to be used to print logs: `debug`, `info`, `warn`, `error`, each for their obvious log level.
+
+A log line contains the HartId from where the log came, the log level, and the log message.
+
+## Physical Memory Management
+### Low Memory Management
+Low memory is the region of physical memory going in the range [1Mib, 16Mib). Areas
+lower than that are never used for any purpose and not managed by the kernel.
+
+Low Memory is only used to allocate memory for drivers wihch require it. General memory requests from
+application or kernel management will never fall back to Low Memory, even if that means a memory request
+cannot be fullfilled(i.e system is considered out of memory even though all 15Mib of Low Memory are still unused).
+
+Low Memory requests come in 2 sizes only, 64Kib frames on 64Kib boundary, and 128Kib frames on 128Kib boundary.
+There is no support for N continuous frames of any size.
+
+Due to its small size, all of Low Memory is managed using a Buddy allocator of 6 64bit words in total.
+
+## Middle Memory Management
+WIP

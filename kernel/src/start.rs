@@ -1,8 +1,10 @@
-use crate::{
-  hart::{FeatureSet, ThisHart},
-  info, mem,
+use {
+  crate::{
+    hart::{FeatureSet, ThisHart},
+    info, mem,
+  },
+  core::hint,
 };
-use core::hint;
 
 #[no_mangle]
 fn _start() -> ! {

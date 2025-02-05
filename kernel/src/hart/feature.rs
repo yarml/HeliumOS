@@ -146,7 +146,7 @@ impl SupportedVendor {
     let has_apic = (cpuid1.edx >> 9) & 1 == 1;
     let has_syscall = (cpuidext1.edx >> 11) & 1 == 1;
 
-    // FIXME: technically speaking, since max-atomic-width is already specified
+    // TODO: technically speaking, since max-atomic-width is already specified
     // to be 128 in layout-kernel.json, the compiler reserves the right to generate
     // a cmpxchg16b before the feature is checked to not exist. I will just assume
     // it will not randomly insert it and cross them fingers for now.

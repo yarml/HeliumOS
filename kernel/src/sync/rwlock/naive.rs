@@ -197,6 +197,7 @@ impl<T: ?Sized> RwLock<T> {
 }
 
 impl<'lock, T: ?Sized> RwLockDeferredGuard<'lock, T> {
+  #[must_use = "check the guard was upgraded or not, otherwise it will drop"]
   pub fn try_write(
     self,
   ) -> Result<RwLockWriteGuard<'lock, T>, RwLockDeferredGuard<'lock, T>> {

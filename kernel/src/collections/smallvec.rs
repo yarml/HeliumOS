@@ -55,6 +55,13 @@ impl<T, const N: usize> SmallVec<T, N> {
       self.buffer[self.len].assume_init_read()
     })
   }
+  pub fn erase(&mut self, index: usize) -> Option<T> {
+    if self.len <= index {
+      return None;
+    }
+    self.buffer[index..self.len].rotate_left(1);
+    self.pop()
+  }
 }
 
 impl<T, const N: usize> Drop for SmallVec<T, N> {

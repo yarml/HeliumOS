@@ -1,13 +1,13 @@
 use core::{
   cell::UnsafeCell,
   hint,
+  mem::ManuallyDrop,
   ops::{Deref, DerefMut},
   sync::atomic::{AtomicUsize, Ordering},
 };
 
 type AtomicWord = AtomicUsize;
 type Word = usize;
-const BPW: usize = core::mem::size_of::<Word>();
 
 pub struct RwLock<T: ?Sized> {
   lock: AtomicWord,
@@ -201,7 +201,8 @@ impl<'lock, T: ?Sized> RwLockDeferredGuard<'lock, T> {
   pub fn try_write(
     self,
   ) -> Result<RwLockWriteGuard<'lock, T>, RwLockDeferredGuard<'lock, T>> {
-    if self
+    let mut mself = ManuallyDrop::new(self);
+    if mself
       .lock
       .fetch_update(Ordering::Acquire, Ordering::Relaxed, |lock| {
         let readers = reader_count_from(lock);
@@ -213,12 +214,11 @@ impl<'lock, T: ?Sized> RwLockDeferredGuard<'lock, T> {
       })
       .is_ok()
     {
-      let data = unsafe { &mut *self.data };
-      let lock = self.lock;
-      core::mem::forget(self);
+      let data = unsafe { &mut *mself.data };
+      let lock = mself.lock;
       Ok(RwLockWriteGuard { lock, data })
     } else {
-      Err(self)
+      Err(ManuallyDrop::into_inner(mself))
     }
   }
 }
@@ -237,24 +237,69 @@ impl<'lock, T: ?Sized> RwLockDeferredGuard<'lock, T> {
 
 impl<'lock, T: ?Sized> RwLockWriteGuard<'lock, T> {
   pub fn read(self) -> RwLockReadGuard<'lock, T> {
-    self
+    let mself = ManuallyDrop::new(self);
+    mself
       .lock
       .fetch_update(Ordering::Acquire, Ordering::Relaxed, |_| {
         Some(make_lock(RwLockState::Open, 1))
       })
       .unwrap();
-    let lock = self.lock;
+    let lock = mself.lock;
     let data = unsafe {
       // # Safety
       // No write guard can race a mutable access to T since we already set the reader count to 1
-      &*(self.data as *const T)
+      &*(mself.data as *const T)
     };
-    core::mem::forget(self);
     RwLockReadGuard { lock, data }
   }
   // Wouldn't make sense to convert a write guard to a deferred guard, since it will
   // be an exclusive reader inhibiting any further readers from entering the lock
   // The write guard already displays that behaviour.
+}
+
+impl<'lock, T: ?Sized> RwLockReadGuard<'lock, T> {
+  /// # Safety
+  /// Must guarentee that T and Q have the same size and are bit compatible
+  pub unsafe fn reinterpret<Q>(self) -> RwLockReadGuard<'lock, Q> {
+    let mself = ManuallyDrop::new(self);
+    let lock = mself.lock;
+    let data = unsafe {
+      // # Safety
+      // Guarenteed if T and Q have the same size and are bit compatible
+      core::mem::transmute_copy(&mself.data)
+    };
+    RwLockReadGuard { lock, data }
+  }
+}
+
+impl<'lock, T: ?Sized> RwLockWriteGuard<'lock, T> {
+  /// # Safety
+  /// Must guarentee that T and Q have the same size and are bit compatible
+  pub unsafe fn reinterpret<Q>(self) -> RwLockWriteGuard<'lock, Q> {
+    let mself = ManuallyDrop::new(self);
+    let lock = mself.lock;
+    let data = unsafe {
+      // # Safety
+      // Guarenteed if T and Q have the same size and are bit compatible
+      core::mem::transmute_copy(&mself.data)
+    };
+    RwLockWriteGuard { lock, data }
+  }
+}
+
+impl<'lock, T: ?Sized> RwLockDeferredGuard<'lock, T> {
+  /// # Safety
+  /// Must guarentee that T and Q have the same size and are bit compatible
+  pub unsafe fn reinterpret<Q>(self) -> RwLockDeferredGuard<'lock, Q> {
+    let mself = ManuallyDrop::new(self);
+    let lock = mself.lock;
+    let data = unsafe {
+      // # Safety
+      // Guarenteed if T and Q have the same size and are bit compatible
+      core::mem::transmute_copy(&mself.data)
+    };
+    RwLockDeferredGuard { lock, data }
+  }
 }
 
 impl<T: ?Sized> Deref for RwLockReadGuard<'_, T> {

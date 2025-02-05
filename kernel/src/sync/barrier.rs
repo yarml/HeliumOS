@@ -1,7 +1,11 @@
-use crate::bootboot::BootbootHeader;
-use core::{
-  hint,
-  sync::atomic::{AtomicBool, AtomicUsize, Ordering},
+// FIXME: needs revision
+
+use {
+  crate::bootboot::BootbootHeader,
+  core::{
+    hint,
+    sync::atomic::{AtomicBool, AtomicUsize, Ordering},
+  },
 };
 
 pub struct Barrier {

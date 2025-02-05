@@ -64,7 +64,7 @@ macro_rules! error {
 #[macro_export]
 macro_rules! log_routine {
   ($logger:expr, $header:expr, $($arg:tt)*) => {
-    let id = $crate::hart::ThisHart::id();
+    let id = *$crate::hart::ThisHart::id();
     $logger.write_fmt(format_args!("[Proc#{:02}] {:>5}: ", id, $header)).unwrap();
     $logger.write_fmt(format_args!($($arg)*)).unwrap();
     $logger.write_str("\r\n").unwrap();

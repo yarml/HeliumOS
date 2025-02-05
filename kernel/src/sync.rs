@@ -7,5 +7,8 @@ pub use {
   barrier::Barrier,
   mutex::{Mutex, MutexGuard},
   once::Once,
-  rwlock::NaiveRwLock,
+  rwlock::{
+    NaiveRwLock, NaiveRwLockDeferredGuard, NaiveRwLockReadGuard,
+    NaiveRwLockWriteGuard,
+  },
 };

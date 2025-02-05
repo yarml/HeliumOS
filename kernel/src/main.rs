@@ -5,6 +5,7 @@
 #![feature(maybe_uninit_slice)]
 #![feature(deref_pure_trait)]
 #![feature(integer_atomics)]
+#![feature(negative_impls)]
 #![feature(generic_const_exprs)]
 #![allow(incomplete_features)]
 #![deny(unsafe_op_in_unsafe_fn)]
@@ -23,3 +24,4 @@ mod meta;
 mod start;
 mod sync;
 mod system;
+mod utils;

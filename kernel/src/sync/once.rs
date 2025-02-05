@@ -52,7 +52,8 @@ impl<T> Once<T> {
   pub fn get(&self) -> Option<&T> {
     if self.status() == Status::Init {
       Some(unsafe {
-        // Safety: self.status() == Status::Init
+        // # Safety
+        // self.status() == Status::Init
         self.force_get()
       })
     } else {

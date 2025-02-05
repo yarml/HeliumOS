@@ -10,9 +10,9 @@ pub struct Mutex<T: ?Sized> {
   data: UnsafeCell<T>,
 }
 
-pub struct MutexGuard<'mutex, T: ?Sized> {
+pub struct MutexGuard<'mutex, T: 'mutex + ?Sized> {
   lock: &'mutex AtomicBool,
-  data: &'mutex UnsafeCell<T>,
+  data: &'mutex mut T,
 }
 
 /// # Safety
@@ -64,9 +64,15 @@ impl<T: ?Sized> Mutex<T> {
       .compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
       .is_ok()
     {
+      let data = unsafe {
+        // # Safety
+        // We host the data, so we know it is in a valid memory location
+        // The lock also guarentees exclusivity of the unique reference
+        self.data.get().as_mut_unchecked()
+      };
       return Some(MutexGuard {
         lock: &self.lock,
-        data: &self.data,
+        data,
       });
     } else {
       None
@@ -88,20 +94,12 @@ impl<'lock, T> Deref for MutexGuard<'lock, T> {
   type Target = T;
 
   fn deref(&self) -> &Self::Target {
-    unsafe {
-      // # Safety
-      // MutexGuard ensures exclusivity
-      &*self.data.get()
-    }
+    self.data
   }
 }
 
 impl<'lock, T> DerefMut for MutexGuard<'lock, T> {
   fn deref_mut(&mut self) -> &mut Self::Target {
-    unsafe {
-      // # Safety
-      // MutexGuard ensures exclusivity
-      &mut *self.data.get()
-    }
+    self.data
   }
 }

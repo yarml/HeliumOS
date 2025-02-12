@@ -1,5 +1,5 @@
 use {
-  crate::sync::{NaiveRwLock, NaiveRwLockWriteGuard},
+  crate::sync::{NaiveRwLock, NaiveRwLockReadGuard, NaiveRwLockWriteGuard},
   core::{
     mem,
     sync::atomic::{
@@ -55,6 +55,15 @@ macro_rules! make_atomic_array {
       }
     }
     impl<const N: usize> $atomic_array_type<N> {
+      pub const fn len(&self) -> usize {
+        N
+      }
+      pub fn iter(&self) -> AtomicArrayIter<'_, $atomic_type, N> {
+        let guard = self.data.read();
+        AtomicArrayIter::new(guard)
+      }
+    }
+    impl<const N: usize> $atomic_array_type<N> {
       expose_fetch! {
         $int_type => (
           fetch_add,
@@ -107,6 +116,16 @@ macro_rules! make_atomic_array {
         }
       }
     }
+    impl<const N: usize> Iterator for AtomicArrayIter<'_, $atomic_type, N> {
+      type Item = $int_type;
+      fn next(&mut self) -> Option<Self::Item> {
+        if self.index >= self.len {
+          None
+        } else {
+          Some(self.guard[self.index].load(Ordering::Relaxed))
+        }
+      }
+    }
   };
 }
 
@@ -122,3 +141,20 @@ make_atomic_array!(AtomicUsizeArray, AtomicUsize, usize);
 make_atomic_array!(AtomicIsizeArray, AtomicIsize, isize);
 make_atomic_array!(AtomicU128Array, AtomicU128, u128);
 make_atomic_array!(AtomicI128Array, AtomicI128, i128);
+
+pub struct AtomicArrayIter<'a, T: 'a, const N: usize> {
+  guard: NaiveRwLockReadGuard<'a, [T; N]>,
+  index: usize,
+  len: usize,
+}
+
+impl<'a, T: 'a, const N: usize> AtomicArrayIter<'a, T, N> {
+  pub fn new(guard: NaiveRwLockReadGuard<'a, [T; N]>) -> Self {
+    let len = guard.len();
+    Self {
+      guard,
+      index: 0,
+      len,
+    }
+  }
+}

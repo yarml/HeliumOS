@@ -2,12 +2,14 @@ pub mod size;
 
 use crate::mem::MemorySize;
 
-use super::PhysAddr;
-use core::{
-  fmt::{Debug, Display},
-  marker::PhantomData,
+use {
+  super::PhysAddr,
+  core::{
+    fmt::{Debug, Display},
+    marker::PhantomData,
+  },
+  size::FrameSize,
 };
-use size::FrameSize;
 
 #[repr(transparent)]
 #[derive(Clone, Copy)]
@@ -21,6 +23,13 @@ impl<S: FrameSize> Frame<S> {
   pub const fn containing(addr: &PhysAddr) -> Self {
     Self {
       boundary: PhysAddr::new_truncate(addr.as_usize() & S::MASK),
+      _phantom: PhantomData,
+    }
+  }
+  #[inline]
+  pub const fn from_number(num: usize) -> Self {
+    Self {
+      boundary: PhysAddr::new_truncate(num << S::SHIFT),
       _phantom: PhantomData,
     }
   }

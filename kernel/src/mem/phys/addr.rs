@@ -12,7 +12,7 @@ macro_rules! phys_truncated {
 }
 
 #[repr(transparent)]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct PhysAddr {
   inner: usize,
 }

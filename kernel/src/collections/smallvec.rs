@@ -14,7 +14,7 @@ pub struct SmallVec<T, const N: usize> {
 }
 
 impl<T, const N: usize> SmallVec<T, N> {
-  pub fn new() -> Self {
+  pub const fn new() -> Self {
     Self {
       buffer: [const { MaybeUninit::uninit() }; N],
       len: 0,

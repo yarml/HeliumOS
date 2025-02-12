@@ -1,4 +1,7 @@
-use core::fmt::{Debug, Display};
+use core::{
+  fmt::{Debug, Display},
+  ops::{Deref, DerefMut},
+};
 
 pub enum MemoryUnit {
   Byte,
@@ -77,6 +80,20 @@ impl MemoryUnit {
   #[inline]
   pub const fn component(&self, size: usize) -> usize {
     (size / self.size()) % 1024
+  }
+}
+
+impl Deref for MemorySize {
+  type Target = usize;
+
+  fn deref(&self) -> &Self::Target {
+    &self.inner
+  }
+}
+
+impl DerefMut for MemorySize {
+  fn deref_mut(&mut self) -> &mut Self::Target {
+    &mut self.inner
   }
 }
 

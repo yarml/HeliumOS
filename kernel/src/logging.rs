@@ -9,6 +9,7 @@ mod port_e9;
 pub use port_e9::DEBUG_PORT;
 
 #[doc(hidden)]
+#[cfg(feature = "logger_framebuffer")]
 pub use fb::FRAMEBUFFER;
 
 #[macro_export]

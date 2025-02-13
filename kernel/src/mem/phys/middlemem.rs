@@ -80,4 +80,34 @@ impl MiddleMemoryAllocator {
       .bitmap
       .fetch_and(windex, !(1 << bitindex), Ordering::Relaxed);
   }
+  pub fn free4_many(&self, start: Frame<Frame4KiB>, count: usize) {
+    let start = start.number();
+    let adjacent = start + count;
+    let end = adjacent - 1;
+
+    let start_word = start / BTPW;
+    let end_word = end / BTPW;
+
+    let start_spill = BTPW - start % BTPW;
+    let end_spill = adjacent % BTPW;
+    let start_mask = Word::MAX << (BTPW - start_spill);
+    let end_mask = Word::MAX >> (BTPW - end_spill);
+
+    let middle_count = count - start_spill - end_spill;
+    if start_word == end_word {
+      self.bitmap.fetch_and(
+        start_word,
+        start_mask & end_mask,
+        Ordering::Relaxed,
+      );
+    } else {
+      self
+        .bitmap
+        .fetch_and(start_word, start_mask, Ordering::Relaxed);
+      self.bitmap.fetch_and(end_word, end_mask, Ordering::Relaxed);
+      for i in 1..=middle_count {
+        self.bitmap.store(i + start_word, 0, Ordering::Relaxed);
+      }
+    }
+  }
 }

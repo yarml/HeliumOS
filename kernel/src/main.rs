@@ -20,7 +20,6 @@ mod hart;
 mod io;
 mod logging;
 mod mem;
-mod meta;
 mod start;
 mod sync;
 mod system;

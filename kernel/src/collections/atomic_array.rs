@@ -122,7 +122,9 @@ macro_rules! make_atomic_array {
         if self.index >= self.len {
           None
         } else {
-          Some(self.guard[self.index].load(Ordering::Relaxed))
+          let x = self.guard[self.index].load(Ordering::Relaxed);
+          self.index += 1;
+          Some(x)
         }
       }
     }

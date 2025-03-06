@@ -14,7 +14,7 @@
 
 use {
   super::frame::{size::Frame4KiB, Frame},
-  crate::{collections::AtomicU64Array, debug},
+  crate::collections::AtomicU64Array,
   core::{
     mem,
     sync::atomic::{AtomicU64, Ordering},
@@ -90,10 +90,17 @@ impl MiddleMemoryAllocator {
 
     let start_spill = BTPW - start % BTPW;
     let end_spill = adjacent % BTPW;
-    let start_mask = Word::MAX << (BTPW - start_spill);
-    let end_mask = Word::MAX >> (BTPW - end_spill);
+    let start_mask = if start_spill == 0 {
+      0
+    } else {
+      Word::MAX << (BTPW - start_spill)
+    };
+    let end_mask = if end_spill == 0 {
+      0
+    } else {
+      Word::MAX >> (BTPW - end_spill)
+    };
 
-    let middle_count = count - start_spill - end_spill;
     if start_word == end_word {
       self.bitmap.fetch_and(
         start_word,
@@ -101,6 +108,7 @@ impl MiddleMemoryAllocator {
         Ordering::Relaxed,
       );
     } else {
+      let middle_count = (count - start_spill - end_spill) / BTPW;
       self
         .bitmap
         .fetch_and(start_word, start_mask, Ordering::Relaxed);

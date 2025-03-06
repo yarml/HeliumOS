@@ -14,20 +14,20 @@
 
 use {
   super::frame::{size::Frame4KiB, Frame},
-  crate::collections::AtomicU128Array,
+  crate::{collections::AtomicU64Array, debug},
   core::{
     mem,
-    sync::atomic::{AtomicU128, Ordering},
+    sync::atomic::{AtomicU64, Ordering},
   },
 };
 
 const BPW: usize = mem::size_of::<Word>();
 const BTPW: usize = BPW * 8;
-const WORDCOUNT: usize = (4 * 1024 * 1024 * 1024) / 4096 / 8 / BPW;
+const WORDCOUNT: usize = (4 * 1024 * 1024 * 1024) / 4096 / BPW;
 
-type Word = u128;
-type AtomicWord = AtomicU128;
-type AtomicArray = AtomicU128Array<WORDCOUNT>;
+type Word = u64;
+type AtomicWord = AtomicU64;
+type AtomicArray = AtomicU64Array<WORDCOUNT>;
 
 static MIDDLEMEM_ALLOCATOR: MiddleMemoryAllocator =
   MiddleMemoryAllocator::new();

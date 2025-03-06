@@ -37,7 +37,6 @@ pub enum InsufficientReason {
   NoHugePages,
   NoApic,
   NoSyscall,
-  NoU128Atomic,
 }
 
 impl FeatureSet {
@@ -146,12 +145,6 @@ impl SupportedVendor {
     let has_apic = (cpuid1.edx >> 9) & 1 == 1;
     let has_syscall = (cpuidext1.edx >> 11) & 1 == 1;
 
-    // TODO: technically speaking, since max-atomic-width is already specified
-    // to be 128 in layout-kernel.json, the compiler reserves the right to generate
-    // a cmpxchg16b before the feature is checked to not exist. I will just assume
-    // it will not randomly insert it and cross them fingers for now.
-    let has_cmpxchg16b = (cpuid1.ecx >> 13) & 1 == 1;
-
     if !has_huge_pages {
       return FeatureSet::Insufficient(InsufficientReason::NoHugePages);
     }
@@ -160,9 +153,6 @@ impl SupportedVendor {
     }
     if !has_syscall {
       return FeatureSet::Insufficient(InsufficientReason::NoSyscall);
-    }
-    if !has_cmpxchg16b {
-      return FeatureSet::Insufficient(InsufficientReason::NoU128Atomic);
     }
 
     let noexec = (cpuidext1.edx >> 20) & 1 == 1;
@@ -235,9 +225,6 @@ impl Display for InsufficientReason {
       }
       InsufficientReason::NoApic => write!(f, "Does not support APIC"),
       InsufficientReason::NoSyscall => write!(f, "Does not support syscalls"), // Dinosaure
-      InsufficientReason::NoU128Atomic => {
-        write!(f, "Does not support cmpxchg16b")
-      }
     }
   }
 }

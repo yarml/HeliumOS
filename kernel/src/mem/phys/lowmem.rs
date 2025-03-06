@@ -11,19 +11,21 @@
 //! Like middle memory, this entire memory space can be found in kernel space
 //! with constant offset using PhysAddr::to_virt()
 
-use super::{
-  frame::{
-    size::{Frame128KiB, Frame4KiB, Frame64KiB, FrameSize},
-    Frame,
+use {
+  super::{
+    frame::{
+      size::{Frame128KiB, Frame4KiB, Frame64KiB, FrameSize},
+      Frame,
+    },
+    PhysAddr,
   },
-  PhysAddr,
+  crate::sync::Mutex,
 };
-use crate::sync::Mutex;
 
-static LOWMEM_ALLOCATOR: Mutex<LowMemoryAllocator> =
+pub static LOWMEM_ALLOCATOR: Mutex<LowMemoryAllocator> =
   Mutex::new(LowMemoryAllocator::default());
 
-struct LowMemoryAllocator {
+pub struct LowMemoryAllocator {
   frames64: [usize; 4],
   frames128: [usize; 2],
 }

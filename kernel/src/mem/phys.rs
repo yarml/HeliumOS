@@ -5,6 +5,14 @@ mod lowmem;
 mod middlemem;
 
 pub use addr::PhysAddr;
+use {
+  frame::{
+    size::{Frame4KiB, Frame64KiB},
+    Frame,
+  },
+  lowmem::LOWMEM_ALLOCATOR,
+  middlemem::MIDDLEMEM_ALLOCATOR,
+};
 
 use crate::{
   bootboot::{mmap::MmapClass, BootbootHeader},
@@ -18,8 +26,26 @@ pub fn init() {
   let mut totals = [0; 3];
   let mut bounds: [(Option<PhysAddr>, Option<PhysAddr>); 3] = [(None, None); 3];
 
+  let mut lowmem_allocator = LOWMEM_ALLOCATOR.lock();
+
   for entry in mmap.iter() {
     if entry.is_free() {
+      match entry.class() {
+        MmapClass::Low => {
+          let k64count = entry.size() / (64 * 1024);
+          let start: Frame<Frame64KiB> = Frame::containing(&entry.phys_addr());
+          for i in 0..k64count {
+            lowmem_allocator.free64(start + i);
+          }
+        }
+        MmapClass::Middle => {
+          let frame_count = entry.size() / 4096;
+          let start: Frame<Frame4KiB> = Frame::containing(&entry.phys_addr());
+          MIDDLEMEM_ALLOCATOR.free4_many(start, frame_count);
+        }
+        MmapClass::High => {}
+        _ => unreachable!(),
+      }
       let index = match entry.class() {
         MmapClass::Low => 0,
         MmapClass::Middle => 1,
@@ -37,6 +63,11 @@ pub fn init() {
       }
     }
   }
+
+  let pretend_alloc0 = MIDDLEMEM_ALLOCATOR.alloc4().unwrap();
+  let pretend_alloc1 = MIDDLEMEM_ALLOCATOR.alloc4().unwrap();
+
+  debug!("Allocated: {} & {}", pretend_alloc0, pretend_alloc1);
 
   let pretend_size = |index: usize| {
     bounds[index].1.unwrap().as_usize() - bounds[index].0.unwrap().as_usize()

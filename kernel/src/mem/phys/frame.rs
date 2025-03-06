@@ -1,5 +1,6 @@
 pub mod size;
 
+use core::ops::Add;
 use crate::mem::MemorySize;
 
 use {
@@ -44,6 +45,14 @@ impl<S: FrameSize> Frame<S> {
   #[inline]
   pub const fn number(&self) -> usize {
     self.boundary.as_usize() >> S::SHIFT
+  }
+}
+
+impl<S: FrameSize> Add<usize> for Frame<S> {
+  type Output = Frame<S>;
+
+  fn add(self, rhs: usize) -> Self::Output {
+    Self::from_number(self.number() + rhs)
   }
 }
 

@@ -1,6 +1,10 @@
+#[derive(Clone, Copy)]
 pub struct Frame4KiB;
+#[derive(Clone, Copy)]
 pub struct Frame64KiB;
+#[derive(Clone, Copy)]
 pub struct Frame128KiB;
+#[derive(Clone, Copy)]
 pub struct Frame2MiB;
 
 pub trait FrameSize {

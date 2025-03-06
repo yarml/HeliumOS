@@ -29,11 +29,11 @@ type Word = u64;
 type AtomicWord = AtomicU64;
 type AtomicArray = AtomicU64Array<WORDCOUNT>;
 
-static MIDDLEMEM_ALLOCATOR: MiddleMemoryAllocator =
+pub static MIDDLEMEM_ALLOCATOR: MiddleMemoryAllocator =
   MiddleMemoryAllocator::new();
 
 // TODO: Maybe implement a DELAY-2 buddy. For now a bitmap
-struct MiddleMemoryAllocator {
+pub struct MiddleMemoryAllocator {
   bitmap: AtomicArray,
 }
 
@@ -47,12 +47,12 @@ impl MiddleMemoryAllocator {
 
 impl MiddleMemoryAllocator {
   pub fn alloc4(&self) -> Option<Frame<Frame4KiB>> {
-    for (index, _) in self
+    let iter = self
       .bitmap
       .iter()
       .enumerate()
-      .filter(|(_, word)| *word != Word::MAX)
-    {
+      .filter(|(_, word)| *word != Word::MAX);
+    for (index, _) in iter {
       if let Ok(word) = self.bitmap.fetch_update(
         index,
         Ordering::Relaxed,

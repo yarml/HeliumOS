@@ -6,6 +6,8 @@
 ██   ██ ███████ ███████ ██  ██████  ██      ██  ██████  ███████
 ```
 
+This project has moved to [PentOS](https://github.com/yarml/PentOS).
+
 # HeliumOS
 HeliumOS, a hobby x86_64 operating system whose main goals are learning and testing random ideas from other operating systems.
 

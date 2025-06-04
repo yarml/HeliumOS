@@ -119,10 +119,7 @@ pub mod init {
     while IGNITION.get().is_none() {
       pause();
     }
-    loop {
-      pause();
-    }
-    //wakeup()
+    wakeup()
   }
 
   fn latewait() {

@@ -31,7 +31,7 @@ pub const USERSTACK_BOTTOM: u64 = USERSPACE_TOP.as_u64() + 1 - 1024 * 1024;
 pub const USERSTACK_TOP: VirtAddr =
   VirtAddr::new_truncate(USERSTACK_BOTTOM - USERSTACK_SIZE as u64);
 
-pub const QUANTUM_MS: usize = 1000;
+pub const QUANTUM_MS: usize = 100000;
 
 // When loading a task, we need to set memory in user space to certain values,
 // But we don't want to change the current mapping of the user space, so instead
@@ -46,7 +46,7 @@ const MAX_TICK_MISS: usize = 10;
 
 static mut CLOCK: AtomicUsize = AtomicUsize::new(0);
 
-static TASKS: Once<RwLock<TaskList>> = Once::new();
+pub static TASKS: Once<RwLock<TaskList>> = Once::new();
 
 pub type TaskRef = Arc<RwLock<Task>>;
 pub type TaskList = Vec<TaskRef>;
@@ -250,9 +250,15 @@ impl Task {
     tasks_lock.push(Arc::new(RwLock::new(task)));
     id
   }
-  fn exec_initrd(path: &str, tasks_lock: TasksLock) -> ExecResult {
+  pub fn exec_initrd(path: &str, tasks_lock: TasksLock) -> ExecResult {
     if let Some(file) = initrd::open_file(path) {
-      Self::exec_raw(file, tasks_lock)
+      match Self::exec_raw(file, tasks_lock) {
+        ExecResult::Success(id) => {
+          println!("Spawned \"{}\" with ID: {}", path, id);
+          ExecResult::Success(id)
+        }
+        other => other,
+      }
     } else {
       ExecResult::FileError
     }

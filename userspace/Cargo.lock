@@ -3,6 +3,13 @@
 version = 3
 
 [[package]]
+name = "dummy"
+version = "0.1.0"
+dependencies = [
+ "helium-runtime",
+]
+
+[[package]]
 name = "helium-runtime"
 version = "0.1.0"
 dependencies = [

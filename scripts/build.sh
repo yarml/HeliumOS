@@ -32,6 +32,10 @@ cp font.psf initrd/sys/font.psf
 # START FIXME: Temporary until userspace build system is complete
 cp /build/userspace/target/layout-userspace/debug/init initrd/bin/init
 cp /build/userspace/target/layout-userspace/debug/init /build/out/init
+
+cp /build/userspace/target/layout-userspace/debug/dummy initrd/bin/dummy
+cp /build/userspace/target/layout-userspace/debug/dummy /build/out/dummy
+
 # END
 
 mkbootimg /build/config/bootimg.json helium.iso

@@ -8,6 +8,7 @@ use ordinalizer::Ordinal;
 pub enum SyscallResult {
   Success(u64, u64, u64, u64, u64, u64),
   Invalid,
+  Failed,
 }
 
 #[derive(Ordinal)]
@@ -15,21 +16,24 @@ pub enum Syscall {
   Exit(u64),
   GetPid,
   DebugDraw(u64, u64, u64, u64, u64), // x, y, r, g, b
+  Spawn(*const u8, usize),
 }
 
 impl Syscall {
   pub fn call(&self) -> SyscallResult {
     let num = self.ordinal();
-    let (mut io0, mut io1, mut io2, mut io3, mut io4, mut io5): (u64, u64, u64, u64, u64, u64) = match self {
-      Syscall::Exit(exitcode) => {
-        (*exitcode, 0, 0, 0, 0, 0)
-      },
-      Syscall::GetPid => {
-        (0, 0, 0, 0, 0, 0)
-      },
-      Self::DebugDraw(x, y, r, g, b) => {
-        (*x, *y, *r, *g, *b, 0)
-      }
+    let (mut io0, mut io1, mut io2, mut io3, mut io4, mut io5): (
+      u64,
+      u64,
+      u64,
+      u64,
+      u64,
+      u64,
+    ) = match self {
+      Syscall::Exit(exitcode) => (*exitcode, 0, 0, 0, 0, 0),
+      Syscall::GetPid => (0, 0, 0, 0, 0, 0),
+      Self::DebugDraw(x, y, r, g, b) => (*x, *y, *r, *g, *b, 0),
+      Self::Spawn(path, len) => (*path as u64, *len as u64, 0, 0, 0, 0),
     };
 
     let mut status: u64;

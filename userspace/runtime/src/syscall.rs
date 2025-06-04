@@ -15,3 +15,10 @@ pub fn getpid() -> u64 {
 pub fn debug_draw(x: usize, y: usize, r: u8, g: u8, b: u8) {
   Syscall::DebugDraw(x as u64, y as u64, r as u64, g as u64, b as u64).call();
 }
+
+pub fn spawn(path: &'static str) -> Option<usize> {
+  match Syscall::Spawn(path.as_ptr(), path.len()).call() {
+    SyscallResult::Success(id, _, _, _, _, _) => Some(id as usize),
+    _ => None,
+  }
+}

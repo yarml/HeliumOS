@@ -2,13 +2,10 @@
 #![no_main]
 
 use core::panic::PanicInfo;
-use helium_runtime::syscall::{self, getpid, spawn};
+use helium_runtime::syscall;
 
 #[no_mangle]
 extern "C" fn run() -> usize {
-  getpid();
-  spawn("/bin/dummy");
-  getpid();
   loop {}
 }
 

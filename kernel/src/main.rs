@@ -5,6 +5,7 @@
 #![feature(abi_x86_interrupt)]
 #![feature(ascii_char_variants)]
 #![feature(ascii_char)]
+#![feature(str_from_raw_parts)]
 #![feature(vec_push_within_capacity)]
 #![feature(option_take_if)]
 

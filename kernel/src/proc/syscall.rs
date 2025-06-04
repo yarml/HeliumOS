@@ -1,5 +1,8 @@
+use core::str;
+
 use crate::{
-  dev::framebuffer::debug_set_pixel, mem::gdt::KernelGlobalDescriptorTable, println, sys
+  dev::framebuffer::debug_set_pixel, mem::gdt::KernelGlobalDescriptorTable,
+  println, sys,
 };
 use helium_syscall::{Syscall, SyscallResult};
 use x86_64::{
@@ -11,7 +14,7 @@ use x86_64::{
 };
 
 use super::{
-  task::{self, TaskProcState},
+  task::{self, Task, TaskProcState, TASKS},
   ProcInfo,
 };
 
@@ -54,6 +57,20 @@ impl SyscallHandler for Syscall {
           (*r as u8, *g as u8, *b as u8).into(),
         );
         SyscallResult::Success(0, 0, 0, 0, 0, 0)
+      }
+      Syscall::Spawn(path, len) => {
+        println!("Spawn");
+        let path = unsafe {
+          // Trust userspace with my life
+          str::from_raw_parts(*path, *len)
+        };
+        let mut tasks_lock = TASKS.get().unwrap().write();
+        match Task::exec_initrd(path, &mut tasks_lock) {
+          task::ExecResult::Success(id) => {
+            SyscallResult::Success(id as u64, 0, 0, 0, 0, 0)
+          }
+          _ => SyscallResult::Failed,
+        }
       }
     }
   }
@@ -105,7 +122,7 @@ extern "C" fn syscall_handle_2(proc_state: &TaskProcState) -> ! {
         procstate.r8 = o4;
         procstate.r9 = o5;
       }
-      SyscallResult::Invalid => procstate.rax = 1,
+      _ => procstate.rax = 1,
     }
   }
   unsafe {
@@ -127,6 +144,10 @@ impl TryFrom<&TaskProcState> for Syscall {
         proc_state.rdx,
         proc_state.r10,
         proc_state.r8,
+      )),
+      3 => Ok(Syscall::Spawn(
+        proc_state.rdi as *const u8,
+        proc_state.rsi as usize,
       )),
       _ => Err(()),
     }
